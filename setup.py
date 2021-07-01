@@ -8,5 +8,7 @@ setup(
     license='MIT',
     author='Natallia Kokash',
     author_email='natallia.kokash@gmail.com',
-    description='Experimental pipeline to create knowledge graphs from Arts and Humanities publications'
+    description='Experimental pipeline to create knowledge graphs from Arts and Humanities publications',
+    python_requires='>=3.0.*',
+    install_requires=['zipfile', 'logging', 'lxml', 'pdfminer']
 )
