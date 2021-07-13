@@ -1,4 +1,4 @@
-class Config:
+class ParserConfig:
     def __init__(self):
         self._indent = 150      # Maximal horizontal offset to consider the next line a continuation of the previous
         self._noise = 3         # Minimal threshold on lines with certain indentation. Helps to exclude non-references

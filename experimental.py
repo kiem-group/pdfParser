@@ -2,6 +2,41 @@ import numpy as np
 from os.path import join
 from sklearn.cluster import AffinityPropagation
 import distance
+import csv
+import Levenshtein as lev
+
+
+def print_clustering_ground():
+    test_dataset = open('data_test/cluster_data/dataset.tsv', encoding='utf-8')
+    reader = csv.reader(test_dataset, delimiter="\t")
+    out_path = 'data_test/cluster_data/dataset_ground.txt'
+    out = open(out_path, "w", encoding='utf-8')
+    next(reader, None)
+    for row in reader:
+        out.write(row[1]+'\n')
+        out.write(row[3]+'\n')
+        out.write(row[5]+'\n\n')
+    out.close()
+    test_dataset.close()
+
+
+def print_clustering_lev():
+    test_dataset = open('data_test/cluster_data/dataset.tsv', encoding='utf-8')
+    reader = csv.reader(test_dataset, delimiter="\t")
+    next(reader, None)
+    out_path = 'data_test/cluster_data/dataset_lev.txt'
+    out = open(out_path, "w", encoding='utf-8')
+    for row in reader:
+        str1 = row[1].lower()
+        str2 = row[3].lower()
+        ratio = lev.ratio(str1, str2)
+        same = ratio > 0.75
+        out.write(row[1] + '\n')
+        out.write(row[3] + '\n')
+        res = 1.0 if same else 0.0
+        out.write(str(res) + '\n\n')
+    out.close()
+    test_dataset.close()
 
 
 # Affinity-propagation clustering
@@ -31,6 +66,11 @@ def cluster(data, path):
         out_file.write(" - *%s:* %s" % (exemplar, cluster_str) + "\n\n")
     out_file.close()
 
+
+# from io import StringIO
+# from pdfminer.converter import TextConverter
+# from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+# from pdfminer.pdfpage import PDFPage
 
 # from gensim.models import Word2Vec
 # from nltk.tokenize import wordpunct_tokenize
@@ -66,3 +106,28 @@ def cluster(data, path):
 #     in_file.close()
 #     out_file.close()
 
+# if any(word in title for word in ['index', 'bibliography']):
+#     href = book_part.xpath('.//self-uri/@xlink:href',
+#                            namespaces={"xlink": "http://www.w3.org/1999/xlink"})[0]
+#     target_pdf = pub_zip.open(href)
+#     # Modify output_txt_path to put target files of the same type to a dedicated folder
+#     if 'index' in title:
+#         corpus.index_count += 1
+#         pub.index_files.append(href)
+#         # curr_index_types = get_index_types(title)
+#         # for type_name in curr_index_types:
+#         #     index_types[type_name] = index_types.get(type_name, 0) + 1
+#         # ext = "-" + str(len(pub.index_files)) + "_" + ('-'.join(curr_index_types))
+#         # output_txt_path = pub_dir_path + ext + ".txt"
+#     else:
+#         # if 'bibliography' in title:
+#         corpus.bibliography_count += 1
+#         pub.bib_file = href
+#         output_txt_path = pub_dir_path + "-bibliography.txt"
+#         parse_target_indent(target_pdf, output_txt_path, bib_config)
+
+# Extract a single file from zip
+# pub_zip.extract(file_name, join(corpus_dir_path, 'temp_xml'))
+
+# for type_name in curr_index_types:
+#     index_types[type_name] = index_types.get(type_name, 0) + 1

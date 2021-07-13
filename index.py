@@ -6,6 +6,8 @@
    # nominum_modern  - modern authors
 # rerum    - index of subjects
 # geographicus - index of places
+
+
 def get_index_types(index_title):
     keywords = {
         'verborum': ['general', 'verborum', 'verborvm', 'abstract', 'word', 'words', 'term', 'terms', 'termes', 'wort', 'sachindex', 'général', 'generalis', 'mots'],
