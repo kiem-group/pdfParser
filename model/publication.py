@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-
 @dataclass
 class Publication:
     """A class for holding information about a publication"""

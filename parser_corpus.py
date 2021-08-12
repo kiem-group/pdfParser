@@ -77,15 +77,13 @@ def parse_target_indent(in_file, out_path, config):
     print("Extracted items: ", len(items))
     out_file = open(out_path, "w", encoding='utf-8')
     for item in items:
-        # ref = u''.join(item)
-        # out_file.write(ref+'\n')
         for char in item:
             try:
                 out_file.write(char)
             except:
                 print(sys.exc_info()[0])
                 print("\tFailed to write to file:", char)
-        out_file.write('\n')
+        out_file.write("\n")
     out_file.close()
     in_file.close()
 
@@ -133,8 +131,9 @@ def parse_bibliography_file(book_part, config, pub_zip, pub):
         href = book_part.xpath('.//self-uri/@xlink:href', namespaces={"xlink": "https://www.w3.org/1999/xlink"})[0]
         target_pdf = pub_zip.open(href)
         pub.bib_file = href
-        # output_txt_path = pub.zip_path + "-bibliography.txt"    #Add output options to config
-        output_txt_path = join(pub.corpus_dir_path, href + "-bibliography.txt")
+        output_txt_path = pub.zip_path if config.output_to_pub_dir else join(pub.corpus_dir_path, href)
+        output_txt_path += "-bibliography.txt"
+        print(output_txt_path)
         parse_target_indent(target_pdf, output_txt_path, config)
 
 
@@ -154,7 +153,6 @@ def parse_index_file(book_part, config, pub_zip, pub):
         output_pdf_path = join(pub.corpus_dir_path, pub.dir_name + ext + ".pdf")
         with open(output_pdf_path, 'wb') as f_dest:
             shutil.copyfileobj(target_pdf, f_dest)
-
         parse_target_indent(target_pdf, output_txt_path, config)
 
 
@@ -185,8 +183,8 @@ def parse_corpus(my_path):
                     pub.jats_file = file_name
                     jats_file = pub_zip.open(file_name)
                     try:
-                        # parse_files(parse_bibliography_file, bib_config, jats_file, pub_zip, pub)
-                        parse_files(parse_index_file, bib_config, jats_file, pub_zip, pub)
+                        parse_files(parse_bibliography_file, bib_config, jats_file, pub_zip, pub)
+                        # parse_files(parse_index_file, bib_config, jats_file, pub_zip, pub)
                     except:
                         corpus.xml_parsing_errors += 1
                         print(sys.exc_info()[0])

@@ -13,9 +13,9 @@ def print_clustering_ground():
     out = open(out_path, "w", encoding='utf-8')
     next(reader, None)
     for row in reader:
-        out.write(row[1]+'\n')
-        out.write(row[3]+'\n')
-        out.write(row[5]+'\n\n')
+        out.write(row[1] + "\n")
+        out.write(row[3] + "\n")
+        out.write(row[5] + "\n\n")
     out.close()
     test_dataset.close()
 
@@ -31,10 +31,10 @@ def print_clustering_lev():
         str2 = row[3].lower()
         ratio = lev.ratio(str1, str2)
         same = ratio > 0.75
-        out.write(row[1] + '\n')
-        out.write(row[3] + '\n')
+        out.write(row[1] + "\n")
+        out.write(row[3] + "\n")
         res = 1.0 if same else 0.0
-        out.write(str(res) + '\n\n')
+        out.write(str(res) + "\n\n")
     out.close()
     test_dataset.close()
 

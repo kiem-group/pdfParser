@@ -1,10 +1,11 @@
 from os import listdir
 from os.path import isfile, join
 import Levenshtein as lev
+import os
 
 
 # Reads references from parsed text file
-def get_refs(path):
+def get_refs(path: str) -> [str]:
     bib_files = [f for f in listdir(path) if f.endswith('-bibliography.txt') and isfile(join(path, f))]
     refs = []
     for filename in bib_files:
@@ -17,7 +18,7 @@ def get_refs(path):
 
 
 # checks if similar references already exists in clusters by matching with first sample in a cluster
-def is_ref_found(ref, ref_cluster, threshold=0.75):
+def is_ref_found(ref: str, ref_cluster: [str], threshold: float = 0.75) -> bool:
     m = len(ref_cluster)
     if m == 0:
         return False
@@ -27,7 +28,7 @@ def is_ref_found(ref, ref_cluster, threshold=0.75):
 
 
 # checks if similar reference already exists in clusters by matching with all samples in a cluster
-def is_ref_found_avg(ref, ref_cluster, threshold=0.75):
+def is_ref_found_avg(ref: str, ref_cluster: [str], threshold: float = 0.75) -> bool:
     m = len(ref_cluster)
     if m == 0:
         return False
@@ -44,7 +45,7 @@ def is_ref_found_avg(ref, ref_cluster, threshold=0.75):
 
 
 # Compute editing distance for local clustering of similar references
-def group_by_levenshtein_ratio(refs, ref_clusters, threshold=0.75):
+def group_by_levenshtein_ratio(refs: [str], ref_clusters: [[str]], threshold: float = 0.75):
     n = len(refs)
     print("Clustering references:", n)
     for i in range(n):
@@ -61,17 +62,26 @@ def group_by_levenshtein_ratio(refs, ref_clusters, threshold=0.75):
             print("Clustering progress - processed:", i)
 
 
-def get_clustered_refs(file_path):
+def get_clustered_refs(file_path) -> [[str]]:
     f = open(file_path, mode="r", encoding="utf-8")
     clusters = f.read().split("\n\n")
     clustered_refs = []
     for cluster in clusters:
-        clustered_refs.append(cluster.split('\n'))
+        items = [ref for ref in cluster.split("\n") if ref]
+        clustered_refs.append(items)
+    return clustered_refs
+
+
+def get_clustered_refs_flat(file_path) -> [str]:
+    f = open(file_path, mode="r", encoding="utf-8")
+    clusters = f.read().split("\n\n")
+    clustered_refs = [ref for ref in clusters if ref]
+    f.close()
     return clustered_refs
 
 
 # Cluster extracted references and export to a file
-def cluster_refs(path):
+def cluster_refs(path: str):
     data = get_refs(path)
     clusters = [[]]
     group_by_levenshtein_ratio(data, clusters, 0.75)
@@ -79,6 +89,6 @@ def cluster_refs(path):
     out_file = open(out_path, "w", encoding='utf-8')
     for cluster in clusters:
         for entry in cluster:
-            out_file.write(entry + '\n')
-        out_file.write('\n\n')
+            out_file.write(entry + "\n")
+        out_file.write("\n\n")
     out_file.close()

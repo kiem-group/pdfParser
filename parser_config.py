@@ -1,69 +1,16 @@
+from dataclasses import dataclass
+
+
+@dataclass
 class ParserConfig:
-    def __init__(self):
-        self._indent = 150      # Maximal horizontal offset to consider the next line a continuation of the previous
-        self._noise = 3         # Minimal threshold on lines with certain indentation. Helps to exclude non-references
-        self._min_length = 30   # Minimal length of the reference or index term, to exclude page numbers, titles, etc.
-        self._max_length = 300  # Maximal length of the reference or index term, to exclude article content
-        self._min_words = 3     # Not used
-        self._max_words = 100   # Not used
+    """A class that defines parameters for indentation-based PDF parser"""
 
-    @property
-    def indent(self):
-        return self._indent
+    indent: int = 150      # Maximal horizontal offset to consider the next line a continuation of the previous
+    noise: int = 3         # Minimal threshold on lines with certain indentation. Helps to exclude non-references
+    min_length: int = 30   # Minimal length of the reference or index term, to exclude page numbers, titles, etc.
+    max_length: int = 300  # Maximal length of the reference or index term, to exclude article content
+    min_words: int = 3     # Minimal number of words in reference or index (currently not used)
+    max_words: int = 100   # Maximal number of words in reference or index (currently not used)
 
-    @indent.setter
-    def indent(self, value):
-        self._indent = value
-
-    @indent.deleter
-    def indent(self):
-        del self._indent
-
-    @property
-    def noise(self):
-        return self._noise
-
-    @noise.setter
-    def noise(self, value):
-        self._noise = value
-
-    @noise.deleter
-    def noise(self):
-        del self._noise
-
-    @property
-    def min_length(self):
-        return self._min_length
-
-    @min_length.setter
-    def min_length(self, value):
-        self._min_length = value
-
-    @min_length.deleter
-    def min_length(self):
-        del self._min_length
-
-    @property
-    def max_length(self):
-        return self._max_length
-
-    @max_length.setter
-    def max_length(self, value):
-        self._max_length = value
-
-    @max_length.deleter
-    def max_length(self):
-        del self._max_length
-
-    @property
-    def min_words(self):
-        return self._min_words
-
-    @min_words.setter
-    def min_words(self, value):
-        self._min_words = value
-
-    @min_words.deleter
-    def min_words(self):
-        del self._min_words
+    output_to_pub_dir: bool = False  # Indicates whether results are saved to corpus folder or to publication folders
 

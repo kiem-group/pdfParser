@@ -11,7 +11,9 @@ def query_google_books(refs):
     print("Searching for references using Google books API:", len(refs))
     api = "https://www.googleapis.com/books/v1/volumes?q="
     for ref in refs:
+        print("Ref", ref)
         url = api + urllib.parse.quote(ref)
+        print("URL", url)
         resp = urlopen(url)
         book_data = json.load(resp)
         print(book_data)
@@ -27,4 +29,4 @@ def query_cross_ref(refs):
         pub = works.query(bibliographic=ref)
         for item in pub:
             print(item['author'], item['title'])
-        print('\n')
+        print("\n")
