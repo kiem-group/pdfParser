@@ -10,6 +10,6 @@ setup(
     author_email='natallia.kokash@gmail.com',
     description='Experimental pipeline to create knowledge graphs from Arts and Humanities publications',
     python_requires='>=3.0.*',
-    install_requires=['zipfile', 'logging', 'lxml', 'pdfminer', 'Levenshtein', 'csv'],
+    install_requires=['zipfile', 'logging', 'lxml', 'pdfminer', 'Levenshtein', 'csv', 'bibtexparser', 'pyparsing'],
     test_suite='test'
 )

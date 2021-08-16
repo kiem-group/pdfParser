@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from model.publication import Publication
 import re
-from pyparsing import (Word, Literal, OneOrMore, ZeroOrMore, Group, CharsNotIn, alphanums, delimitedList, restOfLine, printables,
-    alphas, nums, pyparsing_unicode as ppu, ParseException, Optional, Regex, QuotedString)
+from pyparsing import (Word, Literal, ZeroOrMore, delimitedList, restOfLine, pyparsing_unicode as ppu, ParseException, Optional, Regex)
 
 
 @dataclass
@@ -41,7 +40,7 @@ class BaseReference:
         same = Word('—') + Literal('.').suppress()
         author_list = delimitedList(author) | same
         year = Regex('.{' + str(4) + '}') + Literal('.').suppress()
-        citation = (author_list('authors') + Optional(year('year')) + restOfLine('rest'))
+        citation = author_list('authors') + Optional(year('year')) + restOfLine('rest')
         try:
             res = citation.parseString(self.text)
             self.authors = res.authors.asList()
