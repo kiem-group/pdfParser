@@ -4,8 +4,6 @@ import re
 from clustering import get_clustered_refs_flat
 from model.reference import Reference
 import Levenshtein
-from model.index import Index
-# from nltk.tokenize import regexp_tokenize
 
 
 class TestClassifier(unittest.TestCase):
@@ -176,28 +174,27 @@ class TestClassifier(unittest.TestCase):
         print(str(found) + " out of " + str(len(data)))
         out_file.close()
 
-    # @unittest.skip("Testing index parser")
-    def test_index_parser(self):
-        idx = Index("Hom. Il. 1,124-125")
-        self.assertEqual(idx.refs[0].work, "Hom. Il.")
-        self.assertEqual(idx.refs[0].start, "1.124")
-        self.assertEqual(idx.refs[0].end, "125")
+    # @unittest.skip("Random selection of references for evaluation of disambiguation")
+    def test_random_pick(self):
+        import random
+        data = get_clustered_refs_flat('data/41a8cdce8aae605806c445f28971f623/clusters.txt')
+        validRefs = []
+        for text in data:
+            ref = Reference(text)
+            if ref.authors and ref.year and ref.title:
+                validRefs.append(ref)
+        samples = random.sample(validRefs, 500)
+        header = ["Reference", "CrossRef", "GoogleAPI", "Brill", "Other", "Remarks"]
+        with open('data_test/ref_sample_disambiguation_eval.csv', "w", encoding='utf-8', newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(header)
+            for sample in samples:
+                writer.writerow([sample.text.strip()])
 
-        idx = Index("Hom. Il. 1,12-20; Verg. Aen., 2.240")
-        self.assertEqual(idx.refs[0].work, "Hom. Il.")
-        self.assertEqual(idx.refs[0].start, "1.12")
-        self.assertEqual(idx.refs[0].end, "20")
-        self.assertEqual(idx.refs[1].work, "Verg. Aen.")
-        self.assertEqual(idx.refs[1].start, "2.240")
-        self.assertEqual(idx.refs[1].end, "")
-
-        idx = Index("Hom. Il. 1,12-20; 2.240")
-        self.assertEqual(idx.refs[0].work, "Hom. Il.")
-        self.assertEqual(idx.refs[0].start, "1.12")
-        self.assertEqual(idx.refs[0].end, "20")
-        self.assertEqual(idx.refs[1].work, "")
-        self.assertEqual(idx.refs[1].start, "2.240")
-        self.assertEqual(idx.refs[1].end, "")
+    # @unittest.skip("Random selection of references for evaluation of disambiguation")
+    def test_pdf_parser(self):
+        from parser_corpus import parse_corpus
+        parse_corpus('data')
 
 
 if __name__ == '__main__':

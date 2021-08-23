@@ -58,12 +58,12 @@ def parse_target_indent(in_file, out_path, config):
                         appr_x = round(x)
                         if appr_x in starts and len(curr_ref_chars) > 0:
                             items.append(curr_ref_chars)
-                            curr_ref_chars = get_text(text_line)  # My parser to decode unicode
+                            curr_ref_chars = get_text(text_line)  # My parser to decode string
                             # curr_ref_chars = [text_line.get_text()]
                             base = appr_x
                         else:
                             if appr_x < base + config.indent:
-                                curr_ref_chars.extend(get_text(text_line))  # My parser to decode unicode
+                                curr_ref_chars.extend(get_text(text_line))  # My parser to decode string
                                 # curr_ref_chars.append(text_line.get_text())
                             else:
                                 print("\tSkipped:", text_line.get_text())
@@ -72,6 +72,7 @@ def parse_target_indent(in_file, out_path, config):
             else:
                 print("\tNon-text element", element)
     if len(curr_ref_chars) > 0:
+        print("".join(curr_ref_chars))
         items.append(curr_ref_chars)
     items = [item for item in items if config.min_length <= len(item) <= config.max_length]
     print("Extracted items: ", len(items))
@@ -170,21 +171,19 @@ def parse_corpus(my_path):
             pub_dir_name = os.path.splitext(pub_zip_name)[0]
             pub_dir_path = join(corpus_dir_path, pub_dir_name)
             corpus_zip.extract(pub_zip_name, pub_dir_path)
-
             pub_zip_path = join(pub_dir_path, pub_zip_name)
-            pub_zip = zipfile.ZipFile(pub_zip_path, 'r')
 
             # Publication object that contains info about publication data (e.g., file names, index types etc.)
-            pub = Publication(files=pub_zip.namelist(), zip_path=pub_zip_path, dir_name=pub_dir_name,
-                              corpus_dir_path=corpus_dir_path, index_files=[], index_types=[])
+            pub = Publication(pub_zip_path)
 
+            # TODO: move this to Publication
+            pub_zip = zipfile.ZipFile(pub_zip_path, 'r')
             for file_name in pub.files:
                 if file_name.endswith('.xml'):
-                    pub.jats_file = file_name
                     jats_file = pub_zip.open(file_name)
                     try:
                         parse_files(parse_bibliography_file, bib_config, jats_file, pub_zip, pub)
-                        # parse_files(parse_index_file, bib_config, jats_file, pub_zip, pub)
+                        parse_files(parse_index_file, bib_config, jats_file, pub_zip, pub)
                     except:
                         corpus.xml_parsing_errors += 1
                         print(sys.exc_info()[0])
@@ -192,6 +191,8 @@ def parse_corpus(my_path):
                     corpus.index_count += len(pub.index_files)
                     corpus.bibliography_count += 0 if pub.bib_file is None else 1
             pub_zip.close()
+            #
+
             corpus.publications.append(pub)
             try:
                 os.remove(pub_zip_path)

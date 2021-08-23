@@ -1,18 +1,20 @@
 from dataclasses import dataclass
+from dataclasses_json import dataclass_json
 from model.publication import Publication
 import re
 from pyparsing import (Word, Literal, ZeroOrMore, delimitedList, restOfLine, pyparsing_unicode as ppu, ParseException, Optional, Regex)
 
 
+@dataclass_json
 @dataclass
 class BaseReference:
     """A class for holding information about a reference"""
 
     _text: str
-    cited_by: Publication=None
-    authors: str=None
-    title: str=None
-    year: str=None
+    cited_by: Publication = None
+    authors: str = None
+    title: str = None
+    year: str = None
 
     def __post_init__(self):
         self.parse()
@@ -23,7 +25,7 @@ class BaseReference:
 
     @text.setter
     def text(self, value):
-        self.text = value
+        self._text = value
         self.parse()
 
     def parse(self):
@@ -59,10 +61,9 @@ class BaseReference:
             self.title = max(parts, key=len)
             self.authors = self.text.partition(self.title)[0]
 
+
 @dataclass
 class Reference(BaseReference):
     """A class for holding information about reference with authors like in given reference"""
 
     follows: BaseReference = None
-
-
