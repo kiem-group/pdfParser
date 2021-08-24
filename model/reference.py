@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
-from model.publication import Publication
 import re
 from pyparsing import (Word, Literal, ZeroOrMore, delimitedList, restOfLine, pyparsing_unicode as ppu, ParseException, Optional, Regex)
 
@@ -11,7 +10,9 @@ class BaseReference:
     """A class for holding information about a reference"""
 
     _text: str
-    cited_by: Publication = None
+    cited_by_doi: str = None
+    cited_by_zip: str = None
+    ref_num: int = 0
     authors: str = None
     title: str = None
     year: str = None
@@ -41,26 +42,29 @@ class BaseReference:
         # author.setName("author").setDebug()
         same = Word('—') + Literal('.').suppress()
         author_list = delimitedList(author) | same
-        year = Regex('.{' + str(4) + '}') + Literal('.').suppress()
+        year_or_range = r"[\S]{4}[a-z]?([,–][\S]{4})?"
+        year = Regex(year_or_range) + Literal('.').suppress()
         citation = author_list('authors') + Optional(year('year')) + restOfLine('rest')
         try:
             res = citation.parseString(self.text)
             self.authors = res.authors.asList()
-            self.year = res.year
-            self.title = res.rest
+            if res.year:
+                self.year = res.year[0]
             parts = res.rest.split('.')
             self.title = parts[0].replace("“", "")
         except ParseException:
             # print("FAILED TO PARSE", self.text)
             # Trivial - find year
             try:
-                self.year = re.search(r"(\d{4})", self.text).group(1)
+                self.year = re.search(year_or_range, self.text).group(1)
             except AttributeError:
                 del self.year
             parts = re.split('[;,.()]', self.text)
+            # Use longest part as title
             self.title = max(parts, key=len)
+            # Use anything before title as authors string
             self.authors = self.text.partition(self.title)[0]
-
+        self.title = self.title.strip()
 
 @dataclass
 class Reference(BaseReference):

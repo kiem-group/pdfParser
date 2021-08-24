@@ -11,6 +11,3 @@ class ParserConfig:
     max_length: int = 300  # Maximal length of the reference or index term, to exclude article content
     min_words: int = 3     # Minimal number of words in reference or index (currently not used)
     max_words: int = 100   # Maximal number of words in reference or index (currently not used)
-
-    output_to_pub_dir: bool = False  # Indicates whether results are saved to corpus folder or to publication folders
-

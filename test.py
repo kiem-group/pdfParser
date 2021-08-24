@@ -2,8 +2,9 @@ import unittest
 import csv
 import re
 from clustering import get_clustered_refs_flat
-from model.reference import Reference
 import Levenshtein
+from model.publication import Publication
+from model.reference import Reference
 
 
 class TestClassifier(unittest.TestCase):
@@ -174,8 +175,8 @@ class TestClassifier(unittest.TestCase):
         print(str(found) + " out of " + str(len(data)))
         out_file.close()
 
-    # @unittest.skip("Random selection of references for evaluation of disambiguation")
-    def test_random_pick(self):
+    @unittest.skip("Random selection of references for evaluation of disambiguation")
+    def test_random_pick_from_file(self):
         import random
         data = get_clustered_refs_flat('data/41a8cdce8aae605806c445f28971f623/clusters.txt')
         validRefs = []
@@ -191,10 +192,26 @@ class TestClassifier(unittest.TestCase):
             for sample in samples:
                 writer.writerow([sample.text.strip()])
 
-    # @unittest.skip("Random selection of references for evaluation of disambiguation")
-    def test_pdf_parser(self):
+
+    # @unittest.skip("Random selection of references for evaluation of disambiguation from zip archive")
+    def test_random_pick(self):
+        import random
         from parser_corpus import parse_corpus
-        parse_corpus('data')
+        corpus_list = parse_corpus('data')
+        corpus = corpus_list[0]
+        validRefs = []
+        for pub in corpus.publications:
+            if pub.bib_refs:
+                for ref in pub.bib_refs:
+                    if ref.authors and ref.year and ref.title:
+                        validRefs.append(ref)
+        samples = random.sample(validRefs, 500)
+        header = ["Reference", "Cited_by_doi", "Cited_by_zip", "Cited_num", "CrossRef", "GoogleAPI", "Brill", "Other", "Remarks"]
+        with open('data_test/ref_sample_disambiguation_eval.csv', "w", encoding='utf-8', newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(header)
+            for sample in samples:
+                writer.writerow([sample.text.strip(), sample.cited_by_doi, sample.cited_by_zip, sample.ref_num])
 
 
 if __name__ == '__main__':
