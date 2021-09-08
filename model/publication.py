@@ -6,10 +6,7 @@ import zipfile
 from model.index import Index
 from model.reference import Reference
 from model.contributor import Contributor
-from model.pdf_parser import parse_target_indent
-
-# import shutil
-# from os.path import join
+from model.pdf_parser import parse_target_indent, SkippedText
 
 
 @dataclass_json
@@ -68,6 +65,9 @@ class Publication:
     bib_refs: [Reference] = None
     index_refs: [Index] = None
 
+    _bib_skipped: [SkippedText] = None
+    _index_skipped: [[SkippedText]] = None
+
     def parse_zip(self):
         if self.zip_path is None:
             return
@@ -79,14 +79,16 @@ class Publication:
             if file_name.endswith('.xml'):
                 # Publication signature will be extracted in the setter
                 self._jats_file = file_name
+                jats_file = pub_zip.open(file_name)
+                jats_root = None
                 try:
-                    jats_file = pub_zip.open(file_name)
                     jats_tree = etree.parse(jats_file)
                     jats_root = jats_tree.getroot()
-                    self.parse_book(jats_root)
-                    self.parse_index(jats_root, pub_zip)
                 except:
                     print("Failed to parse JATS file", file_name)
+                if jats_root is not None:
+                    self.parse_book(jats_root)
+                    self.parse_index(jats_root, pub_zip)
                 jats_file.close()
         pub_zip.close()
 
@@ -95,7 +97,7 @@ class Publication:
         def save_to_file(items, out_path):
             with open(out_path, "w", encoding='utf-8') as out_file:
                 for item in items:
-                    out_file.write(item)
+                    out_file.write(item.to_dict())
                 out_file.write("\n")
 
         if jats_root is None:
@@ -103,44 +105,59 @@ class Publication:
         book_parts = jats_root.xpath('//book-part')
         self.bib_refs = []
         self.index_refs = []
+        self.index_files = []
+        self.index_types = []
+        self._index_skipped = []
         for book_part in book_parts:
             title = ' '.join(book_part.xpath('.//title//text()')).lower()
             hrefs = book_part.xpath('.//self-uri/@xlink:href', namespaces={"xlink": "http://www.w3.org/1999/xlink"})
             if hrefs and self.extract_bib and 'bibliography' in title or self.extract_index and 'index' in title:
                 href = hrefs[0]
                 target_pdf = pub_zip.open(href)
+                # TODO issue a warning if more than one bibliography file found
+                # TODO some JATS files contain bibliography inside and not in PDF (check example in unusual_xml)
                 if self.extract_bib and 'bibliography' in title:
                     self.bib_file = href
-                    items = parse_target_indent(target_pdf)
+                    # Extract references and save skipped text from bibliography file for analysis
+                    [items, self._bib_skipped] = parse_target_indent(target_pdf)
                     for ref_num, ref_text in enumerate(items, start=0):
-                         try:
-                             ref = Reference(ref_text, ref_num=ref_num+1, cited_by_doi=self.doi, cited_by_zip=self.zip_path)
-                             self.bib_refs.append(ref)
-                         except:
-                             print("Failed to parse bibliographic reference:", ref_text)
-                    # Serialize bibliographic references
-                    # out_file = join(self.corpus_dir_path, href + "-bibliography.txt")
-                    # save_to_file(bib_refs, out_file)
+                        try:
+                            ref = Reference(ref_text, ref_num=ref_num+1, cited_by_doi=self.doi, cited_by_zip=self.zip_path)
+                            self.bib_refs.append(ref)
+                        except:
+                            print("Failed to parse bibliographic reference:", ref_text)
                 if self.extract_index and 'index' in title:
+                    print("Parsing index file", href)
                     self.index_files.append(href)
                     curr_index_types = Index.get_index_types(title)
                     self.index_types.append(curr_index_types)
-                    items = parse_target_indent(target_pdf)
-                    for ref_num, ref_text in enumerate(items, start=0):
-                        try:
-                            ref = Index(ref_text, ref_num=ref_num+1, cited_by_doi=self.doi, cited_by_zip=self.zip_path)
-                            self.index_refs.append(ref)
-                        except:
-                            print(("Failed to parse index reference:", ref_text))
-                    # Serialize index terms
+                    [items, skipped] = parse_target_indent(target_pdf)
+                    # Save skipped text from index files for analysis
+                    print("Parsed index file: ", len(items), len(skipped))
+                    if skipped:
+                        self._index_skipped.append(skipped)
+                    # Merge lines that start from digid with previous
+                    items = [item.replace("\n", " ").strip() for item in items]
+                    ref_items = []
+                    ref_text = ""
+                    print("Extracted indices: ", len(items))
+                    for text in items:
+                        if text[0].isdigit():
+                            ref_text += " " + text
+                        else:
+                            if ref_text:
+                                ref_items.append(ref_text)
+                            ref_text = text
+                    for ref_num, ref_text in enumerate(ref_items, start=0):
+                        ref = Index(ref_text, ref_num=ref_num+1, cited_by_doi=self.doi, cited_by_zip=self.zip_path,
+                                    types=curr_index_types)
+                        self.index_refs.append(ref)
+                    # Save for analysis
                     # ext = "-" + str(len(self.index_files)) + "_" + ('-'.join(curr_index_types))
-                    # out_path = join(self.corpus_dir_path, self.dir_name + ext + ".txt")
-                    # save_to_file(index_terms, out_path)
-
-                    # Copy original pdf file for analysis
-                    # output_pdf_path = join(self.corpus_dir_path, self.dir_name + ext + ".pdf")
-                    # with open(output_pdf_path, 'wb') as f_dest:
-                    #     shutil.copyfileobj(target_pdf, f_dest)
+                    # out_path = self.zip_path + ext + ".json"
+                    # print("Saving indices in: ", out_path)
+                    # TODO fix
+                    # save_to_file(self.index_refs, out_path)
 
     def parse_book(self, jats_root):
         if jats_root is None:
@@ -182,6 +199,6 @@ class Publication:
         loc = book.xpath(".//publisher//publisher-loc//text()")
         if len(loc) > 0:
             self.location = loc[0]
-        # TODO extract isbn is needed
+        # TODO extract isbn if needed
         # < isbn publication-format = "print" > 9783506782113 < / isbn >
         # < isbn publication-format = "online" > 9783657782116 < / isbn >

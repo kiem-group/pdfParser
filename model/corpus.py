@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from model.publication import Publication
+from model.index import Index
 from dataclasses_json import dataclass_json
 
 

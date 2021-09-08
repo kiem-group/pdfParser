@@ -38,7 +38,6 @@ class BaseReference:
         family_name = Word(intl_alphas + '-')
         first_init = Word(intl_alphas + '-' + '.')
         author = family_name("LastName") + Literal(',').suppress() + ZeroOrMore(first_init("FirstName"))
-
         # author.setName("author").setDebug()
         same = Word('—') + Literal('.').suppress()
         author_list = delimitedList(author) | same

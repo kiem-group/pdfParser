@@ -5,6 +5,7 @@ from clustering import get_clustered_refs_flat
 import Levenshtein
 from model.publication import Publication
 from model.reference import Reference
+from model.corpus import Corpus
 
 
 class TestClassifier(unittest.TestCase):
@@ -13,8 +14,7 @@ class TestClassifier(unittest.TestCase):
     def setUpClass(cls):
         super(TestClassifier, cls).setUpClass()
 
-    # Accuracy of reference clustering based on Levenshtein distance on manually curated dataset
-    @unittest.skip("Skipping clustering accuracy test")
+    @unittest.skip("Accuracy of reference clustering based on Levenshtein distance on manually curated dataset")
     def test_clustering(self):
         test_dataset = open('data_test/cluster_data/dataset.tsv', encoding='utf-8')
         reader = csv.reader(test_dataset, delimiter="\t")
@@ -22,7 +22,6 @@ class TestClassifier(unittest.TestCase):
         next(reader, None)
         count = 0
         correct = 0
-
         out_path = 'data_test/cluster_data/dataset_lev.txt'
         out = open(out_path, "w", encoding='utf-8')
         for row in reader:
@@ -56,7 +55,7 @@ class TestClassifier(unittest.TestCase):
         out.close()
         test_dataset.close()
 
-    @unittest.skip("Skipping disambiguation test")
+    @unittest.skip("Disambiguate selected references")
     def test_disambiguation(self):
         refs = [
             "Vernant, Jean - Pierre, Mythe et société en Grèce ancienne (Paris, 2004).",
@@ -81,7 +80,7 @@ class TestClassifier(unittest.TestCase):
             self.assertGreaterEqual(int(book_data['totalItems']), 1)
             # print(book_data)
 
-    @unittest.skip("Experimental test with disambiguation of parsed references")
+    @unittest.skip("Disambiguate parsed references from file")
     def test_ref_parsing(self):
         data = get_clustered_refs_flat('data/41a8cdce8aae605806c445f28971f623/clusters.txt')
         data = data[:50]
@@ -126,7 +125,7 @@ class TestClassifier(unittest.TestCase):
         print("# FAILS:", num_parsing_errors)
         print(len(data))
 
-    @unittest.skip("Disambiguation via Brill's publication catalogue")
+    @unittest.skip("Disambiguate references from file via Brill's publication catalogue")
     def test_bib_disambiguation(self):
         import bibtexparser
         from bibtexparser.bparser import BibTexParser
@@ -175,7 +174,7 @@ class TestClassifier(unittest.TestCase):
         print(str(found) + " out of " + str(len(data)))
         out_file.close()
 
-    @unittest.skip("Random selection of references for evaluation of disambiguation")
+    @unittest.skip("Random selection of references from file for evaluation of disambiguation")
     def test_random_pick_from_file(self):
         import random
         data = get_clustered_refs_flat('data/41a8cdce8aae605806c445f28971f623/clusters.txt')
@@ -192,8 +191,7 @@ class TestClassifier(unittest.TestCase):
             for sample in samples:
                 writer.writerow([sample.text.strip()])
 
-
-    # @unittest.skip("Random selection of references for evaluation of disambiguation from zip archive")
+    @unittest.skip("Random selection of references from zipped pdf files for evaluation of disambiguation")
     def test_random_pick(self):
         import random
         from parser_corpus import parse_corpus
@@ -207,11 +205,33 @@ class TestClassifier(unittest.TestCase):
                         validRefs.append(ref)
         samples = random.sample(validRefs, 500)
         header = ["Reference", "Cited_by_doi", "Cited_by_zip", "Cited_num", "CrossRef", "GoogleAPI", "Brill", "Other", "Remarks"]
-        with open('data_test/ref_sample_disambiguation_eval.csv', "w", encoding='utf-8', newline="") as f:
+        with open('data_test/ref_sample_disambiguation_eval_new.csv', "w", encoding='utf-8', newline="") as f:
             writer = csv.writer(f)
             writer.writerow(header)
             for sample in samples:
                 writer.writerow([sample.text.strip(), sample.cited_by_doi, sample.cited_by_zip, sample.ref_num])
+
+    @unittest.skip("Query based on keywords + intitle should help to locate requested publication")
+    def test_google_api_format(self):
+        from disambiguation import query_google_book
+        from urllib.parse import quote
+        ref = "The Brazen House"
+        ext_text = "The Brazen House. A Study of the Vestibule of the Imperial Palace of Constantinople"
+        ext = "&intitle:" + quote(ext_text)
+        res = query_google_book(ref, ext)
+        print(res.items)
+        # for book in res.items:
+        #     print(book)
+
+    @unittest.skip("Parsing of indices from zipped pdf files")
+    def test_extract_and_parse_indices(self):
+        from parser_corpus import parse_corpus
+        corpus_list = parse_corpus('data', extract_index=True, extract_bib=False, sample_size=500)
+        corpus = corpus_list[0]
+        for pub in corpus.publications:
+            if pub.index_refs:
+                for ref in pub.index_refs:
+                    print(ref)
 
 
 if __name__ == '__main__':

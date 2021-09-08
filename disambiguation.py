@@ -1,22 +1,25 @@
 import json
-import urllib
 from urllib.request import urlopen
-
+from urllib.parse import quote
 
 # Publication resources with API https://guides.temple.edu/APIs
 
 
 # Google books
 def query_google_books(refs):
-    print("Searching for references using Google books API:", len(refs))
-    api = "https://www.googleapis.com/books/v1/volumes?q="
     for ref in refs:
         print("Ref", ref)
-        url = api + urllib.parse.quote(ref)
-        print("URL", url)
-        resp = urlopen(url)
-        book_data = json.load(resp)
+        book_data = query_google_book(ref)
         print(book_data)
+
+
+def query_google_book(ref, ext):
+    api = "https://www.googleapis.com/books/v1/volumes?q="
+    url = api + quote(ref) + ext
+    print("URL", url)
+    resp = urlopen(url)
+    book_data = json.load(resp)
+    return book_data
 
 
 # CrossRef

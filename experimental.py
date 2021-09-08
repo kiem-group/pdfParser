@@ -131,3 +131,19 @@ def cluster(data, path):
 
 # for type_name in curr_index_types:
 #     index_types[type_name] = index_types.get(type_name, 0) + 1
+
+
+# publication.py - dump extracted data to file
+    # Serialize bibliographic references
+    # out_file = join(self.corpus_dir_path, href + "-bibliography.txt")
+    # save_to_file(bib_refs, out_file)
+
+    # Serialize index terms
+    # ext = "-" + str(len(self.index_files)) + "_" + ('-'.join(curr_index_types))
+    # out_path = join(self.corpus_dir_path, self.dir_name + ext + ".txt")
+    # save_to_file(index_terms, out_path)
+
+    # Copy original pdf file for analysis
+    # output_pdf_path = join(self.corpus_dir_path, self.dir_name + ext + ".pdf")
+    # with open(output_pdf_path, 'wb') as f_dest:
+    #     shutil.copyfileobj(target_pdf, f_dest)
