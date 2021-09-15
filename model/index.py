@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from pyparsing import (Word, Literal, Group, ZeroOrMore, OneOrMore, restOfLine, delimitedList, pyparsing_unicode as ppu,
+from pyparsing import (Word, Literal, Group, ZeroOrMore, OneOrMore, oneOf, restOfLine, delimitedList, pyparsing_unicode as ppu,
                        ParseException, Optional)
 from dataclasses_json import dataclass_json
 
@@ -7,13 +7,11 @@ from dataclasses_json import dataclass_json
 @dataclass_json
 @dataclass
 class IndexReference:
-    work: str = None
-    passages: [str] = None
-    nested: str = None
-    # Filled for index locorum
-    start: str = None
-    end: str = None
-
+    label: str = None
+    locus: str = None
+    occurrences: [str] = None
+    note: str = None
+    # TODO add possibility to indicate occurrences in bold or footnotes
 
 @dataclass_json
 @dataclass
@@ -25,6 +23,9 @@ class Index:
     ref_num: int = 0
     refs: [IndexReference] = None
     types: [str] = None
+
+    # An argument to distinguish between parsing of index references in text vs index files
+    inline: bool = False
 
     def __post_init__(self):
         self.parse()
@@ -44,7 +45,7 @@ class Index:
         if len(self.text) < 5:
             print("Index text is too short", self.text)
             return
-        if len(self.text) > 300:
+        if len(self.text) > 3000:
             print("Index text is too long", self.text)
             return
         if self.types:
@@ -75,7 +76,10 @@ class Index:
 
     def parse_as_locorum(self):
         try:
-            return self.parse_pattern1()
+            if self.inline:
+                return self.parse_pattern1_inline()
+            else:
+                return self.parse_locorum_pattern1()
         except ParseException:
             print("Failed to parse index locorum: ", self.text)
 
@@ -90,26 +94,52 @@ class Index:
 
     def parse_as_rerum(self):
         try:
-            self.parse_pattern2()
+            self.parse_rerum_pattern1()
         except ParseException:
             print("Failed to parse index rerum: ", self.text)
 
-    def parse_pattern2(self):
-        # Adonis (Plato Comicus), 160, 161, 207
+    # @Examples:
+    #   Adespota elegiaca (IEG)  23 206
+    #   Aeschines 2.157 291
+    def parse_locorum_pattern1(self):
         intl_alphas = ppu.Latin1.alphas
         intl_nums = ppu.Latin1.nums
-        work_details = Optional(Literal('(') + OneOrMore(Word(intl_alphas)).setParseAction(' '.join) + Literal(')')).setParseAction(''.join)
-        work = OneOrMore(Word(intl_alphas)).setParseAction(' '.join) + work_details
-        # work.setName("work").setDebug()
-        passages = OneOrMore(Word(intl_nums + 'n' + '–') + Optional(",").suppress())
-        index = work("work") + Optional(Literal(',').suppress()) + passages("passages") + restOfLine('rest')
+        occurrences = delimitedList(Word(intl_nums), delim=",")
+        locus_fragment = Word(intl_nums+".–=") + Optional(oneOf("ff."))
+        locus = locus_fragment + Optional('/'+locus_fragment)
+        label_details = Optional(Literal('(') + OneOrMore(Word(intl_alphas+','+'.')).setParseAction(' '.join) + Literal(')')).setParseAction(''.join)
+        label = OneOrMore(Word(intl_alphas+','+'.')) + label_details
+        # label.setName("label").setDebug()
+        index = Optional(label("label")) + Optional(locus("locus").setParseAction(''.join) + occurrences('occurrences') + restOfLine("rest"))
+        text = self.text
+        the_end = False
+        while not the_end:
+            ref = index.parseString(text)
+            idx_ref = IndexReference(label=" ".join(ref.label).strip(), locus=ref.locus,
+                occurrences=ref.occurrences)
+            self.refs.append(idx_ref)
+            text = ref.rest
+            the_end = True if len(text) == 0 else False
+            if the_end:
+               idx_ref.note = text
+
+    # @Example: Adonis (Plato Comicus), 160, 161, 207
+    def parse_rerum_pattern1(self):
+        intl_alphas = ppu.Latin1.alphas
+        intl_nums = ppu.Latin1.nums
+        label_details = Optional(Literal('(') + OneOrMore(Word(intl_alphas)).setParseAction(' '.join) + Literal(')')).setParseAction(''.join)
+        label = OneOrMore(Word(intl_alphas)).setParseAction(' '.join) + label_details
+        # label.setName("label").setDebug()
+        occurrences = OneOrMore(Word(intl_nums + 'n' + '–') + Optional(",").suppress())
+        index = label("label") + Optional(Literal(',').suppress()) + occurrences("occurrences") + restOfLine('rest')
         ref = index.parseString(self.text)
-        idx_ref = IndexReference(work=" ".join(ref.work), passages=ref.passages, nested=ref.rest)
+        idx_ref = IndexReference(label=" ".join(ref.label), occurrences=ref.occurrences, note=ref.rest)
         self.refs.append(idx_ref)
         print(idx_ref)
 
-    def parse_pattern1(self):
-        # "Hom. Il. 1,124-125"
+    # Inline pattern, only needed for testing
+    def parse_pattern1_inline(self):
+        # This is a patten for the inline style of indices, e.g., "Hom. Il. 1,124-125"
         # 1) The text preceding the numbers contains information about work and author being cited
         # 2) The hyphen is used to specify a range of text passages, e.g. lines 124 to 125
         # 3) The semicolon separates a reference from another within the same citation
@@ -119,16 +149,19 @@ class Index:
         #   1.124 - 1.125 can be written as both 1.124-125 or 1.124 s.
         intl_alphas = ppu.Latin1.alphas
         intl_nums = ppu.Latin1.nums
-        work = ZeroOrMore(Word(intl_alphas + ".")) + Optional(Literal(',').suppress())
+        label = ZeroOrMore(Word(intl_alphas + ".")) + Optional(Literal(',').suppress())
         range_sep = Literal(',') | Literal('.')
         level = Optional(Word(intl_nums) + range_sep.suppress())
         end = Literal('-').suppress() + level + Word(intl_nums) | 's.'
         start = level + Word(intl_nums)
-        passages = start("start") + Optional(end("end"))
-        index = delimitedList(Group(work("work") + passages("passages")), delim=';')
+        locus = start("start") + Optional(end("end"))
+        index = delimitedList(Group(label("label") + locus("locus")), delim=';')
         res = index.parseString(self.text)
         for ref in res:
-            idx_ref = IndexReference(work=" ".join(ref.work), start=".".join(ref.start), end=".".join(ref.end))
+            locus_txt = ref.locus[0]+ "." + ref.locus[1]
+            if len(ref.locus) > 2:
+                locus_txt += "-" + ref.locus[2]
+            idx_ref = IndexReference(label=" ".join(ref.label), locus=locus_txt)
             self.refs.append(idx_ref)
             print(idx_ref)
 
