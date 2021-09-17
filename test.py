@@ -223,7 +223,7 @@ class TestClassifier(unittest.TestCase):
         # for book in res.items:
         #     print(book)
 
-    @unittest.skip("Parsing of indices from zipped pdf files")
+    # @unittest.skip("Parsing of indices from zipped pdf files")
     def test_extract_and_parse_indices(self):
         from parser_corpus import parse_corpus
         corpus_list = parse_corpus('data', extract_index=True, extract_bib=False, sample_size=500)

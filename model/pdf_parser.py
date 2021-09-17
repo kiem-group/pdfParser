@@ -18,12 +18,24 @@ class SkippedText:
 
 
 def parse_target_indent(in_file, config=bib_config):
-    print(in_file.name)
     odd_offset_counter = {}
     even_offset_counter = {}
     odd_length = 0
     even_length = 0
     page_num: int = 0
+
+    def get_line_offset(el):
+        nonlocal odd_length, even_length
+        (x, y, w, h) = el
+        appr_x = round(x)
+        if page_num % 2 == 1:
+            odd_offset_counter[appr_x] = odd_offset_counter.get(appr_x, 0) + 1
+            if x + w > odd_length:
+                odd_length = x + h
+        else:
+            even_offset_counter[appr_x] = even_offset_counter.get(appr_x, 0) + 1
+            if x + w > even_length:
+                even_length = x + h
 
     for page_layout in extract_pages(in_file):
         page_num += 1
@@ -31,16 +43,7 @@ def parse_target_indent(in_file, config=bib_config):
             if isinstance(element, LTTextContainer):
                 for text_line in element:
                     try:
-                        (x, y, w, h) = text_line.bbox
-                        appr_x = round(x)
-                        if page_num % 2 == 1:
-                            odd_offset_counter[appr_x] = odd_offset_counter.get(appr_x, 0) + 1
-                            if x + w > odd_length:
-                                odd_length = x + h
-                        else:
-                            even_offset_counter[appr_x] = even_offset_counter.get(appr_x, 0) + 1
-                            if x + w > even_length:
-                                even_length = x + h
+                        get_line_offset(text_line.bbox)
                     except:
                         print("Failed to get bbox", text_line)
     # Remove occasional lines - title, page numbers, etc. - anything that occurs a couple of times per page on average
@@ -49,9 +52,8 @@ def parse_target_indent(in_file, config=bib_config):
 
     if len(odd_starts) > 2 or len(even_starts) > 2:
         print("\tWarning: multi-column or unusual format")
-        print("odd line length: ", odd_length)
-        print("odd starts:", odd_starts)
-        print("even line length: ", even_length)
+        print("\t\todd starts:", odd_starts)
+        print("\t\teven starts:", even_starts)
 
     page_num = 0
     items: List[List[Any]] = []
@@ -60,8 +62,6 @@ def parse_target_indent(in_file, config=bib_config):
     def split_reference(line_chars, appr_x, curr_ref_chars, base):
         curr_stripped = convert_to_str(curr_ref_chars).strip()
         try:
-            # print("Line starts at: ", appr_x)
-            # print("Line: ", convert_to_str(line_chars))
             new_ref = appr_x == base and len(curr_ref_chars) > 0
             # A reference should not end with , or -
             if len(curr_stripped) > 1:
@@ -77,7 +77,6 @@ def parse_target_indent(in_file, config=bib_config):
                     curr_ref_chars.extend(line_chars)  # My parser to decode string
                 # Record skipped text for method evaluation
                 else:
-                    # print("SKIPPED: ", curr_stripped)
                     skipped.append(SkippedText(len(items), convert_to_str(line_chars)))
         except:
             print("Failed to parse index text: ", curr_stripped)
@@ -89,7 +88,9 @@ def parse_target_indent(in_file, config=bib_config):
         print("Layout differs for odd and even pages!")
 
     n = min(len(odd_starts), len(even_starts))
-    col_curr = [[]*n]
+    col_curr = []
+    for i in range(n):
+        col_curr.append([])
     for page_layout in extract_pages(in_file):
         page_num += 1
         starts = odd_starts if page_num % 2 == 1 else even_starts
@@ -104,16 +105,19 @@ def parse_target_indent(in_file, config=bib_config):
                             if appr_x >= start + config.indent:
                                 col_num += 1
                         line_chars = get_text(text_line)
-                        if col_num < n:
-                            is_ref_added = split_reference(line_chars, appr_x, col_curr[col_num], starts[col_num])
-                            if is_ref_added:
-                                col_curr[col_num] = line_chars
-                        else:
-                            # Text outside the boundaries of the last column
-                            # print("SKIPPED 2: ", convert_to_str(line_chars))
-                            skipped.append(SkippedText(len(items), convert_to_str(line_chars)))
+                        try:
+                            if col_num < n and col_num < len(col_curr):
+                                is_ref_added = split_reference(line_chars, appr_x, col_curr[col_num], starts[col_num])
+                                if is_ref_added:
+                                    col_curr[col_num] = line_chars
+                            else:
+                                # print("SKIPPING: ", convert_to_str(line_chars))
+                                skipped.append(SkippedText(len(items), convert_to_str(line_chars)))
+                        except:
+                            print("Failed to process line", convert_to_str(line_chars))
                     except:
                         print("Failed to get bbox", text_line)
+
             else:
                 print("\tNon-text element", element)
     for curr in col_curr:

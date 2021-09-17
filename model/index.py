@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pyparsing import (Word, Literal, Group, ZeroOrMore, OneOrMore, oneOf, restOfLine, delimitedList, pyparsing_unicode as ppu,
-                       ParseException, Optional)
+                       ParseException, Optional, CaselessKeyword)
 from dataclasses_json import dataclass_json
 
 
@@ -41,7 +41,10 @@ class Index:
 
     def parse(self):
         self._text = self._text.replace("\n", " ")
-        print("Parsing index text:", self._text)
+        # TODO Can parsing benefit from special spacing?
+        self._text = self._text.replace(" ", " ")
+        self._text = self._text.replace(" ", " ")
+        # print("Parsing index text as " + " or ".join(self.types) +": ", self._text)
         if len(self.text) < 5:
             print("Index text is too short", self.text)
             return
@@ -50,95 +53,119 @@ class Index:
             return
         if self.types:
             self.refs = []
-            if "verborum" in self.types:
-                print("  as verborum")
-                self.parse_as_verborum()
-            else:
-                if "locorum" in self.types:
-                    print("  as locorum")
-                    self.parse_as_locorum()
+            options = {
+                "verborum": self.parse_as_verborum,
+                "locorum":  self.parse_as_locorum,
+                "nominum_ancient": self.parse_as_nominum_ancient,
+                "nominum_modern": self.parse_as_nominum_modern,
+                "rerum": self.parse_as_rerum,
+                "geographicus": self.parse_as_geographicus,
+                "bibliographicus": self.parse_as_bibliographicus,
+                "epigraphic": self.parse_as_epigraphic
+            }
+            if len(self.types) > 0:
+                if self.types[0] in options.keys():
+                    options[self.types[0]]()
                 else:
-                    if "nominum_ancient" in self.types:
-                        print("  as nominum ancient")
-                        self.parse_as_nominum_ancient()
-                    else:
-                        if "nominum_modern" in self.types:
-                            print("  as nominum modern")
-                            self.parse_as_nominum_modern()
-                        else:
-                            if "rerum" in self.types:
-                                print("  as rerum")
-                                self.parse_as_rerum()
-                            else:
-                                print("No parsers for this index type yet", ", ".join(self.types), self.text)
+                    print("No parsers for this index type yet", ", ".join(self.types), self.text)
         else:
-            print("Unclassified index:", self.text)
+            print("Unclassified index: ", self.text)
 
     def parse_as_locorum(self):
         try:
             if self.inline:
-                return self.parse_pattern1_inline()
+                return self.parse_locorum_inline()
             else:
-                return self.parse_locorum_pattern1()
+                return self.parse_loop(self.parse_pattern1)
         except ParseException:
             print("Failed to parse index locorum: ", self.text)
 
-    def parse_as_verborum(self):
-        print("No parser for index verborum", self.text)
-
-    def parse_as_nominum_ancient(self):
-        print("No parser for index nominum (ancient)", self.text)
-
-    def parse_as_nominum_modern(self):
-        print("No parser for index nominum (modern)", self.text)
-
     def parse_as_rerum(self):
         try:
-            self.parse_rerum_pattern1()
+            self.parse_loop(self.parse_pattern2)
         except ParseException:
             print("Failed to parse index rerum: ", self.text)
 
-    # @Examples:
-    #   Adespota elegiaca (IEG)  23 206
-    #   Aeschines 2.157 291
-    def parse_locorum_pattern1(self):
-        intl_alphas = ppu.Latin1.alphas
-        intl_nums = ppu.Latin1.nums
-        occurrences = delimitedList(Word(intl_nums), delim=",")
-        locus_fragment = Word(intl_nums+".–=") + Optional(oneOf("ff."))
-        locus = locus_fragment + Optional('/'+locus_fragment)
-        label_details = Optional(Literal('(') + OneOrMore(Word(intl_alphas+','+'.')).setParseAction(' '.join) + Literal(')')).setParseAction(''.join)
-        label = OneOrMore(Word(intl_alphas+','+'.')) + label_details
-        # label.setName("label").setDebug()
-        index = Optional(label("label")) + Optional(locus("locus").setParseAction(''.join) + occurrences('occurrences') + restOfLine("rest"))
+    def parse_as_nominum_ancient(self):
+        try:
+            ref = self.parse_pattern2(self.text)
+            idx_ref = IndexReference(label=" ".join(ref.label).strip(), occurrences=ref.occurrences, note=ref.rest)
+            self.refs.append(idx_ref)
+        except ParseException:
+            print("Failed to parse index nominum (ancient): ", self.text)
+
+    def parse_as_nominum_modern(self):
+        try:
+            ref = self.parse_pattern2(self.text)
+            idx_ref = IndexReference(label=" ".join(ref.label).strip(), occurrences=ref.occurrences, note=ref.rest)
+            self.refs.append(idx_ref)
+        except ParseException:
+            print("Failed to parse index nominum (modern): ", self.text)
+
+    def parse_as_verborum(self):
+        try:
+            self.parse_loop(self.parse_pattern2)
+        except ParseException:
+            print("Failed to parse index verborum: ", self.text)
+
+    def parse_as_epigraphic(self):
+        print("No parser for index epigraphic: ", self.text)
+
+    def parse_as_geographicus(self):
+        try:
+            self.parse_loop(self.parse_pattern2)
+        except ParseException:
+            print("Failed to parse index geographicus: ", self.text)
+
+    def parse_as_bibliographicus(self):
+        print("No parser for index bibliographicus: ", self.text)
+
+    def parse_loop(self, processor):
         text = self.text
         the_end = False
         while not the_end:
-            ref = index.parseString(text)
-            idx_ref = IndexReference(label=" ".join(ref.label).strip(), locus=ref.locus,
-                occurrences=ref.occurrences)
+            ref = processor(text)
+            label = " ".join(ref.label).strip()
+            if label.endswith(','):
+                label = label[:-1]
+            idx_ref = IndexReference(label=label, locus=ref.locus, occurrences=ref.occurrences)
             self.refs.append(idx_ref)
             text = ref.rest
             the_end = True if len(text) == 0 else False
             if the_end:
-               idx_ref.note = text
+                idx_ref.note = text
+        # print(self.refs)
 
-    # @Example: Adonis (Plato Comicus), 160, 161, 207
-    def parse_rerum_pattern1(self):
-        intl_alphas = ppu.Latin1.alphas
-        intl_nums = ppu.Latin1.nums
-        label_details = Optional(Literal('(') + OneOrMore(Word(intl_alphas)).setParseAction(' '.join) + Literal(')')).setParseAction(''.join)
-        label = OneOrMore(Word(intl_alphas)).setParseAction(' '.join) + label_details
+    # @Examples:
+    #   locorum: Adespota elegiaca (IEG)  23 206
+    #     Aeschines 2.157 291
+    def parse_pattern1(self, text):
+        alphas=ppu.Latin1.alphas+ppu.LatinA.alphas+ppu.LatinB.alphas+ppu.Greek.alphas+"\"'.’-—:“”‘’&()/«»?"
+        occurrences = delimitedList(Word(ppu.Latin1.nums), delim=",")
+        locus_fragment = Word(ppu.Latin1.nums+".–=") + Optional(oneOf("ff."))
+        locus = locus_fragment + Optional('/'+locus_fragment)
+        label_chars = Word(alphas+',;')
+        label = OneOrMore(label_chars.setParseAction(''.join))
+        index = Optional(label("label")) + Optional(locus("locus").setParseAction(''.join) + occurrences('occurrences') + restOfLine("rest"))
+        return index.parseString(text)
+
+    # @Examples:
+    #   rerum: Adonis (Plato Comicus), 160, 161, 207
+    #   nominum: Antioch  10; 24; 79; 83; 85; 89–92;  105–107; 114–116; 118; 147–149; 152;  154–156; 173; 231
+    def parse_pattern2(self, text):
+        alphas=ppu.Latin1.alphas+ppu.LatinA.alphas+ppu.LatinB.alphas+ppu.Greek.alphas+"\"'.’-—:“”‘’&()/«»?"
+        occurrences_chars=Word(ppu.Latin1.nums+'n–') + Optional(oneOf("f."))
+        occurrences = OneOrMore(occurrences_chars + Optional(oneOf(", ;")).suppress())
+        label_chars = Word(alphas+',;')
+        label = OneOrMore(label_chars.setParseAction(''.join))
+        # TODO generalize: after 'see' or 'see also' other index references with occurrences can appear
+        alias = CaselessKeyword("see") + Optional(CaselessKeyword("also")) + delimitedList(Word(alphas), delim=oneOf(", ;"))
         # label.setName("label").setDebug()
-        occurrences = OneOrMore(Word(intl_nums + 'n' + '–') + Optional(",").suppress())
-        index = label("label") + Optional(Literal(',').suppress()) + occurrences("occurrences") + restOfLine('rest')
-        ref = index.parseString(self.text)
-        idx_ref = IndexReference(label=" ".join(ref.label), occurrences=ref.occurrences, note=ref.rest)
-        self.refs.append(idx_ref)
-        print(idx_ref)
+        index = label("label") + Optional(occurrences("occurrences")) + Optional(alias("alias")) + restOfLine('rest')
+        return index.parseString(text)
 
     # Inline pattern, only needed for testing
-    def parse_pattern1_inline(self):
+    def parse_locorum_inline(self):
         # This is a patten for the inline style of indices, e.g., "Hom. Il. 1,124-125"
         # 1) The text preceding the numbers contains information about work and author being cited
         # 2) The hyphen is used to specify a range of text passages, e.g. lines 124 to 125

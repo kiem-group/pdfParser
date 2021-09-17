@@ -23,16 +23,43 @@ class TestModel(unittest.TestCase):
         self.assertEqual("", idx.refs[1].label)
         self.assertEqual("2.240", idx.refs[1].locus)
 
-    @unittest.skip("Parse index rerum")
-    def test_index_rerum_parser(self):
+    # @unittest.skip("Parse index rerum")
+    def test_index_parser_pattern2(self):
         # Adonis (Plato Comicus), 160, 161, 207
         idx = Index("Adonis (Plato Comicus), 160, 161, 207", types=["rerum"])
         self.assertEqual("Adonis (Plato Comicus)", idx.refs[0].label)
         self.assertEqual(3, len(idx.refs[0].occurrences))
         self.assertEqual("160", idx.refs[0].occurrences[0])
         self.assertEqual("207", idx.refs[0].occurrences[2])
+        # actors, comic, 75, 78–82 disguising, 84–85 guilds, 92 Menander’s use of, 361–362 in performance, 116–119,
+        # 137– 139 prizes, 137
+        idx = Index(("actors, comic, 75, 78–82 disguising, 84–85 guilds, 92 Menander’s use of, 361–362 in performance, "
+                     "116–119, 137– 139 prizes, 137"), types=["verborum"])
+        self.assertEqual("disguising", idx.refs[1].label)
+        # Alberti, Leon Battista 86, 96–97, 99–100,  110, 221, 228, 244
+        idx=Index("Alberti, Leon Battista 86, 96–97, 99–100,  110, 221, 228, 244", types=["nominum_ancient"])
+        self.assertEqual("Alberti, Leon Battista", idx.refs[0].label)
+        # intention 15, 35–38, 85, 260, 272, 276,  288, 296, 299–306, 317, 331
+        idx=Index("intention 15, 35–38, 85, 260, 272, 276,  288, 296, 299–306, 317, 331", types=["verborum"])
+        self.assertEqual("intention", idx.refs[0].label)
+        # Pozzo, Andrea dal 192–193, 196n
+        idx=Index("Pozzo, Andrea dal 192–193, 196n", types=["nominum_ancient"])
+        self.assertEqual("Pozzo, Andrea dal", idx.refs[0].label)
+        # enumeration 155–166, 184 See also diversity; mathematics; point
+        idx=Index("enumeration 155–166, 184 See also diversity; mathematics; point", types=["verborum"])
+        self.assertEqual("enumeration", idx.refs[0].label)
+        self.assertEqual("155–166", idx.refs[0].occurrences[0])
+        self.assertEqual("184", idx.refs[0].occurrences[1])
+        # incompleteness 312–313 See also completeness; exhaustion
+        idx = Index("incompleteness 312–313 See also completeness; exhaustion", types=["verborum"])
+        self.assertEqual("incompleteness", idx.refs[0].label)
+        self.assertEqual("", idx.refs[0].note)
+        idx = Index(("Tyche,  30,  31,  44,  66,  67,  68,  72,  84,  85,  97,  105,  107,  lI5,  179,  180 " 
+            "Valerianus,  16  Venus,  40,  42,  110,  147,  150,  151,  152,  157,  176,  185 "  
+            "Vologoses  III,  13,  132 Wa'el,  131"), types=["verborum"])
+        self.assertEqual("Tyche", idx.refs[0].label)
 
-    def test_index_locorum_parser(self):
+    def test_index_parser_pattern1(self):
         # Adespota elegiaca (IEG) 23 206
         idx = Index("Adespota elegiaca (IEG) 23 206", types=["locorum"])
         self.assertEqual("Adespota elegiaca (IEG)", idx.refs[0].label)

@@ -65,6 +65,9 @@ class Publication:
     bib_refs: [Reference] = None
     index_refs: [Index] = None
 
+    bib_refs_with_errors: [str] = None
+    index_refs_with_errors: [str] = None
+
     _bib_skipped: [SkippedText] = None
     _index_skipped: [[SkippedText]] = None
 
@@ -108,6 +111,10 @@ class Publication:
         self.index_files = []
         self.index_types = []
         self._index_skipped = []
+
+        self.index_refs_with_errors = []
+        self.bib_refs_with_errors = []
+
         for book_part in book_parts:
             title = ' '.join(book_part.xpath('.//title//text()')).lower()
             hrefs = book_part.xpath('.//self-uri/@xlink:href', namespaces={"xlink": "http://www.w3.org/1999/xlink"})
@@ -126,6 +133,7 @@ class Publication:
                             self.bib_refs.append(ref)
                         except:
                             print("Failed to parse bibliographic reference:", ref_text)
+                            self.bib_refs_with_errors.append(ref_text)
                 if self.extract_index and 'index' in title:
                     print("Parsing index file", href)
                     self.index_files.append(href)
@@ -133,14 +141,14 @@ class Publication:
                     self.index_types.append(curr_index_types)
                     [items, skipped] = parse_target_indent(target_pdf)
                     # Save skipped text from index files for analysis
-                    print("Parsed index file: ", len(items), len(skipped))
+                    print("\tExtracted index references: ", len(items))
+                    print("\tSkipped lines: ", len(skipped))
                     if skipped:
                         self._index_skipped.append(skipped)
                     # Merge lines that start from digid with previous
                     items = [item.replace("\n", " ").strip() for item in items]
                     ref_items = []
                     ref_text = ""
-                    print("Extracted indices: ", len(items))
                     for text in items:
                         if text[0].isdigit():
                             ref_text += " " + text
@@ -152,6 +160,10 @@ class Publication:
                         ref = Index(ref_text, ref_num=ref_num+1, cited_by_doi=self.doi, cited_by_zip=self.zip_path,
                                     types=curr_index_types)
                         self.index_refs.append(ref)
+                        if not ref.refs:
+                            # print("Failed to parse index reference:", ref_text)
+                            self.index_refs_with_errors.append(ref_text)
+
                     # Save for analysis
                     # ext = "-" + str(len(self.index_files)) + "_" + ('-'.join(curr_index_types))
                     # out_path = self.zip_path + ext + ".json"
