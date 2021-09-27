@@ -6,6 +6,7 @@ import Levenshtein
 from model.publication import Publication
 from model.reference import Reference
 from model.corpus import Corpus
+import json
 
 
 class TestClassifier(unittest.TestCase):
@@ -211,12 +212,12 @@ class TestClassifier(unittest.TestCase):
             for sample in samples:
                 writer.writerow([sample.text.strip(), sample.cited_by_doi, sample.cited_by_zip, sample.ref_num])
 
-    @unittest.skip("Query based on keywords + intitle should help to locate requested publication")
+    # @unittest.skip("Query based on keywords + intitle should help to locate requested publication")
     def test_google_api_format(self):
         from disambiguation import query_google_book
         from urllib.parse import quote
-        ref = "The Brazen House"
-        ext_text = "The Brazen House. A Study of the Vestibule of the Imperial Palace of Constantinople"
+        ref = "The Brazen House. A Study of the Vestibule of the Imperial Palace of Constantinople"
+        ext_text = "The Brazen House"
         ext = "&intitle:" + quote(ext_text)
         res = query_google_book(ref, ext)
         print(res.items)
@@ -233,6 +234,123 @@ class TestClassifier(unittest.TestCase):
                 for ref in pub.index_refs:
                     print(ref)
 
+
+    # @unittest.skip("Evaluation of disambiguation")
+    def test_evaluate_disambiguation(self):
+        with open('data_test/ref_sample_disambiguation_100.csv', "r", encoding='utf-8', newline="") as f:
+            from disambiguation import query_google_book, query_crossref_pub
+            from urllib.parse import quote
+            reader = csv.reader(f, delimiter=",")
+            # Skip header
+            next(reader, None)
+            count = 0
+            google_count = 0
+            google_success = 0
+            crossref_count = 0
+            crossref_success = 0
+            for row in reader:
+                text = row[0]
+                ref = Reference(text)
+                # print(ref.authors, ref.title)
+                ext = "&intitle:" + quote(ref.title)
+
+                crossref = row[4]
+                google = row[5]
+                other = row[7]
+
+                if google != 'n/a':
+                    google_count += 1
+                    res = query_google_book(ref.title, ext)
+                    items = res["items"]
+                    google_id = items[0]["selfLink"].split('/')[-1]
+                    given_google_id = google.split('=')[-1]
+                    print("Google API:", google_id, given_google_id)
+                    if google_id == given_google_id:
+                        google_success += 1
+
+                if crossref != 'n/a':
+                    crossref_count += 1
+                    res = query_crossref_pub(text)
+                    # print(res["DOI"], res["title"])
+                    # print(crossref)
+                    doi = res["DOI"].split('/')[-1]
+                    given_doi = crossref.split('/')[-1]
+                    print("Crossref API:", doi, given_doi)
+                    if given_doi.startswith(doi) or doi.startswith(given_doi):
+                        crossref_success += 1
+
+                count += 1
+                if count > 100:
+                    break
+            print(google_success, google_count)
+            print(crossref_success, crossref_count)
+
+    def test_self_evaluate_disambiguation(self):
+        header = ["Reference", "Google API", "CrossRef", "DOI", "ISBN", "Industry identifiers", "Remarks"]
+        f = open('data_test/ref_sample_disambiguation_revised.csv', "w", encoding='utf-8', newline="")
+        writer = csv.writer(f)
+        writer.writerow(header)
+
+        with open('data_test/ref_sample_disambiguation_100.csv', "r", encoding='utf-8', newline="") as f:
+            from disambiguation import query_google_book, query_crossref_pub
+            from urllib.parse import quote
+            reader = csv.reader(f, delimiter=",")
+            # Skip header
+            next(reader, None)
+            count = 0
+            google_success = 0
+            crossref_success = 0
+            for row in reader:
+                new_google = ""
+                new_crossref = ""
+                new_identifiers = ""
+                new_doi = ""
+                new_isbn = ""
+
+                text = row[0]
+                other = row[7]
+                if other != 'n/a':
+                    print(other)
+                ref = Reference(text)
+                # print(ref.authors, ref.title)
+                ext = "&intitle:" + quote(ref.title)
+
+                res = query_google_book(ref.title, ext)
+                if "items" in res:
+                    items = res["items"]
+                    if len(items) > 0:
+                        if "volumeInfo" in items[0]:
+                            google_title = items[0]["volumeInfo"]["title"]
+                            ratio = Levenshtein.ratio(ref.title, google_title)
+                            # print("Google title:", google_title, ratio)
+                            if ratio > 0.75:
+                                if "selfLink" in items[0]:
+                                    new_google = items[0]["selfLink"]
+                                google_success += 1
+                                if "industryIdentifiers" in items[0]["volumeInfo"]:
+                                    new_identifiers = json.dumps(items[0]["volumeInfo"]["industryIdentifiers"])
+                res = query_crossref_pub(text)
+                if "title" in res:
+                    crossref_title = res["title"]
+                    if len(crossref_title) > 0:
+                        ratio = Levenshtein.ratio(ref.title, crossref_title[0])
+                        # print("Crossref title:", crossref_title[0], ratio)
+                        if ratio > 0.75:
+                            crossref_success += 1
+                            # print(res)
+                            if "DOI" in res:
+                                new_doi = res["DOI"]
+                            if "ISBN" in res:
+                                new_isbn = res["ISBN"]
+                            if "URL" in res:
+                                new_crossref = res["URL"]
+                if new_google != "" or new_crossref != "":
+                    count += 1
+                # print(google_success, count)
+                # print(crossref_success, count)
+                # print(text, new_google, new_crossref, new_identifiers, new_doi, new_isbn)
+                # writer.writerow([text, new_google, new_crossref, new_doi, new_isbn, new_identifiers, ""])
+                print(count)
 
 if __name__ == '__main__':
     unittest.main()

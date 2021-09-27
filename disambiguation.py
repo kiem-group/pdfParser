@@ -1,9 +1,9 @@
 import json
 from urllib.request import urlopen
 from urllib.parse import quote
+from crossref.restful import Works
 
 # Publication resources with API https://guides.temple.edu/APIs
-
 
 # Google books
 def query_google_books(refs):
@@ -16,14 +16,14 @@ def query_google_books(refs):
 def query_google_book(ref, ext):
     api = "https://www.googleapis.com/books/v1/volumes?q="
     url = api + quote(ref) + ext
-    print("URL", url)
+    # print("URL", url)
     resp = urlopen(url)
     book_data = json.load(resp)
     return book_data
 
 
 # CrossRef
-def query_cross_ref(refs):
+def query_crossref_pubs(refs):
     print("Searching for references using CrossRef API:", len(refs))
     from crossref.restful import Works
     works = Works()
@@ -33,3 +33,10 @@ def query_cross_ref(refs):
         for item in pub:
             print(item['author'], item['title'])
         print("\n")
+
+
+def query_crossref_pub(ref):
+    works = Works()
+    res = works.query(bibliographic=ref)
+    for item in res:
+        return item
