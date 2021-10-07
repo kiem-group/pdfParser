@@ -13,6 +13,7 @@ class IndexReference:
     note: str = None
     # TODO add possibility to indicate occurrences in bold or footnotes
 
+
 @dataclass_json
 @dataclass
 class Index:

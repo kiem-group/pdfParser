@@ -1,6 +1,10 @@
 import unittest
 from publication import Publication
+from contributor import Contributor
+from reference import Reference
 from index import Index
+from dataclasses import asdict
+import json
 
 
 class TestModel(unittest.TestCase):
@@ -138,14 +142,36 @@ class TestModel(unittest.TestCase):
         self.assertEqual('../data_test/9783657782116_BITS.zip', pub.zip_path)
         self.assertEqual(9, len(pub.files))
 
-    @unittest.skip("Parse publication")
+    def test_reference_parser(self):
+        data = [
+            "C. Lane, Venise, une République maritime, Paris, 1988, p. 344;",
+            "Lane, Frédéric Chapin. Venise : une république maritime, préface de Fernand Braudel; trail, de l'américain par Yannick Bourdoiseau et Marie Ymonel. Paris, Flammarion, coll. «Champs». 1988.",
+            "Coulon, V., ed. 1923-1930. Aristophane, 5 vols., trans. H. van Daele. Paris"
+        ]
+        for ref_text in data:
+            ref = Reference(ref_text)
+            self.assertIsNotNone(ref.year)
+            self.assertIsNotNone(ref.authors)
+            self.assertIsNotNone(ref.title)
+            # print(ref.authors, "#", ref.year, "#", ref.title)
+        ref = Reference("D’Andria, F. “Scavi nella zona del Kerameikos.” (NSA Supplement 29: Metaponto I) 355-452")
+        self.assertEqual("D’Andria, F.", "".join(ref.authors))
+        self.assertEqual("Scavi nella zona del Kerameikos", ref.title)
+
+    # @unittest.skip("Parse publication")
     def test_publication_bib_parser(self):
         pub = Publication('../data_test/9789004188846_BITS.zip', extract_bib=True)
-        self.assertEqual(1218, len(pub.bib_refs))
+        self.assertEqual(1236, len(pub.bib_refs))
         self.assertEqual('2003', pub.bib_refs[0].year)
         self.assertEqual('1987', pub.bib_refs[5].year)
         self.assertEqual('Athena’s Epithets: Their Structural Significance in the Plays of Aristophanes (Beiträge zur Altertumskunde 67)', pub.bib_refs[10].title)
-
+        pub.save("../tmp/9789004188846_BITS.pub")
+        # pub_copy = Publication.load("../tmp/9789004188846_BITS.pub")
+        # print(pub_copy)
+        for author in pub.editors:
+            x = json.dumps(asdict(author))
+            y = Contributor.from_json(x)
+            print(y)
 
 
 if __name__ == '__main__':

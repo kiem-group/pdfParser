@@ -20,9 +20,11 @@ class SkippedText:
 def parse_target_indent(in_file, config=bib_config):
     odd_offset_counter = {}
     even_offset_counter = {}
+    # TODO use length of line in parser
     odd_length = 0
     even_length = 0
     page_num: int = 0
+    count_last_dot = 0
 
     def get_line_offset(el):
         nonlocal odd_length, even_length
@@ -31,24 +33,34 @@ def parse_target_indent(in_file, config=bib_config):
         if page_num % 2 == 1:
             odd_offset_counter[appr_x] = odd_offset_counter.get(appr_x, 0) + 1
             if x + w > odd_length:
-                odd_length = x + h
+                odd_length = x + w
         else:
             even_offset_counter[appr_x] = even_offset_counter.get(appr_x, 0) + 1
             if x + w > even_length:
-                even_length = x + h
+                even_length = x + w
 
     for page_layout in extract_pages(in_file):
         page_num += 1
-        for element in page_layout:
+        # for element in page_layout:
+        for idx, element in enumerate(page_layout, start=0):
             if isinstance(element, LTTextContainer):
                 for text_line in element:
+                    # Probing first 500 lines:
+                    #   if at least 100 of them end with a dot, we assume all lines must end with a dot.
+                    if idx < 500 and count_last_dot <= 100:
+                        line_chars = get_text(text_line)
+                        if line_chars[-2] == '.':
+                            count_last_dot += 1
                     try:
                         get_line_offset(text_line.bbox)
                     except:
                         print("Failed to get bbox", text_line)
+
+
     # Remove occasional lines - title, page numbers, etc. - anything that occurs a couple of times per page on average
     odd_starts = get_offset_counter(odd_offset_counter, page_num, config)
     even_starts = get_offset_counter(even_offset_counter, page_num, config)
+
 
     if len(odd_starts) > 2 or len(even_starts) > 2:
         print("\tWarning: multi-column or unusual format")
@@ -59,22 +71,34 @@ def parse_target_indent(in_file, config=bib_config):
     items: List[List[Any]] = []
     skipped: List[SkippedText] = []
 
+    incomplete = []
     def split_reference(line_chars, appr_x, curr_ref_chars, base):
         curr_stripped = convert_to_str(curr_ref_chars).strip()
         try:
-            new_ref = appr_x == base and len(curr_ref_chars) > 0
+            new_ref = appr_x == base and len(curr_stripped) > 0
             # A reference should not end with , or -
-            if len(curr_stripped) > 1:
-                if curr_stripped.endswith(',') or curr_stripped.endswith('–'):
-                    # print("Reference can't end like this: ", curr_stripped[len(curr_stripped) - 1])
-                    new_ref = False
+            if new_ref:
+                if count_last_dot >= 100:
+                    # Line must end with a dot but it does not
+                    if not curr_stripped.endswith('.'):
+                        incomplete.append(len(items))
+                else:
+                    # Line looks unfinished
+                    if curr_stripped.endswith(',') or curr_stripped.endswith('–'):
+                        # print("Reference can't end like this: ", curr_stripped[-1])
+                        incomplete.append(len(items))
             if new_ref:
                 # print("REFERENCE: ", convert_to_str(curr_ref_chars))
                 items.append(curr_ref_chars)
                 return True  # My parser to decode string
             else:
+                # print(base, "<=", appr_x, "<", base + config.indent)
                 if base <= appr_x < base + config.indent:
-                    curr_ref_chars.extend(line_chars)  # My parser to decode string
+                    if len(incomplete) > 0:
+                        idx = incomplete.pop(0)
+                        items[idx].extend(line_chars)
+                    else:
+                        curr_ref_chars.extend(line_chars)  # My parser to decode string
                 # Record skipped text for method evaluation
                 else:
                     skipped.append(SkippedText(len(items), convert_to_str(line_chars)))
@@ -105,6 +129,7 @@ def parse_target_indent(in_file, config=bib_config):
                             if appr_x >= start + config.indent:
                                 col_num += 1
                         line_chars = get_text(text_line)
+                        # print("NEXT LINE:", convert_to_str(line_chars))
                         try:
                             if col_num < n and col_num < len(col_curr):
                                 is_ref_added = split_reference(line_chars, appr_x, col_curr[col_num], starts[col_num])

@@ -49,7 +49,7 @@ be added to process unusual structures.
 ## Extracting references from PDF files
 After locating PDF files with index and bibliographic references, we need to split the bulk data into individual references.
 This is a daunting task due to the fact that PDF does not preserve logical structures such as sentences or paragraphs, it consists 
-of instructions to position textual and graphical elements on paper. We use PDFMiner to extract text from PDF files and 
+of instructions to position textual and graphical elements on paper. We use [PDFMiner](https://pypi.org/project/pdfminer/) to extract text from PDF files and 
 reconstruct some of those structures by relative positioning of its elements. The problem is made even harder by absence of uniform
 formats: references can be placed in one or several columns, their parts can be separated by commas, different units of indent,
 alignment, long references can spill into several lines or have nested structure with several sub-levels and relation to above content.

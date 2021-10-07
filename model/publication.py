@@ -1,8 +1,8 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from dataclasses_json import dataclass_json
 from lxml import etree
 import zipfile
-
+import json
 from model.index import Index
 from model.reference import Reference
 from model.contributor import Contributor
@@ -10,7 +10,7 @@ from model.pdf_parser import parse_target_indent, SkippedText
 
 
 @dataclass_json
-@dataclass
+@dataclass(unsafe_hash=True)
 class Publication:
     """A class for holding information about a publication"""
 
@@ -128,6 +128,7 @@ class Publication:
                     # Extract references and save skipped text from bibliography file for analysis
                     [items, self._bib_skipped] = parse_target_indent(target_pdf)
                     for ref_num, ref_text in enumerate(items, start=0):
+                        # print(ref_text)
                         try:
                             ref = Reference(ref_text, ref_num=ref_num+1, cited_by_doi=self.doi, cited_by_zip=self.zip_path)
                             self.bib_refs.append(ref)
@@ -193,7 +194,7 @@ class Publication:
         self.editors = []
         self.authors = []
         for jats_contrib in contributors:
-            c = Contributor(jats_contrib)
+            c = Contributor.from_jats(jats_contrib)
             if c.type == "editor":
                 self.editors.append(c)
             else:
@@ -214,3 +215,14 @@ class Publication:
         # TODO extract isbn if needed
         # < isbn publication-format = "print" > 9783506782113 < / isbn >
         # < isbn publication-format = "online" > 9783657782116 < / isbn >
+
+    def save(self, out_path):
+        with open(out_path, "w", encoding='utf-8') as out_file:
+            data = json.dumps(asdict(self))
+            out_file.write(data)
+
+    @classmethod
+    def load(cls, in_path):
+        with open(in_path, "r", encoding='utf-8') as in_file:
+            data = in_file.read()
+            return cls.from_json(data)
