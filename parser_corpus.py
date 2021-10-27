@@ -29,7 +29,7 @@ def parse_corpus_zip(corpus_zip_path, extract_bib=True, extract_index=False, sam
         pub_dir_path = join(corpus_dir_path, pub_dir_name)
         corpus_zip.extract(pub_zip_name, pub_dir_path)
         pub_zip_path = join(pub_dir_path, pub_zip_name)
-        corpus.add_publication(Publication(pub_zip_path, extract_bib=extract_bib, extract_index=extract_index))
+        corpus.add_publication(Publication.from_zip(pub_zip_path, extract_bib=extract_bib, extract_index=extract_index))
         try:
             os.remove(pub_zip_path)
             os.rmdir(pub_dir_path)

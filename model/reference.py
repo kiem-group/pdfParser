@@ -3,7 +3,7 @@ from dataclasses_json import dataclass_json
 import re
 from pyparsing import (Word, Literal, ZeroOrMore, delimitedList, restOfLine, pyparsing_unicode as ppu,
                        ParseException, Optional, Regex, CaselessKeyword)
-
+from model.externalPublication import ExternalPublication
 
 @dataclass_json
 @dataclass
@@ -14,15 +14,11 @@ class BaseReference:
     cited_by_doi: str = None
     cited_by_zip: str = None
     ref_num: int = 0
-    authors: str = None
+    authors: [str] = None
     title: str = None
     year: str = None
 
-    url_google: str = None
-    url_crossref: str = None
-    doi: str = None
-    isbn: str = None
-    industry_identifiers: object = None
+    refers_to: [ExternalPublication] = None
 
     def __post_init__(self):
         self.parse()
@@ -73,6 +69,21 @@ class BaseReference:
         if self.year is None and year_anywhere:
             self.year = year_anywhere
         self.title = self.title.replace("“", "").strip()
+
+    @property
+    def props(self) -> dict:
+        return {
+            "text": self._text,
+            "authors": ", ".join(self.authors),
+            "title": self.title,
+            "year": self.year,
+            "ref_num": self.ref_num
+            # "cited_by_doi": self.sited_by_doi,
+            # "cited_by_zip": self.sited_by_zip
+        }
+
+    def serialize(self):
+        return "{" + ', '.join('{0}: "{1}"'.format(key, value) for (key, value) in self.props.items()) + "}"
 
 
 @dataclass

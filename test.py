@@ -203,8 +203,6 @@ class TestClassifier(unittest.TestCase):
     # @unittest.skip("Evaluation of disambiguation on human labelled data")
     def test_evaluate_disambiguation(self):
         with open('data_test/ref_sample_disambiguation_100.csv', "r", encoding='utf-8', newline="") as f:
-            from disambiguation import query_google_books, query_crossref_pub
-            from urllib.parse import quote
             reader = csv.reader(f, delimiter=",")
             # Skip header
             next(reader, None)
@@ -256,7 +254,6 @@ class TestClassifier(unittest.TestCase):
         writer.writerow(header)
 
         with open('data_test/ref_sample_disambiguation_100.csv', "r", encoding='utf-8', newline="") as f:
-            from disambiguation import disambiguate_google_books, disambiguate_crossref
             reader = csv.reader(f, delimiter=",")
             next(reader, None)
 
@@ -268,9 +265,9 @@ class TestClassifier(unittest.TestCase):
                 text = row[0]
                 ref = Reference(text)
 
-                # disambiguate_google_books(ref)
-                # if ref.url_google:
-                #     google_success += 1
+                disambiguate_google_books(ref)
+                if ref.url_google:
+                    google_success += 1
 
                 disambiguate_crossref(ref)
                 if ref.url_crossref is not None or ref.doi is not None:

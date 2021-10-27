@@ -127,12 +127,14 @@ class TestModel(unittest.TestCase):
         self.assertEqual(15, len(nested_idx.refs))
         self.assertEqual("108–9/126–7", nested_idx.refs[14].locus)
 
-    @unittest.skip("Test whether publication information is correctly extracted from JATS")
+    # @unittest.skip("Test whether publication information is correctly extracted from JATS")
     def test_publication_parser(self):
         zip_file = '../data_test/9783657782116_BITS.zip'
-        pub = Publication(zip_file)
+        pub = Publication.from_zip(zip_file)
         self.assertEqual("ger", pub.lang)
         self.assertEqual("10.30965/9783657782116", pub.doi)
+        self.assertEqual(['9783506782113', '9783657782116'], pub.isbn)
+        self.assertIsNone(pub.issn)
         self.assertEqual('Prosper Tiro Chronik - Laterculus regum Vandalorum et Alanorum', pub.title)
         self.assertEqual(2, len(pub.editors))
         self.assertEqual(0, len(pub.authors))
@@ -160,7 +162,7 @@ class TestModel(unittest.TestCase):
 
     # @unittest.skip("Parse publication")
     def test_publication_bib_parser(self):
-        pub = Publication('../data_test/9789004188846_BITS.zip', extract_bib=True)
+        pub = Publication.from_zip('../data_test/9789004188846_BITS.zip', extract_bib=True)
         self.assertEqual(1236, len(pub.bib_refs))
         self.assertEqual('2003', pub.bib_refs[0].year)
         self.assertEqual('1987', pub.bib_refs[5].year)
