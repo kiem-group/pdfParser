@@ -2,50 +2,89 @@ from dataclasses import dataclass
 from pyparsing import (Word, Literal, Group, ZeroOrMore, OneOrMore, oneOf, restOfLine, delimitedList, pyparsing_unicode as ppu,
                        ParseException, Optional, CaselessKeyword)
 from dataclasses_json import dataclass_json
+from model.reference_base import BaseReference
+import uuid
 
 
 @dataclass_json
 @dataclass
-class IndexReference:
+class IndexReferencePart:
+    """A class for holding information about a single reference part in a composite index"""
     label: str = None
     locus: str = None
     occurrences: [str] = None
     note: str = None
-    # TODO add possibility to indicate occurrences in bold or footnotes
+    is_bold: bool = False
+    is_footnote: bool = False
+    UUID: str = None
+
+    def __post_init__(self):
+        if not self.UUID:
+            self.UUID = str(uuid.uuid4())
+
+    @property
+    def props(self) -> dict:
+        return {
+            "UUID": self.UUID,
+            "label": self.label,
+            "locus": self.locus,
+            "occurrences": ";".join(self.occurrences),
+            "note": self.note,
+            "is_bold": self.is_bold,
+            "is_footnote": self.is_footnote
+        }
+
+    # Convert object properties into a string representing Neo4j property set (json without parentheses in keys)
+    def serialize(self):
+        return "{" + ', '.join('{0}: "{1}"'.format(key, value) for (key, value) in self.props.items()) + "}"
+
+    # Restore object from a string representing Neo4j property set (json without parentheses in keys)
+    @classmethod
+    def deserialize(cls, props):
+        self = cls(UUID=props["UUID"])
+        if "occurrences" in props:
+            self.occurrences = props["occurrences"].split(";")
+            del props["occurrences"]
+        for key in props.keys():
+            self[key] = props[key]
+        return self
 
 
 @dataclass_json
 @dataclass
-class Index:
-    """A class for holding information about a reference"""
-    _text: str
-    cited_by_doi: str = None
-    cited_by_zip: str = None
-    ref_num: int = 0
-    refs: [IndexReference] = None
+class IndexReference(BaseReference):
+    """A class for holding information about an index"""
+    refs: [IndexReferencePart] = None
     types: [str] = None
 
     # An argument to distinguish between parsing of index references in text vs index files
     inline: bool = False
 
-    def __post_init__(self):
-        self.parse()
-
     @property
-    def text(self) -> str:
-        return self._text
+    def props(self) -> dict:
+        props = BaseReference.props.fget(self)
+        props["types"] = ";".join(self.types)
+        return props
 
-    @text.setter
-    def text(self, value):
-        self.text = value
-        self.parse()
+    @classmethod
+    def deserialize(cls, props):
+        self = cls(UUID=props["UUID"])
+        del props["text"]
+        if "types" in props:
+            self.types = props["types"].split(";")
+            del props["types"]
+        for key in props.keys():
+            self[key] = props[key]
+        return self
 
     def parse(self):
-        self._text = self._text.replace("\n", " ")
+        if not self.text:
+            return
+        self.text = self.text.replace("\n", " ")
         # TODO Can parsing benefit from special spacing?
-        self._text = self._text.replace(" ", " ")
-        self._text = self._text.replace(" ", " ")
-        # print("Parsing index text as " + " or ".join(self.types) +": ", self._text)
+        self.text = self.text.replace(" ", " ")
+        self.text = self.text.replace(" ", " ")
+        # print("Parsing index text as " + " or ".join(self.types) +": ", self.text)
         if len(self.text) < 5:
             print("Index text is too short", self.text)
             return
@@ -69,8 +108,8 @@ class Index:
                     options[self.types[0]]()
                 else:
                     print("No parsers for this index type yet", ", ".join(self.types), self.text)
-        else:
-            print("Unclassified index: ", self.text)
+        # else:
+        #     print("Unclassified index: ", self.text)
 
     def parse_as_locorum(self):
         try:
@@ -90,7 +129,7 @@ class Index:
     def parse_as_nominum_ancient(self):
         try:
             ref = self.parse_pattern2(self.text)
-            idx_ref = IndexReference(label=" ".join(ref.label).strip(), occurrences=ref.occurrences, note=ref.rest)
+            idx_ref = IndexReferencePart(label=" ".join(ref.label).strip(), occurrences=ref.occurrences, note=ref.rest)
             self.refs.append(idx_ref)
         except ParseException:
             print("Failed to parse index nominum (ancient): ", self.text)
@@ -98,7 +137,7 @@ class Index:
     def parse_as_nominum_modern(self):
         try:
             ref = self.parse_pattern2(self.text)
-            idx_ref = IndexReference(label=" ".join(ref.label).strip(), occurrences=ref.occurrences, note=ref.rest)
+            idx_ref = IndexReferencePart(label=" ".join(ref.label).strip(), occurrences=ref.occurrences, note=ref.rest)
             self.refs.append(idx_ref)
         except ParseException:
             print("Failed to parse index nominum (modern): ", self.text)
@@ -129,7 +168,7 @@ class Index:
             label = " ".join(ref.label).strip()
             if label.endswith(','):
                 label = label[:-1]
-            idx_ref = IndexReference(label=label, locus=ref.locus, occurrences=ref.occurrences)
+            idx_ref = IndexReferencePart(label=label, locus=ref.locus, occurrences=ref.occurrences)
             self.refs.append(idx_ref)
             text = ref.rest
             the_end = True if len(text) == 0 else False
@@ -189,11 +228,19 @@ class Index:
             locus_txt = ref.locus[0]+ "." + ref.locus[1]
             if len(ref.locus) > 2:
                 locus_txt += "-" + ref.locus[2]
-            idx_ref = IndexReference(label=" ".join(ref.label), locus=locus_txt)
+            idx_ref = IndexReferencePart(label=" ".join(ref.label), locus=locus_txt)
             self.refs.append(idx_ref)
             print(idx_ref)
 
     @classmethod
+    # Guess type of index. Can return several types
+    # verborum - index of words
+    # locorum  - index of references
+    # nominum  - index of names
+    # nominum_ancient - ancient people
+    # nominum_modern  - modern authors
+    # rerum    - index of subjects
+    # geographicus - index of places
     def get_index_types(cls, index_title):
         keywords = {
             'verborum': ['general', 'verborum', 'verborvm', 'abstract', 'word', 'words', 'term', 'terms', 'termes',
@@ -247,12 +294,3 @@ class Index:
         # 'index of verse-end borrowings'
         # 'index of grammatical topics'
         # 'index of greek words'
-
-    # Guess type of index. Can return several types
-    # verborum - index of words
-    # locorum  - index of references
-    # nominum  - index of names
-    # nominum_ancient - ancient people
-    # nominum_modern  - modern authors
-    # rerum    - index of subjects
-    # geographicus - index of places

@@ -1,21 +1,30 @@
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 from model.contributor import Contributor
-from model.industryIdentifier import IndustryIdentifier
+from model.industry_identifier import IndustryIdentifier
 from typing import Union
+import uuid
+
 
 @dataclass_json
 @dataclass(unsafe_hash=True)
 class BasePublication:
     """A class for holding information about a publication"""
-    identifiers: [IndustryIdentifier] = None
+    # properties
     title: str = None
-    authors: [Contributor] = None
-    editors: [Contributor] = None
     year: str = None
     lang: str = None
     publisher: str = None
     location: str = None
+    # relationships
+    authors: [Contributor] = None
+    editors: [Contributor] = None
+    identifiers: [IndustryIdentifier] = None
+    UUID: str = None
+
+    def __post_init__(self):
+        if not self.UUID:
+            self.UUID = str(uuid.uuid4())
 
     @property
     def doi(self) -> Union[str, None]:
@@ -38,6 +47,7 @@ class BasePublication:
     @property
     def props(self) -> dict:
         return {
+            "UUID": self.UUID,
             "title": self.title,
             "year": self.year,
             "lang": self.lang,
@@ -47,3 +57,11 @@ class BasePublication:
 
     def serialize(self):
         return "{" + ', '.join('{0}: "{1}"'.format(key, value) for (key, value) in self.props.items()) + "}"
+
+    # Restore object from a string representing Neo4j property set (json without parentheses in keys)
+    @classmethod
+    def deserialize(cls, props):
+        self = cls(UUID=props["UUID"])
+        for key in props.keys():
+            self[key] = props[key]
+        return self

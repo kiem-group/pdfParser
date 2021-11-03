@@ -3,37 +3,23 @@ from dataclasses_json import dataclass_json
 import re
 from pyparsing import (Word, Literal, ZeroOrMore, delimitedList, restOfLine, pyparsing_unicode as ppu,
                        ParseException, Optional, Regex, CaselessKeyword)
-from model.externalPublication import ExternalPublication
+from model.publication_external import ExternalPublication
+from model.reference_base import BaseReference
+
 
 @dataclass_json
 @dataclass
-class BaseReference:
-    """A class for holding information about a reference"""
-
-    _text: str
-    cited_by_doi: str = None
-    cited_by_zip: str = None
-    ref_num: int = 0
+class ReferencePart(BaseReference):
+    """A class for holding information about a bibliographic reference"""
     authors: [str] = None
     title: str = None
     year: str = None
-
     refers_to: [ExternalPublication] = None
 
-    def __post_init__(self):
-        self.parse()
-
-    @property
-    def text(self) -> str:
-        return self._text
-
-    @text.setter
-    def text(self, value):
-        self._text = value
-        self.parse()
-
     def parse(self):
-        self._text = self._text.replace("\n", " ")
+        if not self.text:
+            return
+        self.text = self.text.replace("\n", " ")
         # Reference Pattern 1
         intl_alphas = ppu.Latin1.alphas
         family_name = Word(intl_alphas + '-')
@@ -60,7 +46,7 @@ class BaseReference:
             self.title = parts[0]
         except ParseException:
             if len(self.text) > 10:
-                text_to_parse = self._text.replace(year_anywhere, "") if year_anywhere is not None else self._text
+                text_to_parse = self.text.replace(year_anywhere, "") if year_anywhere is not None else self.text
                 parts = re.split('[;,.()]', text_to_parse)
                 # Use the longest part as title
                 self.title = max(parts, key=len)
@@ -72,22 +58,15 @@ class BaseReference:
 
     @property
     def props(self) -> dict:
-        return {
-            "text": self._text,
-            "authors": ", ".join(self.authors),
-            "title": self.title,
-            "year": self.year,
-            "ref_num": self.ref_num
-            # "cited_by_doi": self.sited_by_doi,
-            # "cited_by_zip": self.sited_by_zip
-        }
-
-    def serialize(self):
-        return "{" + ', '.join('{0}: "{1}"'.format(key, value) for (key, value) in self.props.items()) + "}"
+        props = BaseReference.props.fget(self)
+        props["authors"] = ";".join(self.authors)
+        props["title"] = self.title
+        props["year"] = self.year
+        return props
 
 
 @dataclass
-class Reference(BaseReference):
-    """A class for holding information about reference with authors like in given reference"""
+class Reference(ReferencePart):
+    """A class for holding information about reference with authors like in a given reference"""
 
-    follows: BaseReference = None
+    follows: ReferencePart = None

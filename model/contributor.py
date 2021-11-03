@@ -1,17 +1,21 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from dataclasses_json import dataclass_json
+import uuid
 
 
 @dataclass_json
 @dataclass
 class Contributor:
     """A class for holding information about a publication contributor"""
-
     type: str = None
     surname: str = None
     given_names: str = None
     full_name: str = None
-    # TODO save order of authors
+    UUID: str = None
+
+    def __post_init__(self):
+        if not self.UUID:
+            self.UUID = str(uuid.uuid4())
 
     @classmethod
     def from_jats(cls, jats_contrib):
@@ -27,12 +31,15 @@ class Contributor:
 
     @property
     def props(self) -> dict:
-        return {
-            "type": self.type,
-            "surname": self.surname,
-            "given_names": self.given_names,
-            "full_name": self.full_name
-        }
+        return asdict(self)
 
     def serialize(self):
         return "{" + ', '.join('{0}: "{1}"'.format(key, value) for (key, value) in self.props.items()) + "}"
+
+    # Restore object from a string representing Neo4j property set (json without parentheses in keys)
+    @classmethod
+    def deserialize(cls, props):
+        self = cls(UUID=props["UUID"])
+        for key in props.keys():
+            self[key] = props[key]
+        return self

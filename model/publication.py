@@ -3,12 +3,14 @@ from dataclasses_json import dataclass_json
 from lxml import etree
 import zipfile
 import json
-from model.index import Index
-from model.reference import Reference
+from model.reference_index import IndexReference
+from model.reference_bibliographic import Reference
 from model.contributor import Contributor
 from model.pdf_parser import parse_target_indent, SkippedText
-from model.industryIdentifier import IndustryIdentifier
-from model.basePublication import BasePublication
+from model.industry_identifier import IndustryIdentifier
+from model.publication_base import BasePublication
+import uuid
+
 
 @dataclass_json
 @dataclass(unsafe_hash=True)
@@ -16,47 +18,32 @@ class Publication(BasePublication):
     """A class for holding information about a publication"""
 
     # Sources
-    _zip_path: str = None
-
-    @property
-    def zip_path(self) -> str:
-        return self._zip_path
-
-    _files: [str] = None
-
-    @property
-    def files(self) -> [str]:
-        return self._files
-
-    _jats_file: str = None
-
-    @property
-    def jats_file(self) -> str:
-        return self._jats_file
-
+    zip_path: str = None
+    files: [str] = None
+    jats_file: str = None
     text_file: str = None
-
     # Bibliography and indices
     bib_file: str = None
     index_files: [str] = None
     index_types: [[str]] = None
-
+    # Relationships
     bib_refs: [Reference] = None
-    index_refs: [Index] = None
-
+    index_refs: [IndexReference] = None
+    # Error logs
     bib_refs_with_errors: [str] = None
     index_refs_with_errors: [str] = None
-
     _bib_skipped: [SkippedText] = None
     _index_skipped: [[SkippedText]] = None
+    # Parsing config
     _extract_bib: bool = False
     _extract_index: bool = False
 
     @classmethod
     def from_zip(cls, pub_zip, extract_bib=False, extract_index=False):
+        # TODO generate UUIDs from archive name
         self = cls()
         if pub_zip is not None:
-            self._zip_path = pub_zip
+            self.zip_path = pub_zip
             self._extract_bib = extract_bib
             self._extract_index = extract_index
             self._parse_zip()
@@ -67,12 +54,12 @@ class Publication(BasePublication):
             return
         print("Publication archive is being processed:", self.zip_path)
         pub_zip = zipfile.ZipFile(self.zip_path, 'r')
-        self._files = pub_zip.namelist()
+        self.files = pub_zip.namelist()
 
         for file_name in self.files:
             if file_name.endswith('.xml'):
                 # Publication signature will be extracted in the setter
-                self._jats_file = file_name
+                self.jats_file = file_name
                 jats_file = pub_zip.open(file_name)
                 jats_root = None
                 try:
@@ -111,10 +98,10 @@ class Publication(BasePublication):
                     self.bib_file = href
                     # Extract references and save skipped text from bibliography file for analysis
                     [items, self._bib_skipped] = parse_target_indent(target_pdf)
-                    for ref_num, ref_text in enumerate(items, start=0):
+                    for ref_num, ref_text in enumerate(items):
                         # print(ref_text)
                         try:
-                            ref = Reference(ref_text, ref_num=ref_num+1, cited_by_doi=self.doi, cited_by_zip=self.zip_path)
+                            ref = Reference(text=ref_text, ref_num=ref_num+1, cited_by_doi=self.doi, cited_by_zip=self.zip_path)
                             self.bib_refs.append(ref)
                         except:
                             print("Failed to parse bibliographic reference:", ref_text)
@@ -122,7 +109,7 @@ class Publication(BasePublication):
                 if self._extract_index and 'index' in title:
                     print("Parsing index file", href)
                     self.index_files.append(href)
-                    curr_index_types = Index.get_index_types(title)
+                    curr_index_types = IndexReference.get_index_types(title)
                     self.index_types.append(curr_index_types)
                     [items, skipped] = parse_target_indent(target_pdf)
                     # Save skipped text from index files for analysis
@@ -141,9 +128,9 @@ class Publication(BasePublication):
                             if ref_text:
                                 ref_items.append(ref_text)
                             ref_text = text
-                    for ref_num, ref_text in enumerate(ref_items, start=0):
-                        ref = Index(ref_text, ref_num=ref_num+1, cited_by_doi=self.doi, cited_by_zip=self.zip_path,
-                                    types=curr_index_types)
+                    for ref_num, ref_text in enumerate(ref_items):
+                        ref = IndexReference(UUID=str(uuid.uuid4()), text=ref_text, ref_num=ref_num + 1, cited_by_doi=self.doi, cited_by_zip=self.zip_path,
+                                             types=curr_index_types)
                         self.index_refs.append(ref)
                         if not ref.refs:
                             # print("Failed to parse index reference:", ref_text)
@@ -209,6 +196,7 @@ class Publication(BasePublication):
                 self.identifiers.append(IndustryIdentifier(pub_id[0], "isbn", pub_format))
 
     def save(self, out_path):
+        # TODO override to be able to load correctly
         with open(out_path, "w", encoding='utf-8') as out_file:
             data = json.dumps(asdict(self))
             out_file.write(data)

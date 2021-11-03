@@ -16,6 +16,8 @@ class SkippedText:
     pos: int = None
     text: str = None
 
+# TODO create a Parser class and serialize logs
+
 
 def parse_target_indent(in_file, config=bib_config):
     odd_offset_counter = {}
@@ -42,7 +44,7 @@ def parse_target_indent(in_file, config=bib_config):
     for page_layout in extract_pages(in_file):
         page_num += 1
         # for element in page_layout:
-        for idx, element in enumerate(page_layout, start=0):
+        for idx, element in enumerate(page_layout):
             if isinstance(element, LTTextContainer):
                 for text_line in element:
                     # Probing first 500 lines:

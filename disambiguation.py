@@ -3,8 +3,8 @@ from urllib.request import Request, urlopen
 from urllib.parse import quote
 from crossref.restful import Works
 import Levenshtein
-from model.externalPublication import ExternalPublication
-from model.industryIdentifier import IndustryIdentifier
+from model.publication_external import ExternalPublication
+from model.industry_identifier import IndustryIdentifier
 from model.contributor import Contributor
 
 # Publication resources with API https://guides.temple.edu/APIs

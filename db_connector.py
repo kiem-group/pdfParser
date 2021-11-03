@@ -1,4 +1,6 @@
 from neo4j import GraphDatabase
+from model.publication import Publication
+from model.reference_bibliographic import Reference
 
 
 class DBConnector:
@@ -9,105 +11,137 @@ class DBConnector:
     def close(self):
         self.driver.close()
 
-    # def print_greeting(self, message):
-    #     with self.driver.session() as session:
-    #         greeting = session.write_transaction(self._create_and_return_greeting, message)
-    #         print(greeting)
-    #
-    # @staticmethod
-    # def _create_and_return_greeting(tx, message):
-    #     result = tx.run("CREATE (a:Greeting) "
-    #                     "SET a.message = $message "
-    #                     "RETURN a.message + ', from node ' + id(a)", message=message)
-    #     return result.single()[0]
+    def clear_graph(self):
+        # CQL to clear graph
+        cql_delete_relationships = "MATCH (a) -[r] -> () DELETE a, r"
+        cql_delete_nodes = "MATCH (a) DELETE a"
+        with self.driver.session() as session:
+            # Clear graph
+            session.run(cql_delete_relationships)
+            session.run(cql_delete_nodes)
+
+    def create_pub(self, pub):
+        # TODO create or update
+        # CQL to create publication nodes
+        cql_create_pub = """CREATE (:Publication {0})"""
+
+        # CQL to create publication industry identifier
+        cql_create_id = """CREATE (:Identifier {0})"""
+        cql_create_pub_has_identifier = """MATCH (a:Publication), (b:Identifier)
+           WHERE a.UUID = $pub_uuid AND b.UUID = $id_uuid CREATE (a)-[:HasIdentifier]->(b)"""
+
+        # CQL to create publication contributor
+        cql_create_contributor = """CREATE (:Contributor {0})"""
+        cql_create_pub_has_contributor = """MATCH (a:Publication), (b:Contributor)
+                  WHERE a.UUID = $pub_uuid AND b.UUID = $c_uuid CREATE (a)-[:HasContributor {num: $num}]->(b)"""
+
+        with self.driver.session() as session:
+            # Create publication
+            session.run(cql_create_pub.format(pub.serialize()))
+            # Create industry identifiers
+            for industry_id in pub.identifiers:
+                session.run(cql_create_id.format(industry_id.serialize()))
+                session.run(cql_create_pub_has_identifier, pub_uuid=pub.UUID, id_uuid=industry_id.UUID)
+            # Create editors
+            for idx, editor in enumerate(pub.editors):
+                session.run(cql_create_contributor.format(editor.serialize()))
+                session.run(cql_create_pub_has_contributor, pub_uuid=pub.UUID, c_uuid=editor.UUID, num=idx)
+            # Create authors
+            for idx, author in enumerate(pub.authors):
+                session.run(cql_create_contributor.format(author.serialize()))
+                session.run(cql_create_pub_has_contributor, pub_uuid=pub.UUID, c_uuid=author.UUID, num=idx)
+            # Create bibliographic references
+            self.create_bib_refs(pub, session)
+            # Create index references
+            self.create_index_refs(pub, session)
+
+    def create_bib_refs(self, pub, session=None):
+        if session is None:
+            session = self.driver.session()
+        # CQL to create reference nodes
+        cql_create_ref = """CREATE (:Reference {0})"""
+        cql_create_pub_cites_ref = """MATCH (a:Publication), (b:Reference)
+           WHERE a.UUID = $pub_uuid AND b.UUID = $ref_uuid CREATE (a)-[:Cites]->(b)"""
+        for ref in pub.bib_refs:
+            session.run(cql_create_ref.format(ref.serialize()))
+            session.run(cql_create_pub_cites_ref, pub_uuid=pub.UUID, ref_uuid=ref.UUID)
+            if ref.refers_to is not None:
+                for ext_pub in ref.refers_to:
+                    self.create_ext_pub(ext_pub, ref.UUID, session)
+
+    def create_index_refs(self, pub, session=None):
+        if session is None:
+            session = self.driver.session()
+        # CQL to create reference nodes
+        cql_create_idx = """CREATE (:IndexReference {0})"""
+        cql_create_pub_includes_idx = """MATCH (a:Publication), (b:IndexReference)
+           WHERE a.UUID = $pub_uuid AND b.UUID = $ref_uuid CREATE (a)-[:Includes]->(b)"""
+        for idx in pub.index_refs:
+            session.run(cql_create_idx.format(idx.serialize()))
+            session.run(cql_create_pub_includes_idx, pub_uuid=pub.UUID, ref_uuid=idx.UUID)
+            # if ref.refers_to is not None:
+            #     for ext_pub in ref.refers_to:
+            #         self.create_ext_pub(ext_pub, ref.UUID, session)
+
+    def create_ext_pub(self, ext_pub, ref_uuid, session=None):
+        if session is None:
+            session = self.driver.session()
+        # CQL to create external publications
+        cql_create_ext_pub = """CREATE (b:ExternalPublication {0})"""
+        cql_create_ref_refers_to_ext_pub = """MATCH (a:Reference), (b:ExternalPublication)
+           WHERE a.UUID = $ref_uuid AND b.UUID = $ext_pub_uuid CREATE (a)-[:RefersTo]->(b)"""
+        session.run(cql_create_ext_pub.format(ext_pub.serialize()))
+        session.run(cql_create_ref_refers_to_ext_pub, ref_uuid=ref_uuid, ext_pub_uuid=ext_pub.UUID)
 
     # Execute the CQL query
     def create_graph(self, pubs):
-        # CQL to clear graph
-        cql_delete_all = "MATCH (n) DETACH DELETE n"
-
-        # CQL to create publication nodes
-        cql_create_pub = """CREATE (a:Publication {0}) RETURN ID(a) as id"""
-
-        # CQL to create publication industry identifier
-        cql_create_id = """CREATE (b:Identifier {0}) RETURN ID(b) as id"""
-        cql_create_pub_has_identifier = """MATCH (a:Publication), (b:Identifier)
-           WHERE ID(a) = {0} AND ID(b) = {1} CREATE (a)-[r:HasIdentifier]->(b)"""
-
-        # CQL to create publication contributor
-        cql_create_contributor = """CREATE (b:Contributor {0}) RETURN ID(b) as id"""
-        cql_create_pub_has_contributor = """MATCH (a:Publication), (b:Contributor)
-                  WHERE ID(a) = {0} AND ID(b) = {1} CREATE (a)-[r:HasContributor]->(b)"""
-
-        # CQL to create reference nodes
-        cql_create_ref = """CREATE (b:Reference {0}) RETURN ID(b) as id"""
-        cql_create_pub_cites_ref = """MATCH (a:Publication), (b:Reference)
-           WHERE ID(a) = {0} AND ID(b) = {1} CREATE (a)-[r:Cites]->(b)"""
-
-        # CQL to create external publications
-        cql_create_ext_pub = """CREATE (b:ExternalPublication {0}) RETURN ID(b) as id"""
-        cql_create_ref_refers_to_ext_pub = """MATCH (a:Reference), (b:ExternalPublication)
-           WHERE ID(a) = {0} AND ID(b) = {1} CREATE (a)-[r:RefersTo]->(b)"""
-
-        with self.driver.session() as session:
-            # Clear graph
-            session.run(cql_delete_all)
-            # Create publications
-            for pub in pubs:
-                print("Creating Neo4j node for publication", pub.title)
-                # Create publication
-                res = session.run(cql_create_pub.format(pub.serialize()))
-                pub_id = [record["id"] for record in res][0]
-                # Create industry identifiers
-                for industry_id in pub.identifiers:
-                    res = session.run(cql_create_id.format(industry_id.serialize()))
-                    id_id = [record["id"] for record in res][0]
-                    session.run(cql_create_pub_has_identifier.format(pub_id, id_id))
-                # Create editors
-                for editor in pub.editors:
-                    res = session.run(cql_create_contributor.format(editor.serialize()))
-                    editor_id = [record["id"] for record in res][0]
-                    session.run(cql_create_pub_has_contributor.format(pub_id, editor_id))
-                # Create authors
-                for author in pub.authors:
-                    res = session.run(cql_create_contributor.format(author.serialize()))
-                    author_id = [record["id"] for record in res][0]
-                    session.run(cql_create_pub_has_contributor.format(pub_id, author_id))
-                # Create references
-                for ref in pub.bib_refs:
-                    print("Creating Neo4j node for reference", ref.text)
-                    res = session.run(cql_create_ref.format(ref.serialize()))
-                    ref_id = [record["id"] for record in res][0]
-                    session.run(cql_create_pub_cites_ref.format(pub_id, ref_id))
-                    if ref.refers_to is not None:
-                        for ext_pub in ref.refers_to:
-                            res = session.run(cql_create_ext_pub.format(ext_pub.serialize()))
-                            ext_pub_id = [record["id"] for record in res][0]
-                            session.run(cql_create_ref_refers_to_ext_pub.format(ref_id, ext_pub_id))
+        # Create publications
+        for pub in pubs:
+            self.create_pub(pub)
 
     def query_graph(self):
-        # CQL to retrieve publications
-        cql_query_pubs = "MATCH (x:Publication) RETURN x"
+        pubs = self.query_pubs()
+        print("List of publications in the graph:")
+        for pub in pubs:
+            print(pub)
+        # refs = self.query_refs()
+
+    # Retrieve references
+    def query_bib_refs(self):
         # CQL to retrieve references
-        cql_query_refs = "MATCH (x:Reference) RETURN x"
-        # CQL to retrieve references of a publication
-        cql_query_pub_cites_ref = "MATCH (x:Publication)-[:Cites]->(y:Reference) RETURN y"
-
+        cql_refs = "MATCH (a:Reference) return a"
+        refs = []
         with self.driver.session() as session:
-            # Retrieve publications
-            pubs = session.run(cql_query_pubs)
-            print("List of publications present in the graph:")
-            for pub in pubs:
-                print(pub)
-
             # Retrieve references
-            refs = session.run(cql_query_refs)
-            print("List of references present in the graph:")
-            for ref in refs:
-                print(ref)
+            db_refs = session.run(cql_refs)
+            for db_ref in db_refs:
+                refs.append(Reference.deserialize(db_ref))
+        return refs
 
-            # Query the citation relationships present in the graph
-            rel_cites = session.run(cql_query_pub_cites_ref)
-            print("Citation relationships present in the graph:")
+    # Retrieve publications
+    def query_pubs(self):
+        # CQL to retrieve publications
+        cql_pubs = "MATCH (a:Publication) return a"
+        pubs = []
+        with self.driver.session() as session:
+            db_pubs = session.run(cql_pubs)
+            for db_pub in db_pubs:
+                pubs.append(Publication.deserialize(db_pub))
+        return pubs
+
+    # Retrieve bibliographic references for a publication
+    def query_pub_bib_refs(self, pub_uuid):
+        # CQL to retrieve references of a publication
+        cql_pub_cites_ref = "MATCH (a:Publication)-[r:Cites]->(b:Reference) WHERE a.UUID = $pub_uuid return b"
+        with self.driver.session() as session:
+            rel_cites = session.run(cql_pub_cites_ref, pub_uuid=pub_uuid)
+            for r in rel_cites:
+                print(r)
+
+    def query_pub_index_refs(self, pub_uuid):
+        # CQL to retrieve references of a publication
+        cql_pub_includes_idx = "MATCH (a:Publication)-[r:Includes]->(b:IndexReference) WHERE a.UUID = $pub_uuid return b"
+        with self.driver.session() as session:
+            rel_cites = session.run(cql_pub_includes_idx, pub_uuid=pub_uuid)
             for r in rel_cites:
                 print(r)

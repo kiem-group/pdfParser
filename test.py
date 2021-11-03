@@ -3,10 +3,11 @@ import csv
 import re
 from clustering import get_clustered_refs_flat
 import Levenshtein
-from model.reference import Reference
+from model.reference_bibliographic import Reference
 from disambiguation import query_google_books, query_crossref_pub, \
     disambiguate_google_books, disambiguate_crossref
 from urllib.parse import quote
+
 
 class TestClassifier(unittest.TestCase):
 
@@ -286,7 +287,6 @@ class TestClassifier(unittest.TestCase):
         from disambiguation import query_open_citations
         book_data = query_open_citations("The Brazen House.")
         print(book_data)
-
 
     # TODO Disambiguation/Linking of indices
     # Start by trying to look up the surface of index entries in Matteo’s hucitlib (example query: Aeschylus Agamemnon).

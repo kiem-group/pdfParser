@@ -1,7 +1,6 @@
 from dataclasses import dataclass
-from model.publication import Publication
-from model.index import Index
 from dataclasses_json import dataclass_json
+from model.publication import Publication
 
 
 @dataclass_json
@@ -28,4 +27,3 @@ class Corpus:
             self.bibliography_count += 1
         else:
             self.xml_parsing_errors += 1
-

@@ -1,14 +1,13 @@
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
-from model.contributor import Contributor
-from model.basePublication import BasePublication
+from model.publication_base import BasePublication
 
 
 @dataclass_json
 @dataclass(unsafe_hash=True)
 class ExternalPublication(BasePublication):
     """A class for holding information about an external publication"""
-
+    # properties
     confidence: float = 0
     url_google: str = None
     url_crossref: str = None

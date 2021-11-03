@@ -11,6 +11,6 @@ setup(
     description='Experimental pipeline to create knowledge graphs from Arts and Humanities publications',
     python_requires='>=3.0.*',
     install_requires=['zipfile', 'logging', 'lxml', 'pdfminer', 'Levenshtein', 'csv', 'bibtexparser', 'pyparsing',
-                      'dataclasses', 'dataclasses-json', 'pdoc3', 'neo4j'],
+                      'dataclasses', 'dataclasses-json', 'pdoc3', 'neo4j', 'json', 'abc'],
     test_suite='test'
 )
