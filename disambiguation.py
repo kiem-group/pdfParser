@@ -9,8 +9,9 @@ from model.contributor import Contributor
 
 # Publication resources with API https://guides.temple.edu/APIs
 
+
 # Google books
-def disambiguate_google_books(ref, threshold = 0.75):
+def disambiguate_google_books(ref, threshold=0.75):
     if ref is None or ref.text is None:
         return
     term = ref.text if ref.title is None else ref.title
@@ -46,7 +47,6 @@ def disambiguate_google_books(ref, threshold = 0.75):
                     if ref.refers_to is None:
                         ref.refers_to = []
                     ref.refers_to.append(ext_pub)
-
 
 
 def query_google_books(ref, ext=""):

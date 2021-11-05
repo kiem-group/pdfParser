@@ -25,14 +25,17 @@ class BaseReference(object):
         """Parse here reference text"""
         return
 
+    @abc.abstractmethod
+    def disambiguate(self):
+        """Disambiguate reference"""
+        return
+
     @property
     def props(self) -> dict:
         return {
             "UUID": self.UUID,
             "text": self.text,
-            "ref_num": self.ref_num,
-            "cited_by_doi": self.cited_by_doi,
-            "cited_by_zip": self.cited_by_zip
+            "ref_num": self.ref_num
         }
 
     def serialize(self):

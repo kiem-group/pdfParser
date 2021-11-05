@@ -1,12 +1,20 @@
 import unittest
 import csv
 import re
-from clustering import get_clustered_refs_flat
 import Levenshtein
 from model.reference_bibliographic import Reference
 from disambiguation import query_google_books, query_crossref_pub, \
     disambiguate_google_books, disambiguate_crossref
 from urllib.parse import quote
+from model.batch import Batch
+
+
+def get_clustered_refs_flat(file_path) -> [str]:
+    f = open(file_path, mode="r", encoding="utf-8")
+    clusters = f.read().split("\n\n")
+    clustered_refs = [ref for ref in clusters if ref]
+    f.close()
+    return clustered_refs
 
 
 class TestClassifier(unittest.TestCase):
@@ -35,16 +43,15 @@ class TestClassifier(unittest.TestCase):
     @unittest.skip("Random selection of references from zipped pdf files for evaluation of disambiguation")
     def test_random_pick(self):
         import random
-        from parser_corpus import parse_corpus
-        corpus_list = parse_corpus('data')
+        corpus_list = Batch.from_zip('data/41a8cdce8aae605806c445f28971f623.zip')
         corpus = corpus_list[0]
-        validRefs = []
+        valid_refs = []
         for pub in corpus.publications:
             if pub.bib_refs:
                 for ref in pub.bib_refs:
                     if ref.authors and ref.year and ref.title:
-                        validRefs.append(ref)
-        samples = random.sample(validRefs, 500)
+                        valid_refs.append(ref)
+        samples = random.sample(valid_refs, 500)
         header = ["Reference", "Cited_by_doi", "Cited_by_zip", "Cited_num", "CrossRef", "GoogleAPI", "Brill", "Other",
                   "Remarks"]
         with open('data_test/ref_sample_disambiguation_eval_new.csv', "w", encoding='utf-8', newline="") as f:
@@ -152,7 +159,7 @@ class TestClassifier(unittest.TestCase):
         parser.customization = convert_to_unicode
         bib_database = bibtexparser.load(bibtex_file, parser=parser)
         bibtex_file.close()
-        print("Total publications in the database:", len(bib_database.entries))
+        print("Total publications in the database:", len(bib_database.refs))
         data = get_clustered_refs_flat('data/41a8cdce8aae605806c445f28971f623/clusters.txt')
         found = 0
         out_file = open('data_test/Brill_recognized.txt', "w", encoding='utf-8')
@@ -162,7 +169,7 @@ class TestClassifier(unittest.TestCase):
             best_match = {}
             if ref.title:
                 author_list = ", ".join(ref.authors)
-                for entry in bib_database.entries:
+                for entry in bib_database.refs:
                     ratio_authors = 0
                     ratio_title = 0
                     if "title" in entry.keys():
@@ -193,8 +200,7 @@ class TestClassifier(unittest.TestCase):
 
     # @unittest.skip("Parsing of indices from zipped pdf files")
     def test_extract_and_parse_indices(self):
-        from parser_corpus import parse_corpus
-        corpus_list = parse_corpus('data', extract_index=True, extract_bib=False, sample_size=500)
+        corpus_list = Batch.from_zip('data/41a8cdce8aae605806c445f28971f623.zip', extract_index=True, extract_bib=False, size=500)
         corpus = corpus_list[0]
         for pub in corpus.publications:
             if pub.index_refs:
@@ -293,7 +299,8 @@ class TestClassifier(unittest.TestCase):
     # Given that hucitlib is much more narrowly focussed than Wikidata this may ease the task at the beginning
     # Assess percentage of entries in index locorum that are ambiguous and difficult to link (2+ linking candidates)
     # Keep Wikidata look-up as a fallback for index entries that don’t have a match in hucitlib
-    # Before linking, and for the sake of efficiency, an intermediate step could be the clustering of index entries (e.g. “Aeschylus, Agamemnon” in publication A is grouped together with similar entries in other indexes)
+    # Before linking, and for the sake of efficiency, an intermediate step could be the clustering of index entries
+    # (e.g. “Aeschylus, Agamemnon” in publication A is grouped together with similar entries in other indexes)
 
 
 if __name__ == '__main__':

@@ -1,4 +1,5 @@
 from neo4j import GraphDatabase
+from model.batch import Batch
 from model.publication import Publication
 from model.reference_bibliographic import Reference
 
@@ -20,7 +21,9 @@ class DBConnector:
             session.run(cql_delete_relationships)
             session.run(cql_delete_nodes)
 
-    def create_pub(self, pub):
+    def create_pub(self, pub, session=None):
+        if session is None:
+            session = self.driver.session()
         # TODO create or update
         # CQL to create publication nodes
         cql_create_pub = """CREATE (:Publication {0})"""
@@ -35,25 +38,24 @@ class DBConnector:
         cql_create_pub_has_contributor = """MATCH (a:Publication), (b:Contributor)
                   WHERE a.UUID = $pub_uuid AND b.UUID = $c_uuid CREATE (a)-[:HasContributor {num: $num}]->(b)"""
 
-        with self.driver.session() as session:
-            # Create publication
-            session.run(cql_create_pub.format(pub.serialize()))
-            # Create industry identifiers
-            for industry_id in pub.identifiers:
-                session.run(cql_create_id.format(industry_id.serialize()))
-                session.run(cql_create_pub_has_identifier, pub_uuid=pub.UUID, id_uuid=industry_id.UUID)
-            # Create editors
-            for idx, editor in enumerate(pub.editors):
-                session.run(cql_create_contributor.format(editor.serialize()))
-                session.run(cql_create_pub_has_contributor, pub_uuid=pub.UUID, c_uuid=editor.UUID, num=idx)
-            # Create authors
-            for idx, author in enumerate(pub.authors):
-                session.run(cql_create_contributor.format(author.serialize()))
-                session.run(cql_create_pub_has_contributor, pub_uuid=pub.UUID, c_uuid=author.UUID, num=idx)
-            # Create bibliographic references
-            self.create_bib_refs(pub, session)
-            # Create index references
-            self.create_index_refs(pub, session)
+        # Create publication
+        session.run(cql_create_pub.format(pub.serialize()))
+        # Create industry identifiers
+        for industry_id in pub.identifiers:
+            session.run(cql_create_id.format(industry_id.serialize()))
+            session.run(cql_create_pub_has_identifier, pub_uuid=pub.UUID, id_uuid=industry_id.UUID)
+        # Create editors
+        for idx, editor in enumerate(pub.editors):
+            session.run(cql_create_contributor.format(editor.serialize()))
+            session.run(cql_create_pub_has_contributor, pub_uuid=pub.UUID, c_uuid=editor.UUID, num=idx)
+        # Create authors
+        for idx, author in enumerate(pub.authors):
+            session.run(cql_create_contributor.format(author.serialize()))
+            session.run(cql_create_pub_has_contributor, pub_uuid=pub.UUID, c_uuid=author.UUID, num=idx)
+        # Create bibliographic references
+        self.create_bib_refs(pub, session)
+        # Create index references
+        self.create_index_refs(pub, session)
 
     def create_bib_refs(self, pub, session=None):
         if session is None:
@@ -93,11 +95,29 @@ class DBConnector:
         session.run(cql_create_ext_pub.format(ext_pub.serialize()))
         session.run(cql_create_ref_refers_to_ext_pub, ref_uuid=ref_uuid, ext_pub_uuid=ext_pub.UUID)
 
+    def create_cluster(self, cluster, session=None):
+        if session is None:
+            session = self.driver.session()
+        # CQL to create clusters
+        # Save only meaningful clusters
+        if len(cluster.refs) > 1:
+            cql_create_cluster = """CREATE (b:Cluster {0})"""
+            session.run(cql_create_cluster.format(cluster.serialize()))
+            for ref in cluster.refs:
+                cql_create_ref_belongs_to_cluster = """MATCH (a:Reference), (b:Cluster)
+                   WHERE a.UUID = $ref_uuid AND b.UUID = $cluster_uuid CREATE (a)-[:BelongsTo]->(b)"""
+                session.run(cql_create_ref_belongs_to_cluster, ref_uuid=ref.UUID, cluster_uuid=cluster.UUID)
+
     # Execute the CQL query
-    def create_graph(self, pubs):
-        # Create publications
-        for pub in pubs:
-            self.create_pub(pub)
+    def create_graph(self, batch):
+        with self.driver.session() as session:
+            # Create publications
+            if batch.publications:
+                for pub in batch.publications:
+                    self.create_pub(pub, session)
+            if batch.cluster_set and batch.cluster_set.clusters:
+                for cluster in batch.cluster_set.clusters:
+                    self.create_cluster(cluster, session)
 
     def query_graph(self):
         pubs = self.query_pubs()
