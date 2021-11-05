@@ -114,7 +114,10 @@ class DBConnector:
             # Create publications
             if batch.publications:
                 for pub in batch.publications:
-                    self.create_pub(pub, session)
+                    try:
+                        self.create_pub(pub, session)
+                    except:
+                        print("Failed to serialize publication: ", pub.UUID)
             if batch.cluster_set and batch.cluster_set.clusters:
                 for cluster in batch.cluster_set.clusters:
                     self.create_cluster(cluster, session)

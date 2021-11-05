@@ -156,10 +156,9 @@ def parse_target_indent(in_file, config=bib_config):
                         except:
                             print("Failed to process line", convert_to_str(line_chars))
                     except:
-                        print("Failed to get bbox", text_line)
-
-            else:
-                print("\tNon-text element", element)
+                         print("Failed to get bbox", text_line)
+            # else:
+                # print("\tNon-text element", element)
     for curr in col_curr:
         if len(curr) > 0:
             items.append(curr)

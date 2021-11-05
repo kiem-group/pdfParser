@@ -13,16 +13,14 @@ class Batch:
     """A class for holding information about a batch of publications"""
 
     zip_path: str
-    extract_bib = True
-    extract_index = False
-    start = 0
-    size = 0
     publications: [Publication]
     cluster_set: ClusterSet = None
-
+    extract_bib: bool = True
+    extract_index: bool = False
+    start: int = 0
+    size: int = 0
     index_count: int = 0
     bibliography_count: int = 0
-
     xml_parsing_errors: int = 0
     format_errors: int = 0
     other_errors: int = 0
@@ -54,17 +52,13 @@ class Batch:
     @classmethod
     def from_zip(cls, zip_path, extract_bib=True, extract_index=False, start=0, size=-1):
         batch_zip = zipfile.ZipFile(zip_path)
-        if len(batch_zip.namelist()) < start:
-            return
         m = len(batch_zip.namelist())
+        if m < start:
+            return
         end = m if size < 0 else min(start + size, m)
-
-        batch = Batch(zip_path=zip_path, publications=[])
-        batch.start = start
-        batch.size = end - start
-        batch.extract_bib = extract_bib
-        batch.extract_index = extract_index
-
+        batch = Batch(zip_path=zip_path, publications=[], start=start,
+                      size=end-start, extract_bib=extract_bib, extract_index=extract_index)
+        # print(batch)
         batch_dir_path = os.path.splitext(zip_path)[0]
         for i in range(start, end):
             pub_zip_name = batch_zip.namelist()[i]
