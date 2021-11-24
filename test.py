@@ -1,12 +1,13 @@
-import unittest
 import csv
 import re
+import unittest
+from urllib.parse import quote
 import Levenshtein
-from model.reference_bibliographic import Reference
 from disambiguation import query_google_books, query_crossref_pub, \
     disambiguate_google_books, disambiguate_crossref
-from urllib.parse import quote
 from model.batch import Batch
+from model.reference_bibliographic import Reference
+from model.publication import Publication
 
 
 def get_clustered_refs_flat(file_path) -> [str]:
@@ -200,12 +201,14 @@ class TestClassifier(unittest.TestCase):
 
     # @unittest.skip("Parsing of indices from zipped pdf files")
     def test_extract_and_parse_indices(self):
-        corpus_list = Batch.from_zip('data/41a8cdce8aae605806c445f28971f623.zip', extract_index=True, extract_bib=False, size=500)
-        corpus = corpus_list[0]
-        for pub in corpus.publications:
-            if pub.index_refs:
-                for ref in pub.index_refs:
-                    print(ref)
+        batch = Batch.from_zip('data/41a8cdce8aae605806c445f28971f623.zip', extract_index=True, extract_bib=False, size=5)
+        index_count = [0, 335, 14, 30, 100]
+        for idx, pub in enumerate(batch.publications):
+            self.assertEqual(len(pub.index_refs), index_count[idx])
+        batch.cluster()
+        index_clusters = [cluster for cluster in batch.cluster_set_index.clusters if len(cluster.refs) > 1]
+        self.assertGreaterEqual(len(index_clusters), 5)
+
 
     # @unittest.skip("Evaluation of disambiguation on human labelled data")
     def test_evaluate_disambiguation(self):
@@ -288,11 +291,17 @@ class TestClassifier(unittest.TestCase):
 
             print(count, google_success, crossref_success)
 
-    @unittest.skip("Disambiguation with OpenCitation API")
-    def test_query_open_citations(self):
+    # @unittest.skip("Disambiguation with OpenCitation API")
+    def test_query_open_citations_pub(self):
         from disambiguation import query_open_citations
-        book_data = query_open_citations("The Brazen House.")
-        print(book_data)
+        pub = Publication.from_zip('./data_test/9789004188846_BITS.zip', extract_bib=True)
+        print(len(pub.bib_refs))
+        if pub.doi:
+            res = query_open_citations(pub.doi)
+            for ref in res:
+                print(ref["citing"])
+
+
 
     # TODO Disambiguation/Linking of indices
     # Start by trying to look up the surface of index entries in Matteo’s hucitlib (example query: Aeschylus Agamemnon).
@@ -301,6 +310,15 @@ class TestClassifier(unittest.TestCase):
     # Keep Wikidata look-up as a fallback for index entries that don’t have a match in hucitlib
     # Before linking, and for the sake of efficiency, an intermediate step could be the clustering of index entries
     # (e.g. “Aeschylus, Agamemnon” in publication A is grouped together with similar entries in other indexes)
+
+    # @unittest.skip("Test Hucilib for disambiguation of indices")
+    def test_query_hucilib(self):
+        from hucitlib import KnowledgeBase
+        import pkg_resources
+        virtuoso_cfg_file = pkg_resources.resource_filename('hucitlib', 'config/virtuoso.ini')
+        kb = KnowledgeBase(virtuoso_cfg_file)
+        search_results = kb.search('Iliad')
+        self.assertGreaterEqual(len(search_results), 1)
 
 
 if __name__ == '__main__':

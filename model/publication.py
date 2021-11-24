@@ -19,21 +19,20 @@ class Publication(BasePublication):
 
     # Sources
     zip_path: str = None
-    files: [str] = None
     jats_file: str = None
-    text_file: str = None
-    # Bibliography and indices
     bib_file: str = None
     index_files: [str] = None
-    index_types: [[str]] = None
+
     # Relationships
     bib_refs: [Reference] = None
     index_refs: [IndexReference] = None
+
     # Error logs
     bib_refs_with_errors: [str] = None
     index_refs_with_errors: [str] = None
     _bib_skipped: [SkippedText] = None
     _index_skipped: [[SkippedText]] = None
+
     # Parsing config
     _extract_bib: bool = False
     _extract_index: bool = False
@@ -54,9 +53,8 @@ class Publication(BasePublication):
             return
         print("Publication archive is being processed:", self.zip_path)
         pub_zip = zipfile.ZipFile(self.zip_path, 'r')
-        self.files = pub_zip.namelist()
 
-        for file_name in self.files:
+        for file_name in pub_zip.namelist():
             if file_name.endswith('.xml'):
                 # Publication signature will be extracted in the setter
                 self.jats_file = file_name
@@ -110,7 +108,6 @@ class Publication(BasePublication):
                     print("Parsing index file", href)
                     self.index_files.append(href)
                     curr_index_types = IndexReference.get_index_types(title)
-                    self.index_types.append(curr_index_types)
                     [items, skipped] = parse_target_indent(target_pdf)
                     # Save skipped text from index files for analysis
                     print("\tExtracted index references: ", len(items))
@@ -206,3 +203,22 @@ class Publication(BasePublication):
         with open(in_path, "r", encoding='utf-8') as in_file:
             data = in_file.read()
             return cls.from_json(data)
+
+    @property
+    def props(self) -> dict:
+        props = BasePublication.props.fget(self)
+        props["zip_path"] = self.zip_path
+        props["jats_file"] = self.jats_file
+        props["bib_file"] = self.bib_file
+        props["index_files"] = ";".join(self.index_files)
+        return props
+
+    @classmethod
+    def deserialize(cls, props):
+        self = cls(UUID=props["UUID"])
+        if "index_files" in props:
+            setattr(self, "index_files", props["index_files"].split(";"))
+            del props["index_files"]
+        for key in props.keys():
+            setattr(self, key, props[key])
+        return self

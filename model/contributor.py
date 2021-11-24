@@ -41,5 +41,5 @@ class Contributor:
     def deserialize(cls, props):
         self = cls(UUID=props["UUID"])
         for key in props.keys():
-            self[key] = props[key]
+            setattr(self, key, props[key])
         return self

@@ -1,10 +1,13 @@
+# author: Natallia Kokash, natallia.kokash@gmail.com
+
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 from os.path import join
 import zipfile
 import os
 from model.publication import Publication
-from model.cluster_bibliographic import Cluster, ClusterSet
+from model.cluster_bibliographic import ClusterSet
+from model.cluster_index import IndexClusterSet
 
 
 @dataclass_json
@@ -14,36 +17,35 @@ class Batch:
 
     zip_path: str
     publications: [Publication]
-    cluster_set: ClusterSet = None
+    cluster_set_bib: ClusterSet = None
+    cluster_set_index: IndexClusterSet = None
     extract_bib: bool = True
     extract_index: bool = False
     start: int = 0
     size: int = 0
-    index_count: int = 0
-    bibliography_count: int = 0
-    xml_parsing_errors: int = 0
-    format_errors: int = 0
-    other_errors: int = 0
+    count_index: int = 0
+    count_bib: int = 0
+    errors_xml: int = 0
+    errors_format: int = 0
+    errors_other: int = 0
 
     def add_publication(self, pub):
         if pub is None:
             return
         self.publications.append(pub)
-        self.index_count += len(pub.index_files) if pub.index_files else 0
+        self.count_index += len(pub.index_files) if pub.index_files else 0
         if pub.bib_file:
-            self.bibliography_count += 1
+            self.count_bib += 1
         else:
-            self.xml_parsing_errors += 1
+            self.errors_xml += 1
 
     def cluster(self):
-        self.cluster_set = ClusterSet()
+        self.cluster_set_bib = ClusterSet()
         for pub in self.publications:
-            self.cluster_set.add_references(pub.bib_refs)
-        # for cluster in self.cluster_set.clusters:
-        #     if len(cluster.refs) > 1:
-        #         print("Found cluster")
-        #         for ref in cluster.refs:
-        #             print("\t" + ref.text)
+            self.cluster_set_bib.add_references(pub.bib_refs)
+        self.cluster_set_index = IndexClusterSet()
+        for pub in self.publications:
+            self.cluster_set_index.add_references(pub.index_refs)
 
     def disambiguate(self):
         pass
@@ -72,5 +74,5 @@ class Batch:
                 os.remove(pub_zip_path)
                 os.rmdir(pub_dir_path)
             except:
-                batch.other_errors += 1
+                batch.errors_other += 1
         return batch

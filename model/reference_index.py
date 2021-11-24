@@ -43,10 +43,10 @@ class IndexReferencePart:
     def deserialize(cls, props):
         self = cls(UUID=props["UUID"])
         if "occurrences" in props:
-            self.occurrences = props["occurrences"].split(";")
+            setattr(self, "occurrences", props["occurrences"].split(";"))
             del props["occurrences"]
         for key in props.keys():
-            self[key] = props[key]
+            setattr(self, key, props[key])
         return self
 
 
@@ -71,10 +71,10 @@ class IndexReference(BaseReference):
         self = cls(UUID=props["UUID"])
         del props["text"]
         if "types" in props:
-            self.types = props["types"].split(";")
+            setattr(self, "types", props["types"].split(";"))
             del props["types"]
         for key in props.keys():
-            self[key] = props[key]
+            setattr(self, key, props[key])
         return self
 
     def parse(self):

@@ -113,12 +113,10 @@ def disambiguate_open_citations(ref):
     res = query_open_citations(ref.title)
 
 
-def query_open_citations(ref):
-    url = "https://opencitations.net/api/v1/require/doi&filter=" + "title:" + quote(ref)
+def query_open_citations(doi):
+    url = "https://opencitations.net/index/coci/api/v1/citations/" + doi
     print(url)
-    # url = "https://opencitations.net/api/v1/metadata/10.1108/jd-12-2013-0166__10.1016/j.websem.2012.08.001"
     req = Request(url, headers={'User-Agent': 'Chrome/93.4'})
     resp = urlopen(req)
     book_data = json.load(resp)
     return book_data
-

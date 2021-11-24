@@ -1,11 +1,10 @@
 import unittest
-from publication import Publication
-from contributor import Contributor
-from reference_bibliographic import Reference
-from reference_index import IndexReference
+from model.publication import Publication
+from model.contributor import Contributor
+from model.reference_bibliographic import Reference
+from model.reference_index import IndexReference
 from dataclasses import asdict
 import json
-import uuid
 
 
 class TestModel(unittest.TestCase):
@@ -129,6 +128,20 @@ class TestModel(unittest.TestCase):
         self.assertEqual(15, len(nested_idx.refs))
         self.assertEqual("108–9/126–7", nested_idx.refs[14].locus)
 
+    def test_query_open_citations(self):
+        from hucitlib import KnowledgeBase, HucitAuthor, HucitWork
+        import pkg_resources
+        virtuoso_cfg_file = pkg_resources.resource_filename('hucitlib', 'config/virtuoso.ini')
+        kb = KnowledgeBase(virtuoso_cfg_file)
+        kb.get_authors()
+        res_aeschylus = kb.search('Aeschylus')
+        res_agamemnon = kb.search('Agamemnon')
+        self.assertGreaterEqual(len(res_aeschylus), 1)
+        self.assertGreaterEqual(len(res_agamemnon), 1)
+        author = res_aeschylus[0][1].to_json()
+
+
+
     # Test whether publication information is correctly extracted from JATS
     def test_publication_parser(self):
         zip_file = '../data_test/9783657782116_BITS.zip'
@@ -144,7 +157,6 @@ class TestModel(unittest.TestCase):
         self.assertEqual('Netherlands', pub.location)
         self.assertEqual('2016', pub.year)
         self.assertEqual('../data_test/9783657782116_BITS.zip', pub.zip_path)
-        self.assertEqual(9, len(pub.files))
 
     # Parse bibliographic reference
     def test_reference_parser(self):
