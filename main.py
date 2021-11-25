@@ -18,8 +18,8 @@ if __name__ == '__main__':
         corpus_zip_path = join(dir_path, zip_arr[0])
         start_idx = 0
         # Larger batch is better for clustering as we do not cluster references across batches
-        batch_size = 5
-        end_idx = 20
+        batch_size = 20
+        end_idx = 100
         while start_idx < end_idx:
             batch = Batch.from_zip(zip_path=corpus_zip_path, start=start_idx, size=batch_size,
                                    extract_bib=True, extract_index=True)

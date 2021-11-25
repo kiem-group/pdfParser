@@ -107,15 +107,8 @@ def query_crossref_pub(ref):
         return item
 
 
-def disambiguate_open_citations(ref):
-    if ref is None or ref.title is None:
-        return
-    res = query_open_citations(ref.title)
-
-
 def query_open_citations(doi):
     url = "https://opencitations.net/index/coci/api/v1/citations/" + doi
-    print(url)
     req = Request(url, headers={'User-Agent': 'Chrome/93.4'})
     resp = urlopen(req)
     book_data = json.load(resp)

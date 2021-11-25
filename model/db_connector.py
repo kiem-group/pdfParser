@@ -12,14 +12,21 @@ class DBConnector:
     def close(self):
         self.driver.close()
 
+    # Delete
+
     def clear_graph(self):
-        # CQL to clear graph
         cql_delete_relationships = "MATCH (a) -[r] -> () DELETE a, r"
         cql_delete_nodes = "MATCH (a) DELETE a"
         with self.driver.session() as session:
-            # Clear graph
             session.run(cql_delete_relationships)
             session.run(cql_delete_nodes)
+
+    def delete_node(self, node_uuid):
+        cql_delete_relationships = "MATCH (a) -[r] -> () WHERE a.UUID = $node_uuid DELETE a, r"
+        cql_delete_nodes = "MATCH (a) WHERE a.UUID = $node_uuid DELETE a"
+        with self.driver.session() as session:
+            session.run(cql_delete_relationships, node_uuid=node_uuid)
+            session.run(cql_delete_nodes, node_uuid=node_uuid)
 
     # Create
 
@@ -150,8 +157,18 @@ class DBConnector:
                 pubs.append(Publication.deserialize(db_pub["a"]))
         return pubs
 
+    # Find node by uuid
+    def query_node(self, node_uuid):
+        cql_pubs = "MATCH (a) where a.UUID=$node_uuid return a"
+        with self.driver.session() as session:
+            nodes = session.run(cql_pubs, node_uuid=node_uuid)
+            db_pubs = [record for record in nodes.data()]
+            if len(db_pubs) > 0:
+                return Publication.deserialize(db_pubs[0]["a"])
+        return None
+
     # Find publication by zip_path
-    def query_pubs_by_zip(self, zip_path):
+    def query_pub_by_zip(self, zip_path):
         cql_pubs = "MATCH (a:Publication) where a.zip_path=$zip_path return a"
         with self.driver.session() as session:
             nodes = session.run(cql_pubs, zip_path=zip_path)
@@ -164,7 +181,7 @@ class DBConnector:
     def query_bib_refs(self, limit=None):
         refs = []
         cql_refs = "MATCH (a:Reference) return a"
-        if limit is not None:
+        if limit:
             cql_refs += " limit " + str(limit)
         with self.driver.session() as session:
             nodes = session.run(cql_refs)
@@ -177,7 +194,7 @@ class DBConnector:
     def query_index_refs(self, limit=None):
         refs = []
         cql_refs = "MATCH (a:IndexReference) return a"
-        if limit is not None:
+        if limit:
             cql_refs += " limit " + str(limit)
         with self.driver.session() as session:
             nodes = session.run(cql_refs)

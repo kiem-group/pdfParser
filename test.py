@@ -3,7 +3,7 @@ import re
 import unittest
 from urllib.parse import quote
 import Levenshtein
-from disambiguation import query_google_books, query_crossref_pub, \
+from model.disambiguate_bibliographic import query_google_books, query_crossref_pub, \
     disambiguate_google_books, disambiguate_crossref
 from model.batch import Batch
 from model.reference_bibliographic import Reference
@@ -293,17 +293,16 @@ class TestClassifier(unittest.TestCase):
 
     # @unittest.skip("Disambiguation with OpenCitation API")
     def test_query_open_citations_pub(self):
-        from disambiguation import query_open_citations
+        from model.disambiguate_bibliographic import query_open_citations
         pub = Publication.from_zip('./data_test/9789004188846_BITS.zip', extract_bib=True)
         print(len(pub.bib_refs))
         if pub.doi:
             res = query_open_citations(pub.doi)
-            for ref in res:
-                print(ref["citing"])
+            self.assertGreaterEqual(len(res), 3)
+            # for ref in res:
+            #     print(ref["citing"])
 
 
-
-    # TODO Disambiguation/Linking of indices
     # Start by trying to look up the surface of index entries in Matteo’s hucitlib (example query: Aeschylus Agamemnon).
     # Given that hucitlib is much more narrowly focussed than Wikidata this may ease the task at the beginning
     # Assess percentage of entries in index locorum that are ambiguous and difficult to link (2+ linking candidates)

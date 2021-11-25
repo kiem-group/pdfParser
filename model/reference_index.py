@@ -180,7 +180,7 @@ class IndexReference(BaseReference):
     #   locorum: Adespota elegiaca (IEG)  23 206
     #     Aeschines 2.157 291
     def parse_pattern1(self, text):
-        alphas=ppu.Latin1.alphas+ppu.LatinA.alphas+ppu.LatinB.alphas+ppu.Greek.alphas+"\"'.’-—:“”‘’&()/«»?"
+        alphas = ppu.Latin1.alphas+ppu.LatinA.alphas+ppu.LatinB.alphas+ppu.Greek.alphas+"\"'.’-—:“”‘’&()/«»?"
         occurrences = delimitedList(Word(ppu.Latin1.nums), delim=",")
         locus_fragment = Word(ppu.Latin1.nums+".–=") + Optional(oneOf("ff."))
         locus = locus_fragment + Optional('/'+locus_fragment)
@@ -193,8 +193,8 @@ class IndexReference(BaseReference):
     #   rerum: Adonis (Plato Comicus), 160, 161, 207
     #   nominum: Antioch  10; 24; 79; 83; 85; 89–92;  105–107; 114–116; 118; 147–149; 152;  154–156; 173; 231
     def parse_pattern2(self, text):
-        alphas=ppu.Latin1.alphas+ppu.LatinA.alphas+ppu.LatinB.alphas+ppu.Greek.alphas+"\"'.’-—:“”‘’&()/«»?"
-        occurrences_chars=Word(ppu.Latin1.nums+'n–') + Optional(oneOf("f."))
+        alphas = ppu.Latin1.alphas+ppu.LatinA.alphas+ppu.LatinB.alphas+ppu.Greek.alphas+"\"'.’-—:“”‘’&()/«»?"
+        occurrences_chars = Word(ppu.Latin1.nums+'n–') + Optional(oneOf("f."))
         occurrences = OneOrMore(occurrences_chars + Optional(oneOf(", ;")).suppress())
         label_chars = Word(alphas+',;')
         label = OneOrMore(label_chars.setParseAction(''.join))

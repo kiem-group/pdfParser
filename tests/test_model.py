@@ -120,7 +120,7 @@ class TestModel(unittest.TestCase):
         # Xenophanes (IEG) B 3 89
         # Xenophon Memorabilia 1. 5. 5 790
 
-    # Multi-level locorum
+    # Parse multi-level locorum index text
     def test_index_locorum_parser_nested(self):
         complex_idx_text = ('Aeschylus Agamemnon 6–7 19 14 586 22 232, 410, 619 32 ff. 129 40 602 40–103 492 42–4 591, 593'
                           '43–4 57 48 130 60 591, 593 65 77 96 194 104 412 108–9 593, 799 108–9 / 126–7 415')
@@ -128,7 +128,8 @@ class TestModel(unittest.TestCase):
         self.assertEqual(15, len(nested_idx.refs))
         self.assertEqual("108–9/126–7", nested_idx.refs[14].locus)
 
-    def test_query_open_citations(self):
+    # Index is disambiguated via Hucitlib
+    def test_query_hucitlib(self):
         from hucitlib import KnowledgeBase, HucitAuthor, HucitWork
         import pkg_resources
         virtuoso_cfg_file = pkg_resources.resource_filename('hucitlib', 'config/virtuoso.ini')
@@ -139,8 +140,16 @@ class TestModel(unittest.TestCase):
         self.assertGreaterEqual(len(res_aeschylus), 1)
         self.assertGreaterEqual(len(res_agamemnon), 1)
         author = res_aeschylus[0][1].to_json()
+        author_data = json.loads(author)
+        self.assertEqual(type(author_data), dict)
+        names = [name["label"] for name in author_data["names"]]
+        self.assertIn('Aeschylus', names)
 
-
+    # Index is disambiguated via Hucitlib
+    def test_disambiguate_index_author(self):
+        from model.disambiguate_index import DisambiguateIndex
+        ext_idx = DisambiguateIndex.find_author_hucitlib('Aeschylus')
+        self.assertIsNotNone(ext_idx)
 
     # Test whether publication information is correctly extracted from JATS
     def test_publication_parser(self):

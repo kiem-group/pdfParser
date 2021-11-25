@@ -11,13 +11,12 @@ class IndexCluster(BaseCluster):
 
     def ref_lev_ratio(self, ref: IndexReference, match_all=False) -> float:
         if self.refs and ref.refs:
-            ref_label = next(item.label for item in ref.refs if item.label is not None)
-            if ref_label:
+            ref_label = next((item.label for item in ref.refs if len(item.label) > 3), None)
+            if ref_label and len(self.refs) > 0:
                 for cluster_ref in self.refs:
-                    cluster_label = next(item.label for item in cluster_ref.refs if item.label is not None)
+                    cluster_label = next((item.label for item in cluster_ref.refs if len(item.label) > 3), None)
                     if cluster_label:
                         return lev.ratio(cluster_label, ref_label)
-                    # TODO add an option to match with all labels, return average ratio
         return 0
 
 

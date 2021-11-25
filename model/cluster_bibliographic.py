@@ -37,11 +37,11 @@ class Cluster(BaseCluster):
 class ClusterSet(BaseClusterSet):
     # Compute editing distance for local clustering of similar references
     def add_references(self, refs: [Reference]):
-        n = len(refs)
-        for i in range(n):
-            ref = refs[i]
-            cluster = self.get_ref_cluster(ref)
-            if cluster is not None:
-                cluster.add_reference(ref)
-            else:
-                self.clusters.append(Cluster(refs=[ref]))
+        if refs:
+            for i in range(len(refs)):
+                ref = refs[i]
+                cluster = self.get_ref_cluster(ref)
+                if cluster is not None:
+                    cluster.add_reference(ref)
+                else:
+                    self.clusters.append(Cluster(refs=[ref]))

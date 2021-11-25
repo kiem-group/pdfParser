@@ -163,7 +163,8 @@ class Publication(BasePublication):
         self.authors = []
         for jats_contrib in contributors:
             c = Contributor.from_jats(jats_contrib)
-            if c.type == "editor":
+            # This will work for "volume editor", "volume-editor", and other variations
+            if "editor" in c.type:
                 self.editors.append(c)
             else:
                 if c.type == "author":
