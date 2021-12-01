@@ -1,3 +1,4 @@
+from __future__ import annotations
 import abc
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
@@ -23,12 +24,7 @@ class BaseReference(object):
     @abc.abstractmethod
     def parse(self):
         """Parse here reference text"""
-        return
-
-    @abc.abstractmethod
-    def disambiguate(self):
-        """Disambiguate reference"""
-        return
+        pass
 
     @property
     def props(self) -> dict:
@@ -43,7 +39,7 @@ class BaseReference(object):
 
     # Restore object from a string representing Neo4j property set (json without parentheses in keys)
     @classmethod
-    def deserialize(cls, props):
+    def deserialize(cls, props: dict) -> BaseReference:
         self = cls(UUID=props["UUID"])
         for key in props.keys():
             setattr(self, key, props[key])

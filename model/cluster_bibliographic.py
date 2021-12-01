@@ -10,6 +10,7 @@ from model.cluster_base import BaseCluster, BaseClusterSet
 @dataclass_json
 @dataclass
 class Cluster(BaseCluster):
+
     def ref_lev_ratio(self, ref: Reference, match_all=False) -> float:
         avg_ratio = 0
         if self.refs and len(self.refs) > 0:

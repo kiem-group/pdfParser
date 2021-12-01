@@ -1,9 +1,12 @@
+from __future__ import annotations
 from dataclasses import dataclass
 from pyparsing import (Word, Literal, Group, ZeroOrMore, OneOrMore, oneOf, restOfLine, delimitedList, pyparsing_unicode as ppu,
                        ParseException, Optional, CaselessKeyword)
 from dataclasses_json import dataclass_json
 from model.reference_base import BaseReference
+from model.index_external import ExternalIndex
 import uuid
+from typing import List
 
 
 @dataclass_json
@@ -35,12 +38,12 @@ class IndexReferencePart:
         }
 
     # Convert object properties into a string representing Neo4j property set (json without parentheses in keys)
-    def serialize(self):
+    def serialize(self) -> str:
         return "{" + ', '.join('{0}: "{1}"'.format(key, value) for (key, value) in self.props.items()) + "}"
 
     # Restore object from a string representing Neo4j property set (json without parentheses in keys)
     @classmethod
-    def deserialize(cls, props):
+    def deserialize(cls, props: dict) -> IndexReferencePart:
         self = cls(UUID=props["UUID"])
         if "occurrences" in props:
             setattr(self, "occurrences", props["occurrences"].split(";"))
@@ -56,7 +59,7 @@ class IndexReference(BaseReference):
     """A class for holding information about an index"""
     refs: [IndexReferencePart] = None
     types: [str] = None
-
+    refers_to: [ExternalIndex] = None
     # An argument to distinguish between parsing of index references in text vs index files
     inline: bool = False
 
@@ -67,7 +70,7 @@ class IndexReference(BaseReference):
         return props
 
     @classmethod
-    def deserialize(cls, props):
+    def deserialize(cls, props: dict) -> IndexReference:
         self = cls(UUID=props["UUID"])
         del props["text"]
         if "types" in props:
@@ -94,14 +97,14 @@ class IndexReference(BaseReference):
         if self.types:
             self.refs = []
             options = {
-                "verborum": self.parse_as_verborum,
-                "locorum":  self.parse_as_locorum,
-                "nominum_ancient": self.parse_as_nominum_ancient,
-                "nominum_modern": self.parse_as_nominum_modern,
-                "rerum": self.parse_as_rerum,
-                "geographicus": self.parse_as_geographicus,
-                "bibliographicus": self.parse_as_bibliographicus,
-                "epigraphic": self.parse_as_epigraphic
+                "verborum": self.__parse_as_verborum,
+                "locorum":  self.__parse_as_locorum,
+                "nominum_ancient": self.__parse_as_nominum_ancient,
+                "nominum_modern": self.__parse_as_nominum_modern,
+                "rerum": self.__parse_as_rerum,
+                "geographicus": self.__parse_as_geographicus,
+                "bibliographicus": self.__parse_as_bibliographicus,
+                "epigraphic": self.__parse_as_epigraphic
             }
             if len(self.types) > 0:
                 if self.types[0] in options.keys():
@@ -111,56 +114,56 @@ class IndexReference(BaseReference):
         # else:
         #     print("Unclassified index: ", self.text)
 
-    def parse_as_locorum(self):
+    def __parse_as_locorum(self):
         try:
             if self.inline:
-                return self.parse_locorum_inline()
+                return self.__parse_locorum_inline()
             else:
-                return self.parse_loop(self.parse_pattern1)
+                return self.__parse_loop(self.__parse_pattern1)
         except ParseException:
             print("Failed to parse index locorum: ", self.text)
 
-    def parse_as_rerum(self):
+    def __parse_as_rerum(self):
         try:
-            self.parse_loop(self.parse_pattern2)
+            self.__parse_loop(self.__parse_pattern2)
         except ParseException:
             print("Failed to parse index rerum: ", self.text)
 
-    def parse_as_nominum_ancient(self):
+    def __parse_as_nominum_ancient(self):
         try:
-            ref = self.parse_pattern2(self.text)
+            ref = self.__parse_pattern2(self.text)
             idx_ref = IndexReferencePart(label=" ".join(ref.label).strip(), occurrences=ref.occurrences, note=ref.rest)
             self.refs.append(idx_ref)
         except ParseException:
             print("Failed to parse index nominum (ancient): ", self.text)
 
-    def parse_as_nominum_modern(self):
+    def __parse_as_nominum_modern(self):
         try:
-            ref = self.parse_pattern2(self.text)
+            ref = self.__parse_pattern2(self.text)
             idx_ref = IndexReferencePart(label=" ".join(ref.label).strip(), occurrences=ref.occurrences, note=ref.rest)
             self.refs.append(idx_ref)
         except ParseException:
             print("Failed to parse index nominum (modern): ", self.text)
 
-    def parse_as_verborum(self):
+    def __parse_as_verborum(self):
         try:
-            self.parse_loop(self.parse_pattern2)
+            self.__parse_loop(self.__parse_pattern2)
         except ParseException:
             print("Failed to parse index verborum: ", self.text)
 
-    def parse_as_epigraphic(self):
+    def __parse_as_epigraphic(self):
         print("No parser for index epigraphic: ", self.text)
 
-    def parse_as_geographicus(self):
+    def __parse_as_geographicus(self):
         try:
-            self.parse_loop(self.parse_pattern2)
+            self.__parse_loop(self.__parse_pattern2)
         except ParseException:
             print("Failed to parse index geographicus: ", self.text)
 
-    def parse_as_bibliographicus(self):
+    def __parse_as_bibliographicus(self):
         print("No parser for index bibliographicus: ", self.text)
 
-    def parse_loop(self, processor):
+    def __parse_loop(self, processor):
         text = self.text
         the_end = False
         while not the_end:
@@ -174,25 +177,25 @@ class IndexReference(BaseReference):
             the_end = True if len(text) == 0 else False
             if the_end:
                 idx_ref.note = text
-        # print(self.refs)
 
     # @Examples:
     #   locorum: Adespota elegiaca (IEG)  23 206
     #     Aeschines 2.157 291
-    def parse_pattern1(self, text):
+    def __parse_pattern1(self, text: str):
         alphas = ppu.Latin1.alphas+ppu.LatinA.alphas+ppu.LatinB.alphas+ppu.Greek.alphas+"\"'.’-—:“”‘’&()/«»?"
         occurrences = delimitedList(Word(ppu.Latin1.nums), delim=",")
         locus_fragment = Word(ppu.Latin1.nums+".–=") + Optional(oneOf("ff."))
         locus = locus_fragment + Optional('/'+locus_fragment)
         label_chars = Word(alphas+',;')
         label = OneOrMore(label_chars.setParseAction(''.join))
-        index = Optional(label("label")) + Optional(locus("locus").setParseAction(''.join) + occurrences('occurrences') + restOfLine("rest"))
+        index = Optional(label("label")) + Optional(locus("locus").setParseAction(''.join) +
+                                                    occurrences('occurrences') + restOfLine("rest"))
         return index.parseString(text)
 
     # @Examples:
     #   rerum: Adonis (Plato Comicus), 160, 161, 207
     #   nominum: Antioch  10; 24; 79; 83; 85; 89–92;  105–107; 114–116; 118; 147–149; 152;  154–156; 173; 231
-    def parse_pattern2(self, text):
+    def __parse_pattern2(self, text: str):
         alphas = ppu.Latin1.alphas+ppu.LatinA.alphas+ppu.LatinB.alphas+ppu.Greek.alphas+"\"'.’-—:“”‘’&()/«»?"
         occurrences_chars = Word(ppu.Latin1.nums+'n–') + Optional(oneOf("f."))
         occurrences = OneOrMore(occurrences_chars + Optional(oneOf(", ;")).suppress())
@@ -205,7 +208,7 @@ class IndexReference(BaseReference):
         return index.parseString(text)
 
     # Inline pattern, only needed for testing
-    def parse_locorum_inline(self):
+    def __parse_locorum_inline(self):
         # This is a patten for the inline style of indices, e.g., "Hom. Il. 1,124-125"
         # 1) The text preceding the numbers contains information about work and author being cited
         # 2) The hyphen is used to specify a range of text passages, e.g. lines 124 to 125
@@ -225,12 +228,11 @@ class IndexReference(BaseReference):
         index = delimitedList(Group(label("label") + locus("locus")), delim=';')
         res = index.parseString(self.text)
         for ref in res:
-            locus_txt = ref.locus[0]+ "." + ref.locus[1]
+            locus_txt = ref.locus[0] + "." + ref.locus[1]
             if len(ref.locus) > 2:
                 locus_txt += "-" + ref.locus[2]
             idx_ref = IndexReferencePart(label=" ".join(ref.label), locus=locus_txt)
             self.refs.append(idx_ref)
-            print(idx_ref)
 
     @classmethod
     # Guess type of index. Can return several types
@@ -241,7 +243,7 @@ class IndexReference(BaseReference):
     # nominum_modern  - modern authors
     # rerum    - index of subjects
     # geographicus - index of places
-    def get_index_types(cls, index_title):
+    def get_index_types(cls, index_title: str) -> List[str]:
         keywords = {
             'verborum': ['general', 'verborum', 'verborvm', 'abstract', 'word', 'words', 'term', 'terms', 'termes',
                          'wort', 'sachindex', 'général', 'generalis', 'mots'],

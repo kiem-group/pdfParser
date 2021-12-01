@@ -66,7 +66,6 @@ def cluster(data, path):
         out_file.write(" - *%s:* %s" % (exemplar, cluster_str) + "\n\n")
     out_file.close()
 
-
 # from io import StringIO
 # from pdfminer.converter import TextConverter
 # from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter

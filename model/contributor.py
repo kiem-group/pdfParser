@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass, asdict
 from dataclasses_json import dataclass_json
 import uuid
@@ -18,7 +19,7 @@ class Contributor:
             self.UUID = str(uuid.uuid4())
 
     @classmethod
-    def from_jats(cls, jats_contrib):
+    def from_jats(cls, jats_contrib) -> Contributor:
         self = cls()
         if jats_contrib is not None:
             contrib_type = jats_contrib.xpath('@contrib-type')
@@ -33,12 +34,12 @@ class Contributor:
     def props(self) -> dict:
         return asdict(self)
 
-    def serialize(self):
+    def serialize(self) -> str:
         return "{" + ', '.join('{0}: "{1}"'.format(key, value) for (key, value) in self.props.items()) + "}"
 
     # Restore object from a string representing Neo4j property set (json without parentheses in keys)
     @classmethod
-    def deserialize(cls, props):
+    def deserialize(cls, props) -> Contributor:
         self = cls(UUID=props["UUID"])
         for key in props.keys():
             setattr(self, key, props[key])

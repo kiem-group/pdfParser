@@ -42,6 +42,10 @@ class BaseCluster:
     def serialize(self):
         return "{" + ', '.join('{0}: "{1}"'.format(key, value) for (key, value) in self.props.items()) + "}"
 
+    @classmethod
+    def deserialize(cls, props: dict, refs):
+        return cls(UUID=props["UUID"], refs=refs)
+
 
 @dataclass_json
 @dataclass

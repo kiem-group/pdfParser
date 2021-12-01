@@ -68,5 +68,4 @@ class ReferencePart(BaseReference):
 @dataclass
 class Reference(ReferencePart):
     """A class for holding information about reference with authors like in a given reference"""
-
     follows: ReferencePart = None

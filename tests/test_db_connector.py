@@ -17,9 +17,14 @@ class TestDBConnector(unittest.TestCase):
 
         # Add publication
         pub = Publication.from_zip('../data_test/9789004188846_BITS.zip', extract_bib=True, extract_index=True)
+        # pub.disambiguate_bib()
+        pub.disambiguate_index()
+        found_idx = [idx for idx in pub.index_refs if len(idx.refers_to) > 0]
+        print(len(found_idx))
+
         db.create_pub(pub)
         # Make sure publication was added
-        db_pub = db.query_node(pub.UUID)
+        db_pub = db.query_pub(pub.UUID)
         self.assertIsNotNone(db_pub)
         # Find publication by zip_path
         db_pub = db.query_pub_by_zip(pub.zip_path)
@@ -39,10 +44,14 @@ class TestDBConnector(unittest.TestCase):
         db_pub_idx_refs = db.query_pub_index_refs(pub.UUID)
         self.assertEqual(len(db_pub_idx_refs), len(pub.index_refs))
 
+        # TODO Test external references
+        # TODO Test clusters
+
         # Delete test publication
-        db.delete_node(pub.UUID)
+        db.delete_pub(pub)
+
         # Make sure publication was deleted
-        db_pub = db.query_node(pub.UUID)
+        db_pub = db.query_pub(pub.UUID)
         self.assertIsNone(db_pub)
 
         db.close()

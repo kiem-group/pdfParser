@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 from model.contributor import Contributor
@@ -55,12 +56,12 @@ class BasePublication:
             "location": self.location
         }
 
-    def serialize(self):
+    def serialize(self) -> str:
         return "{" + ', '.join('{0}: "{1}"'.format(key, value) for (key, value) in self.props.items()) + "}"
 
     # Restore object from a string representing Neo4j property set (json without parentheses in keys)
     @classmethod
-    def deserialize(cls, props):
+    def deserialize(cls, props: dict) -> BasePublication:
         self = cls(UUID=props["UUID"])
         for key in props.keys():
             setattr(self, key, props[key])

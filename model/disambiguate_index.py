@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 from model.index_external import ExternalIndex
-from model.reference_index import IndexReference
-from hucitlib import KnowledgeBase, HucitAuthor, HucitWork
+from hucitlib import KnowledgeBase
 import pkg_resources
 import json
 from typing import Union
@@ -15,12 +14,19 @@ class DisambiguateIndex:
     kb = KnowledgeBase(virtuoso_cfg_file)
 
     @classmethod
-    def find_author_hucitlib(cls, author_name: str) -> Union[ExternalIndex, None]:
-        cls.kb.get_authors()
-        res_author = cls.kb.search(author_name)
-        if res_author and len(res_author) > 0:
-            author = res_author[0][1].to_json()
-            author_data = json.loads(author)
-            # Create instance of ExternalIndex
-            return ExternalIndex(url_hucitlib = author_data["uri"])
-        return None
+    def find_hucitlib(cls, term: str) -> Union[ExternalIndex, None]:
+        try:
+            res_term = cls.kb.search(term)
+            if res_term and len(res_term) > 0:
+                res = res_term[0][1].to_json()
+                res_data = json.loads(res)
+                return ExternalIndex(uri=res_data["uri"], type="hucitlib")
+            else:
+                return None
+        except:
+            return None
+
+    # Assess percentage of entries in index locorum that are ambiguous and difficult to link (2+ linking candidates)
+    # Keep Wikidata look-up as a fallback for index entries that don’t have a match in hucitlib
+    # Before linking, and for the sake of efficiency, an intermediate step could be the clustering of index entries
+    # (e.g. “Aeschylus, Agamemnon” in publication A is grouped together with similar entries in other indexes)

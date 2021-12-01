@@ -10,15 +10,10 @@ import unicodedata
 from joblib.numpy_pickle_utils import xrange
 from pyparsing import unichr
 
-global punct_codes, punct_codes_nodot, symbol_codes, numbers_codes
-
 punct_codes = [i for i in xrange(sys.maxunicode) if unicodedata.category(unichr(i)).startswith('P')]
 punct_codes_nodot = [i for i in xrange(sys.maxunicode) if unicodedata.category(unichr(i)).startswith('P') and i != 46]
 symbol_codes = [i for i in xrange(sys.maxunicode) if unicodedata.category(unichr(i)).startswith('S')]
 numbers_codes = [i for i in xrange(sys.maxunicode) if unicodedata.category(unichr(i)).startswith('N')]
-
-global p_codes_to_space, p_codes_nodot_to_space, s_codes_to_space, n_codes_to_space
-
 p_codes_to_space = dict.fromkeys(punct_codes, 32)
 p_codes_nodot_to_space = dict.fromkeys(punct_codes_nodot, 32)
 s_codes_to_space = dict.fromkeys(symbol_codes, 32)

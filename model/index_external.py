@@ -7,7 +7,8 @@ import uuid
 @dataclass(unsafe_hash=True)
 class ExternalIndex:
     """A class for holding information about index disambiguation"""
-    url_hucitlib: str = None
+    uri: str = None
+    type: str = None
     UUID: str = None
 
     def __post_init__(self):
@@ -18,7 +19,8 @@ class ExternalIndex:
     def props(self) -> dict:
         return {
             "UUID": self.UUID,
-            "hucitlib": self.url_hucitlib
+            "uri": self.uri,
+            "type": self.type
         }
 
     def serialize(self):
