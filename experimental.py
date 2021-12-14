@@ -81,3 +81,26 @@ def cluster(data, path):
 # model.save("word2vec.model")
 # ref1 = data[0]
 # ref1_clones = model.wv.most_similar(positive=ref1, topn=1)
+
+
+def write_rdf():
+    # Bob:Person(age=24) --knows--> Linda:Person
+    from rdflib import Graph, URIRef, Literal, BNode
+    g = Graph()
+    from rdflib.namespace import FOAF, RDF
+    linda = BNode()  # a GUID is generated
+    bob = URIRef("http://example.org/people/Bob")
+    g.add((bob, RDF.type, FOAF.Person))
+    g.add((bob, FOAF.name, Literal("Bob")))
+    g.add((bob, FOAF.age, Literal(24)))
+    g.add((bob, FOAF.knows, linda))
+    g.add((linda, RDF.type, FOAF.Person))
+    g.add((linda, FOAF.name, Literal("Linda")))
+
+    # <http://example.org/people/Bob> a ns1:Person ;
+    # ns1:age 24 ;
+    # ns1:knows [ a ns1:Person ;
+    #         ns1:name "Linda" ] ;
+    # ns1:name "Bob" .
+    # """
+

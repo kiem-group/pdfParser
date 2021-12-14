@@ -1,5 +1,10 @@
+# author: Natallia Kokash, natallia.kokash@gmail.com
+# Maps KIEM resources to Neo4j graph
+
 from neo4j import GraphDatabase, Session
 from model.publication import Publication
+from model.contributor import Contributor
+from model.industry_identifier import IndustryIdentifier
 from model.reference_bibliographic import Reference
 from model.reference_index import IndexReference
 from model.publication_external import ExternalPublication
@@ -230,6 +235,73 @@ class DBConnector:
                 return Publication.deserialize(db_pubs[0]["a"])
         return None
 
+    # Retrieve bibliographic references for a publication
+    def query_pub_bib_refs(self, pub_uuid: str) -> List[Reference]:
+        refs = []
+        cql_pub_cites_ref = "MATCH (a:Publication)-[r:Cites]->(b:Reference) WHERE a.UUID = $pub_uuid return b"
+        with self.driver.session() as session:
+            nodes = session.run(cql_pub_cites_ref, pub_uuid=pub_uuid)
+            db_refs = [record for record in nodes.data()]
+            for db_ref in db_refs:
+                refs.append(Reference.deserialize(db_ref["b"]))
+        return refs
+
+    # Retrieve index references for a publication
+    def query_pub_index_refs(self, pub_uuid: str) -> List[IndexReference]:
+        refs = []
+        cql_pub_incl_idx = "MATCH (a:Publication)-[r:Includes]->(b:IndexReference) WHERE a.UUID = $pub_uuid return b"
+        with self.driver.session() as session:
+            nodes = session.run(cql_pub_incl_idx, pub_uuid=pub_uuid)
+            db_refs = [record for record in nodes.data()]
+            for db_ref in db_refs:
+                refs.append(IndexReference.deserialize(db_ref["b"]))
+        return refs
+
+    # Retrieve publication identifiers
+    def query_pub_identifiers(self, pub_uuid: str) -> List[IndustryIdentifier]:
+        identifiers = []
+        cql_pub_incl_idx = "MATCH (a:Publication)-[r:HasIdentifier]->(b:Identifier) WHERE a.UUID = $pub_uuid return b"
+        with self.driver.session() as session:
+            nodes = session.run(cql_pub_incl_idx, pub_uuid=pub_uuid)
+            db_refs = [record for record in nodes.data()]
+            for db_ref in db_refs:
+                identifiers.append(IndustryIdentifier.deserialize(db_ref["b"]))
+        return identifiers
+
+    # Retrieve publication contributors
+    def query_pub_contributors(self, pub_uuid: str) -> List[Contributor]:
+        contributors = []
+        cql_pub_incl_idx = "MATCH (a:Publication)-[r:HasContributor]->(b:Contributor) WHERE a.UUID = $pub_uuid return b"
+        with self.driver.session() as session:
+            nodes = session.run(cql_pub_incl_idx, pub_uuid=pub_uuid)
+            db_refs = [record for record in nodes.data()]
+            for db_ref in db_refs:
+                contributors.append(Contributor.deserialize(db_ref["b"]))
+        return contributors
+
+    # Retrieve publication with all relationships
+    def query_pub_full(self, node_uuid: str) -> Union[Publication, None]:
+        pub = self.query_pub(node_uuid)
+        if pub is not None:
+            # industry identifiers
+            pub.identifiers = self.query_pub_identifiers(pub.UUID)
+            # contributors
+            contributors = self.query_pub_contributors(pub.UUID)
+            pub.authors = []
+            pub.editors = []
+            for contributor in contributors:
+                if "author" in contributor.type:
+                    pub.authors.append(contributor)
+                else:
+                    if "editor" in contributor.type:
+                        pub.editors.append(contributor)
+            # bibliographic references
+            pub.bib_refs = self.query_pub_bib_refs(pub.UUID)
+            # index references
+            pub.index_refs = self.query_pub_index_refs(pub.UUID)
+            return pub
+        return None
+
     # Retrieve all references
     def query_bib_refs(self, limit: int = None) -> List[Reference]:
         refs = []
@@ -254,28 +326,6 @@ class DBConnector:
             db_refs = [record for record in nodes.data()]
             for db_ref in db_refs:
                 refs.append(IndexReference.deserialize(db_ref["a"]))
-        return refs
-
-    # Retrieve bibliographic references for a publication
-    def query_pub_bib_refs(self, pub_uuid: str) -> List[Reference]:
-        refs = []
-        cql_pub_cites_ref = "MATCH (a:Publication)-[r:Cites]->(b:Reference) WHERE a.UUID = $pub_uuid return b"
-        with self.driver.session() as session:
-            nodes = session.run(cql_pub_cites_ref, pub_uuid=pub_uuid)
-            db_refs = [record for record in nodes.data()]
-            for db_ref in db_refs:
-                refs.append(Reference.deserialize(db_ref["b"]))
-        return refs
-
-    # Retrieve index references for a publication
-    def query_pub_index_refs(self, pub_uuid: str) -> List[IndexReference]:
-        refs = []
-        cql_pub_incl_idx = "MATCH (a:Publication)-[r:Includes]->(b:IndexReference) WHERE a.UUID = $pub_uuid return b"
-        with self.driver.session() as session:
-            nodes = session.run(cql_pub_incl_idx, pub_uuid=pub_uuid)
-            db_refs = [record for record in nodes.data()]
-            for db_ref in db_refs:
-                refs.append(IndexReference.deserialize(db_ref["b"]))
         return refs
 
     # Retrieve bibliographic references for a cluster

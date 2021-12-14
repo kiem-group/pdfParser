@@ -84,9 +84,11 @@ class Publication(BasePublication):
         self.identifiers = []
         issn = book.xpath('.//issn')
         if len(issn) > 0:
-            pub_format = issn[0].xpath('/@publication-format')
+            pub_format = issn[0].xpath('@publication-format')
             pub_id = issn[0].xpath("text()")
-            self.identifiers.append(IndustryIdentifier(pub_id, "issn", pub_format))
+            if len(pub_id) > 0:
+                pub_format = pub_format[0] if len(pub_format) > 0 else None
+                self.identifiers.append(IndustryIdentifier(pub_id[0], "issn", pub_format))
         doi = book.xpath('.//book-meta/book-id[@book-id-type="doi"]')
         if len(doi) > 0:
             self.identifiers.append(IndustryIdentifier(doi[0].xpath('text()')[0], "doi", "online"))
@@ -100,6 +102,7 @@ class Publication(BasePublication):
         # Title
         self.title = ' '.join(book.xpath('.//book-title//text()'))
         # Authors or Editors
+        # TODO How to handle chapter authors???
         contributors = book.xpath('.//book-meta//contrib-group//contrib')
         self.editors = []
         self.authors = []
@@ -109,7 +112,7 @@ class Publication(BasePublication):
             if "editor" in c.type:
                 self.editors.append(c)
             else:
-                if c.type == "author":
+                if "author" in c.type:
                     self.authors.append(c)
                 else:
                     print("Unknown contributor type", c)
@@ -132,7 +135,7 @@ class Publication(BasePublication):
             pub_format = isbn.xpath('@publication-format')
             pub_id = isbn.xpath("text()")
             if len(pub_id) > 0:
-                pub_format = pub_format[0] if len(pub_format) > 0 else ""
+                pub_format = pub_format[0] if len(pub_format) > 0 else None
                 self.identifiers.append(IndustryIdentifier(pub_id[0], "isbn", pub_format))
 
     def __parse_references(self, jats_root, pub_zip):

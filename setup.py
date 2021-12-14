@@ -12,6 +12,7 @@ setup(
     python_requires='>=3.0.*',
     install_requires=['zipfile', 'logging', 'lxml', 'pdfminer', 'Levenshtein', 'csv', 'bibtexparser', 'pyparsing',
                       'dataclasses', 'dataclasses-json', 'pdoc3', 'neo4j', 'json', 'abc', 'importlib_resources',
+                      'qwikidata',
                       'surf@ git+https://github.com/franzlst/surfrdf@master#egg=surf',
                       'hucitlib@ git+https://github.com/mromanello/hucitlib.git'
                       ],

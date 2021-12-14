@@ -64,6 +64,18 @@ class ReferencePart(BaseReference):
         props["year"] = self.year
         return props
 
+    @classmethod
+    def deserialize(cls, props: dict) -> BaseReference:
+        self = cls(UUID=props["UUID"])
+        if "authors" in props:
+            setattr(self, "authors", props["authors"].split(";"))
+            del props["authors"]
+        if "editors" in props:
+            setattr(self, "editors", props["editors"].split(";"))
+            del props["editors"]
+        for key in props.keys():
+            setattr(self, key, props[key])
+        return self
 
 @dataclass
 class Reference(ReferencePart):

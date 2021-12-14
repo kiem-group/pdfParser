@@ -164,19 +164,31 @@ class TestModel(unittest.TestCase):
     # Parse publication
     def test_publication_bib_parser(self):
         pub = Publication.from_zip('../data_test/9789004188846_BITS.zip', extract_bib=True)
+        # Check UUID
+        self.assertIsNotNone(pub.UUID)
+        # Check identifiers
+        self.assertGreaterEqual(len(pub.identifiers), 1)
+        self.assertEqual(pub.identifiers[0].format, 'print')
+        self.assertEqual(pub.identifiers[0].type, 'issn')
+        self.assertEqual(pub.identifiers[0].id, '1872-3357')
+        # Check contributors
+        self.assertGreaterEqual(len(pub.editors), 1)
+        self.assertEqual(pub.editors[0].surname, 'Dobrov')
+        self.assertEqual(pub.editors[0].given_names, 'Gregory W.')
+        # Check bibliographic references
         self.assertEqual(1236, len(pub.bib_refs))
         self.assertEqual('2003', pub.bib_refs[0].year)
         self.assertEqual('1987', pub.bib_refs[5].year)
         self.assertEqual(('Athena’s Epithets: Their Structural Significance in the Plays of '
                          'Aristophanes (Beiträge zur Altertumskunde 67)'), pub.bib_refs[10].title)
-        self.assertIsNotNone(pub.UUID)
         pub.save("../tmp/9789004188846_BITS.pub")
         # pub_copy = Publication.load("../tmp/9789004188846_BITS.pub")
         # print(pub_copy)
         for author in pub.editors:
             x = json.dumps(asdict(author))
             y = Contributor.from_json(x)
-            print(y)
+            self.assertEqual(y.surname, 'Dobrov')
+            self.assertEqual(y.given_names, 'Gregory W.')
 
     def test_props(self):
         author = Contributor(UUID="3a9987f0-40c8-42d3-9ff8-24a5289ae978", type="author", surname="Smith", given_names="Mike")

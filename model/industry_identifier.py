@@ -7,9 +7,9 @@ import uuid
 @dataclass
 class IndustryIdentifier:
     """A class for holding information about publication industry identifier"""
-    id: str      # Identifier
-    type: str    # ISBN, DOI, etc.
-    format: str
+    id: str = None     # Identifier
+    type: str = None   # ISBN, DOI, etc.
+    format: str = None
     UUID: str = None
 
     def __post_init__(self):

@@ -7,6 +7,9 @@ from pdfminer.layout import LTTextContainer, LTChar, LTAnno
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 
+import logging
+logging.basicConfig()
+logger = logging.getLogger('logger')
 
 @dataclass
 class ParserConfig:
@@ -82,16 +85,16 @@ class PdfParser:
                         try:
                             get_line_offset(text_line.bbox)
                         except:
-                            print("Failed to get bbox", text_line)
+                            logger.error("Failed to get bbox", text_line)
 
         # Remove occasional lines - title, page numbers, etc. - anything that occurs a couple of times per page on average
         odd_starts = cls.__get_offset_counter(odd_offset_counter, page_num, config)
         even_starts = cls.__get_offset_counter(even_offset_counter, page_num, config)
 
         if len(odd_starts) > 2 or len(even_starts) > 2:
-            print("\tWarning: multi-column or unusual format")
-            print("\t\todd starts:", odd_starts)
-            print("\t\teven starts:", even_starts)
+            logger.warning("\tWarning: multi-column or unusual format")
+            logger.warning("\t\todd starts:", odd_starts)
+            logger.warning("\t\teven starts:", even_starts)
 
         page_num = 0
         items: List[List[Any]] = []
@@ -111,14 +114,12 @@ class PdfParser:
                     else:
                         # Line looks unfinished
                         if curr_stripped.endswith(',') or curr_stripped.endswith('–'):
-                            # print("Reference can't end like this: ", curr_stripped[-1])
+                            logger.warning("Reference can't end like this: ", curr_stripped[-1])
                             incomplete.append(len(items))
                 if new_ref:
-                    # print("REFERENCE: ", convert_to_str(curr_ref_chars))
                     items.append(curr_ref_chars)
                     return True  # My parser to decode string
                 else:
-                    # print(base, "<=", appr_x, "<", base + config.indent)
                     if base <= appr_x < base + config.indent:
                         if len(incomplete) > 0:
                             idx = incomplete.pop(0)
@@ -129,13 +130,13 @@ class PdfParser:
                     else:
                         skipped.append(SkippedText(len(items), cls.__convert_to_str(line_chars)))
             except:
-                print("Failed to parse index text: ", curr_stripped)
-                print(sys.exc_info()[0])
+                logger.warning("Failed to parse index text: ", curr_stripped)
+                logger.warning(sys.exc_info()[0])
             return False
 
         # TODO odd_starts and even_starts should ahve the same number of columns, trim otherwise
         if len(odd_starts) != len(even_starts):
-            print("Layout differs for odd and even pages!")
+            logger.warning("Layout differs for odd and even pages!")
 
         n = min(len(odd_starts), len(even_starts))
         col_curr = []
@@ -165,9 +166,9 @@ class PdfParser:
                                     # print("SKIPPING: ", convert_to_str(line_chars))
                                     skipped.append(SkippedText(len(items), cls.__convert_to_str(line_chars)))
                             except:
-                                print("Failed to process line", cls.__convert_to_str(line_chars))
+                                logger.error("Failed to process line", cls.__convert_to_str(line_chars))
                         except:
-                             print("Failed to get bbox", text_line)
+                             logger.error("Failed to get bbox", text_line)
                 # else:
                     # print("\tNon-text element", element)
         for curr in col_curr:
@@ -210,7 +211,6 @@ class PdfParser:
             if len(starts) == 0 or len(include) > len(starts) - 1:
                 starts.append(key)
         if len(offset_counter) == len(starts):
-            print("\tNo-indent formatting!")
-        # print("Starts: ", starts)
+            logger.warning("\tNo-indent formatting!")
         return starts
 
