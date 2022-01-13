@@ -12,8 +12,10 @@ from model.industry_identifier import IndustryIdentifier
 from model.publication_base import BasePublication
 from model.disambiguate_bibliographic import DisambiguateBibliographic
 from model.disambiguate_index import DisambiguateIndex
-import uuid
 import re
+import logging
+
+module_logger = logging.getLogger('pdfParser.publication')
 
 
 @dataclass_json
@@ -43,7 +45,7 @@ class Publication(BasePublication):
 
     @classmethod
     def from_zip(cls, pub_zip: str, extract_bib: bool = False, extract_index: bool = False) -> Publication:
-        # TODO generate UUIDs from archive name?
+        module_logger.info('Extracting publication from zip: ' + pub_zip)
         self = cls()
         if pub_zip is not None:
             self.zip_path = pub_zip
@@ -53,9 +55,9 @@ class Publication(BasePublication):
         return self
 
     def __parse_zip(self):
+        self.logger.info("Parsing publication from zip: " + self.zip_path)
         if self.zip_path is None:
             return
-        print("Publication archive is being processed:", self.zip_path)
         pub_zip = zipfile.ZipFile(self.zip_path, 'r')
 
         for file_name in pub_zip.namelist():
@@ -68,7 +70,7 @@ class Publication(BasePublication):
                     jats_tree = etree.parse(jats_file)
                     jats_root = jats_tree.getroot()
                 except:
-                    print("Failed to parse JATS file", file_name)
+                    self.logger.error("Failed to parse JATS file: " + file_name)
                 if jats_root is not None:
                     self.__parse_book(jats_root)
                     self.__parse_references(jats_root, pub_zip)
@@ -115,7 +117,7 @@ class Publication(BasePublication):
                 if "author" in c.type:
                     self.authors.append(c)
                 else:
-                    print("Unknown contributor type", c)
+                    self.logger.warning("Unknown contributor type: " + c)
         # Year
         year = book.xpath('.//book-meta/pub-date/year/text()')
         if len(year) > 0:
@@ -151,36 +153,44 @@ class Publication(BasePublication):
         self.index_refs_with_errors = []
         self.bib_refs_with_errors = []
 
+        # Some JATS files contain bibliography inside and not in PDF (e.g., see example in unusual_xml)
+        jats_bib = jats_root.xpath('//ref-list')
+        if len(jats_bib) > 0:
+            self.logger.error("JATS file contains bibliographic references (currently not processed!)")
+        jats_idx = jats_root.xpath('//index-title-group')
+        if len(jats_idx) > 0:
+            self.logger.error("JATS file contains index lists (currently not processed!)")
+
         for book_part in book_parts:
             title = ' '.join(book_part.xpath('.//title//text()')).lower()
             hrefs = book_part.xpath('.//self-uri/@xlink:href', namespaces={"xlink": "http://www.w3.org/1999/xlink"})
             if hrefs and self._extract_bib and 'bibliography' in title or self._extract_index and 'index' in title:
                 href = hrefs[0]
                 target_pdf = pub_zip.open(href)
-                # TODO issue a warning if more than one bibliography file found
-                # TODO some JATS files contain bibliography inside and not in PDF (check example in unusual_xml)
                 if self._extract_bib and 'bibliography' in title:
                     self.bib_file = href
                     # Extract references and save skipped text from bibliography file for analysis
                     [items, self._bib_skipped] = PdfParser.parse_target_indent(target_pdf)
                     for ref_num, ref_text in enumerate(items):
-                        # print(ref_text)
                         try:
                             ref = Reference(text=ref_text, ref_num=ref_num+1, cited_by_doi=self.doi, cited_by_zip=self.zip_path)
                             self.bib_refs.append(ref)
                         except:
-                            print("Failed to parse bibliographic reference:", ref_text)
+                            self.logger.warning("Failed to parse bibliographic reference: " + ref_text)
                             self.bib_refs_with_errors.append(ref_text)
                 if self._extract_index and 'index' in title:
-                    print("Parsing index file", href)
+                    self.logger.info("Parsing index file: " + href)
                     self.index_files.append(href)
                     curr_index_types = IndexReference.get_index_types(title)
                     [items, skipped] = PdfParser.parse_target_indent(target_pdf)
+
                     # Save skipped text from index files for analysis
-                    print("\tExtracted index references: ", len(items))
-                    print("\tSkipped lines in index file: ", len(skipped))
+                    self.logger.info("Extracted index references: " + str(len(items)))
+                    self.logger.info("Skipped lines in index file: " + str(len(skipped)))
+
                     if skipped:
                         self._index_skipped.append(skipped)
+
                     # Merge lines that start from digid with previous
                     items = [item.replace("\n", " ").strip() for item in items]
                     ref_items = []
@@ -193,11 +203,11 @@ class Publication(BasePublication):
                                 ref_items.append(ref_text)
                             ref_text = text
                     for ref_num, ref_text in enumerate(ref_items):
-                        ref = IndexReference(UUID=str(uuid.uuid4()), text=ref_text, ref_num=ref_num + 1, cited_by_doi=self.doi, cited_by_zip=self.zip_path,
+                        ref = IndexReference(text=ref_text, ref_num=ref_num + 1, cited_by_doi=self.doi, cited_by_zip=self.zip_path,
                                              types=curr_index_types)
                         self.index_refs.append(ref)
                         if not ref.refs:
-                            # print("Failed to parse index reference:", ref_text)
+                            self.logger.warning("Failed to parse index reference: " + ref_text)
                             self.index_refs_with_errors.append(ref_text)
 
     def disambiguate_bib(self):
@@ -219,10 +229,10 @@ class Publication(BasePublication):
                         terms = re.split('[;,.() ]', part.label)
                         for term in terms:
                             if len(term) >= 5:
-                                print(term)
+                                self.logger.debug("Trying to disambiguate term: " + term)
                                 ext = DisambiguateIndex.find_hucitlib(term)
                                 if ext:
-                                    print(ext)
+                                    self.logger.debug("Found corresponding external term: " + ext)
                                     idx.refers_to.append(ext)
 
     def save(self, out_path: str):
@@ -248,6 +258,7 @@ class Publication(BasePublication):
 
     @classmethod
     def deserialize(cls, props: dict) -> Publication:
+        module_logger.info('Deserializing publication: ' + props["UUID"])
         self = cls(UUID=props["UUID"])
         if "index_files" in props:
             setattr(self, "index_files", props["index_files"].split(";"))

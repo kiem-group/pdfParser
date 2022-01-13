@@ -13,15 +13,18 @@ from model.cluster_bibliographic import Cluster
 from model.cluster_index import IndexCluster
 from model.batch import Batch
 from typing import List, Union
+import logging
 
 
 class DBConnector:
 
     def __init__(self, uri: str, user: str, password: str):
         self.driver = GraphDatabase.driver(uri, auth=(user, password))
+        self.logger = logging.getLogger('pdfParser.dbConnector.' + self.__class__.__name__)
+        self.logger.debug('Created an instance of: %s ', self.__class__.__name__)
 
-    def close(self):
-        self.driver.close()
+    def cdisconnected(self):
+        self.driver.cdisconnected()
 
     # Delete
 
@@ -36,34 +39,56 @@ class DBConnector:
     def delete_node(self, node_uuid: str, session: Session = None):
         if session is None:
             session = self.driver.session()
-        cql_delete_relationships = "MATCH (a) -[r] -> () WHERE a.UUID = $node_uuid DELETE a, r"
-        cql_delete_nodes = "MATCH (a) WHERE a.UUID = $node_uuid DELETE a"
-        session.run(cql_delete_relationships, node_uuid=node_uuid)
+        cql_delete_nodes = "MATCH (a {UUID: $node_uuid}) DETACH DELETE a"
         session.run(cql_delete_nodes, node_uuid=node_uuid)
 
     def delete_empty_nodes(self, node_class: str, session: Session = None):
         if session is None:
             session = self.driver.session()
-        cql_delete_nodes = "MATCH (a: $node_class) DELETE a"
-        session.run(cql_delete_nodes, node_class=node_class)
+        cql_delete_nodes = "MATCH (a: {node_class}) WHERE size((a)--())=0 DELETE a".format(node_class=node_class)
+        session.run(cql_delete_nodes)
 
     def delete_pub(self, pub: Publication, session: Session = None):
         if session is None:
             session = self.driver.session()
+
+        self.logger.debug("# nodes before deleting publication data: %d", self.query_node_count())
+
         self.delete_node(pub.UUID, session)
+
+        # Delete disconnected contributors
+        self.delete_empty_nodes(Contributor.__name__)
+
+        # Delete disconnected industry identifiers
+        # TODO remove obsolete class 'Identifier'
+        self.delete_empty_nodes("Identifier")
+        self.delete_empty_nodes(IndustryIdentifier.__name__)
+
         # Delete references
         if pub.bib_refs:
             for ref in pub.bib_refs:
                 self.delete_node(ref.UUID, session)
+        self.delete_empty_nodes(Reference.__name__)
+
         if pub.index_refs:
             for ref in pub.index_refs:
                 self.delete_node(ref.UUID, session)
-        # Delete lose external publications and index disambiguation links
-        self.delete_empty_nodes("Reference")
-        self.delete_empty_nodes("IndexReference")
+        self.delete_empty_nodes(IndexReference.__name__)
+
+        # TODO test if this works as references are connected to clusters
+
+        # Delete disconnected external publications and external index references
+        self.delete_empty_nodes(ExternalPublication.__name__)
+
+        self.delete_empty_nodes(ExternalIndex.__name__)
+
         # Delete empty clusters
-        self.delete_empty_nodes("Cluster")
-        self.delete_empty_nodes("IndexCluster")
+        self.delete_empty_nodes(Cluster.__name__)
+
+        self.delete_empty_nodes(IndexCluster.__name__)
+
+        self.logger.debug("# nodes after deleting publication data: %d", self.query_node_count())
+
 
     # Create
 
@@ -72,16 +97,21 @@ class DBConnector:
         if session is None:
             session = self.driver.session()
         # TODO create or update
+
+        self.logger.debug("# nodes before adding publication data: %d", self.query_node_count())
+
         # Create publication
         cql_create_pub = """CREATE (:Publication {0})"""
         session.run(cql_create_pub.format(pub.serialize()))
+
         # Create industry identifiers
-        cql_create_id = """CREATE (:Identifier {0})"""
-        cql_create_pub_has_identifier = """MATCH (a:Publication), (b:Identifier)
+        cql_create_id = """CREATE (:IndustryIdentifier {0})"""
+        cql_create_pub_has_identifier = """MATCH (a:Publication), (b:IndustryIdentifier)
            WHERE a.UUID = $pub_uuid AND b.UUID = $id_uuid CREATE (a)-[:HasIdentifier]->(b)"""
         for industry_id in pub.identifiers:
             session.run(cql_create_id.format(industry_id.serialize()))
             session.run(cql_create_pub_has_identifier, pub_uuid=pub.UUID, id_uuid=industry_id.UUID)
+
         # Create contributors: editors or authors
         cql_create_contributor = """CREATE (:Contributor {0})"""
         cql_create_pub_has_contributor = """MATCH (a:Publication), (b:Contributor)
@@ -94,10 +124,15 @@ class DBConnector:
         for idx, author in enumerate(pub.authors):
             session.run(cql_create_contributor.format(author.serialize()))
             session.run(cql_create_pub_has_contributor, pub_uuid=pub.UUID, c_uuid=author.UUID, num=idx)
+
         # Create bibliographic references
         self.create_bib_refs(pub, session)
+
         # Create index references
         self.create_index_refs(pub, session)
+
+        self.logger.debug("# nodes after adding publication data: %d", self.query_node_count())
+
 
     # Create bibliographic references
     def create_bib_refs(self, pub: Publication, session: Session = None):
@@ -197,7 +232,7 @@ class DBConnector:
                     try:
                         self.create_pub(pub, session)
                     except:
-                        print("Failed to serialize publication: ", pub.UUID)
+                        self.logger.error("Failed to serialize publication: ", pub.UUID)
             self.create_clusters(batch, session)
 
     # Query
@@ -260,7 +295,7 @@ class DBConnector:
     # Retrieve publication identifiers
     def query_pub_identifiers(self, pub_uuid: str) -> List[IndustryIdentifier]:
         identifiers = []
-        cql_pub_incl_idx = "MATCH (a:Publication)-[r:HasIdentifier]->(b:Identifier) WHERE a.UUID = $pub_uuid return b"
+        cql_pub_incl_idx = "MATCH (a:Publication)-[r:HasIdentifier]->(b:IndustryIdentifier) WHERE a.UUID = $pub_uuid return b"
         with self.driver.session() as session:
             nodes = session.run(cql_pub_incl_idx, pub_uuid=pub_uuid)
             db_refs = [record for record in nodes.data()]
@@ -302,31 +337,26 @@ class DBConnector:
             return pub
         return None
 
-    # Retrieve all references
-    def query_bib_refs(self, limit: int = None) -> List[Reference]:
+    def process_base_refs(self, cql_refs: str, cls, limit: int = None):
         refs = []
-        cql_refs = "MATCH (a:Reference) return a"
         if limit:
             cql_refs += " limit " + str(limit)
         with self.driver.session() as session:
             nodes = session.run(cql_refs)
             db_refs = [record for record in nodes.data()]
             for db_ref in db_refs:
-                refs.append(Reference.deserialize(db_ref["a"]))
+                refs.append(cls.deserialize(db_ref["a"]))
         return refs
+
+    # Retrieve all references
+    def query_bib_refs(self, limit: int = None) -> List[Reference]:
+        cql_refs = "MATCH (a:Reference) return a"
+        return self.process_base_refs(cql_refs, Reference, limit)
 
     # Retrieve all index references
     def query_index_refs(self, limit: int = None) -> List[IndexReference]:
-        refs = []
         cql_refs = "MATCH (a:IndexReference) return a"
-        if limit:
-            cql_refs += " limit " + str(limit)
-        with self.driver.session() as session:
-            nodes = session.run(cql_refs)
-            db_refs = [record for record in nodes.data()]
-            for db_ref in db_refs:
-                refs.append(IndexReference.deserialize(db_ref["a"]))
-        return refs
+        return self.process_base_refs(cql_refs, IndexReference, limit)
 
     # Retrieve bibliographic references for a cluster
     def query_cluster_bib_refs(self, cluster_uuid: str) -> List[Reference]:
@@ -379,9 +409,15 @@ class DBConnector:
         return clusters
 
     def query_node_count(self) -> int:
-        cql_pubs = "MATCH (a) return count(a)"
+        cql_count = "MATCH (a) return count(a) as node_count"
         with self.driver.session() as session:
-            count = session.run(cql_pubs)
-            print(count)
-            return count
-        return 0
+            res = session.run(cql_count)
+            entries = [record for record in res.data()]
+            return entries[0]['node_count']
+
+    def query_rel_count(self) -> int:
+        cql_count = "MATCH ()-->() RETURN COUNT(*) AS rel_count"
+        with self.driver.session() as session:
+            res = session.run(cql_count)
+            entries = [record for record in res.data()]
+            return entries[0]['rel_count']

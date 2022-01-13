@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 import re
@@ -9,12 +10,13 @@ from model.reference_base import BaseReference
 
 @dataclass_json
 @dataclass
-class ReferencePart(BaseReference):
+class Reference(BaseReference):
     """A class for holding information about a bibliographic reference"""
     authors: [str] = None
     title: str = None
     year: str = None
     refers_to: [ExternalPublication] = None
+    follows: Reference = None
 
     def parse(self):
         if not self.text:
@@ -65,7 +67,7 @@ class ReferencePart(BaseReference):
         return props
 
     @classmethod
-    def deserialize(cls, props: dict) -> BaseReference:
+    def deserialize(cls, props: dict) -> Reference:
         self = cls(UUID=props["UUID"])
         if "authors" in props:
             setattr(self, "authors", props["authors"].split(";"))
@@ -76,8 +78,3 @@ class ReferencePart(BaseReference):
         for key in props.keys():
             setattr(self, key, props[key])
         return self
-
-@dataclass
-class Reference(ReferencePart):
-    """A class for holding information about reference with authors like in a given reference"""
-    follows: ReferencePart = None

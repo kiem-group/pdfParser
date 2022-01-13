@@ -1,10 +1,14 @@
 from model.batch import Batch
+from model.log_config import config_logger
 from os import listdir
 from model.db_connector import DBConnector
 from os.path import isfile, join
 import os
 
 if __name__ == '__main__':
+    # -1. Create logger
+    logger = config_logger()
+
     # 0. Prepare storage
     pwd = os.environ.get('KIEM_NEO4J_PASSWORD')
     db = DBConnector("neo4j+s://aeb0fdae.databases.neo4j.io:7687", "neo4j", pwd)
@@ -18,8 +22,8 @@ if __name__ == '__main__':
         corpus_zip_path = join(dir_path, zip_arr[0])
         start_idx = 0
         # Larger batch is better for clustering as we do not cluster references across batches
-        batch_size = 20
-        end_idx = 100
+        batch_size = 10
+        end_idx = 90
         while start_idx < end_idx:
             batch = Batch.from_zip(zip_path=corpus_zip_path, start=start_idx, size=batch_size,
                                    extract_bib=True, extract_index=True)

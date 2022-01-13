@@ -5,6 +5,7 @@ from model.contributor import Contributor
 from model.industry_identifier import IndustryIdentifier
 from typing import Union
 import uuid
+import logging
 
 
 @dataclass_json
@@ -26,6 +27,8 @@ class BasePublication:
     def __post_init__(self):
         if not self.UUID:
             self.UUID = str(uuid.uuid4())
+        self.logger = logging.getLogger('pdfParser.publication.' + self.__class__.__name__)
+        self.logger.debug('Created an instance of %s for %s ', self.__class__.__name__, self.UUID)
 
     @property
     def doi(self) -> Union[str, None]:
