@@ -3,6 +3,7 @@ import abc
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 import uuid
+import logging
 
 
 @dataclass_json
@@ -19,6 +20,8 @@ class BaseReference(object):
     def __post_init__(self):
         if not self.UUID:
             self.UUID = str(uuid.uuid4())
+        self.logger = logging.getLogger('pdfParser.reference.' + self.__class__.__name__)
+        self.logger.debug('Created an instance of %s for %s ', self.__class__.__name__, self.UUID)
         self.parse()
 
     @abc.abstractmethod

@@ -156,7 +156,6 @@ class PdfParser:
                                 if appr_x >= start + config.indent:
                                     col_num += 1
                             line_chars = cls.__get_text(text_line)
-                            # print("NEXT LINE:", convert_to_str(line_chars))
                             try:
                                 if col_num < n and col_num < len(col_curr):
                                     is_ref_added = split_reference(line_chars, appr_x, col_curr[col_num], starts[col_num])
@@ -169,8 +168,8 @@ class PdfParser:
                                 module_logger.error("Failed to process line", cls.__convert_to_str(line_chars))
                         except:
                              module_logger.error("Failed to get bbox", text_line)
-                # else:
-                    # print("\tNon-text element", element)
+                else:
+                    module_logger.warning("Non-text element: " + element)
         for curr in col_curr:
             if len(curr) > 0:
                 items.append(curr)
@@ -198,6 +197,7 @@ class PdfParser:
         for char in text_line:
             if isinstance(char, LTChar) or isinstance(char, LTAnno):
                 char_list.append(char.get_text())
+                # TODO pass this information the the index reference instance
                 # if 'Bold' in char.fontname:
                 #     print("Bold", char.get_text())
         return char_list

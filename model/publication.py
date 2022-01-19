@@ -12,7 +12,6 @@ from model.industry_identifier import IndustryIdentifier
 from model.publication_base import BasePublication
 from model.disambiguate_bibliographic import DisambiguateBibliographic
 from model.disambiguate_index import DisambiguateIndex
-import re
 import logging
 
 module_logger = logging.getLogger('pdfParser.publication')
@@ -224,16 +223,13 @@ class Publication(BasePublication):
                 # TODO optimize via cache dictionary {term: ExternalIndex}?
                 # TODO optimize via clustering
                 idx.refers_to = []
-                for part in idx.refs:
-                    if part.label:
-                        terms = re.split('[;,.() ]', part.label)
-                        for term in terms:
-                            if len(term) >= 5:
-                                self.logger.debug("Trying to disambiguate term: " + term)
-                                ext = DisambiguateIndex.find_hucitlib(term)
-                                if ext:
-                                    self.logger.debug("Found corresponding external term: " + ext)
-                                    idx.refers_to.append(ext)
+                terms = idx.terms
+                for term in terms:
+                    self.logger.debug("Trying to disambiguate term: " + term)
+                    ext = DisambiguateIndex.find_hucitlib(term)
+                    if ext:
+                        self.logger.debug("Found corresponding external term: " + ext)
+                        idx.refers_to.append(ext)
 
     def save(self, out_path: str):
         # TODO override to be able to load correctly

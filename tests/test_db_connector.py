@@ -11,7 +11,7 @@ class TestDBConnector(unittest.TestCase):
         self.pwd = os.environ.get('KIEM_NEO4J_PASSWORD')
         self.assertIsNotNone(self.pwd)
         self.db = DBConnector("neo4j+s://aeb0fdae.databases.neo4j.io:7687", "neo4j", self.pwd)
-        self.logger = config_logger()
+        self.logger = config_logger("test_db_connector.log")
 
     def test_query_nodes(self):
         # Retrieve 20 publications
@@ -87,4 +87,6 @@ class TestDBConnector(unittest.TestCase):
         rel_count = self.db.query_rel_count()
         self.assertGreaterEqual(node_count, 10215)
         self.assertGreaterEqual(rel_count, 10108)
+
+
 

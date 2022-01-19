@@ -7,6 +7,7 @@ from model.reference_base import BaseReference
 from model.index_external import ExternalIndex
 import uuid
 from typing import List
+import re
 
 
 @dataclass_json
@@ -64,6 +65,18 @@ class IndexReference(BaseReference):
     inline: bool = False
 
     @property
+    def terms(self) -> [str]:
+        res = []
+        if self.refs is not None:
+            for part in self.refs:
+                if part.label:
+                    terms = re.split('[;,.() ]', part.label)
+                    for term in terms:
+                        if len(term) >= 5:
+                            res.append(term)
+        return res
+
+    @property
     def props(self) -> dict:
         props = BaseReference.props.fget(self)
         props["types"] = ";".join(self.types)
@@ -72,12 +85,13 @@ class IndexReference(BaseReference):
     @classmethod
     def deserialize(cls, props: dict) -> IndexReference:
         self = cls(UUID=props["UUID"])
-        del props["text"]
         if "types" in props:
             setattr(self, "types", props["types"].split(";"))
             del props["types"]
         for key in props.keys():
             setattr(self, key, props[key])
+        # Restore index parts
+        self.parse()
         return self
 
     def parse(self):
@@ -87,12 +101,12 @@ class IndexReference(BaseReference):
         # TODO Can parsing benefit from special spacing?
         self.text = self.text.replace(" ", " ")
         self.text = self.text.replace(" ", " ")
-        # print("Parsing index text as " + " or ".join(self.types) +": ", self.text)
+        self.logger.debug("Parsing index text as " + " or ".join(self.types) + ": " + self.text)
         if len(self.text) < 5:
-            print("Index text is too short", self.text)
+            self.logger.warning("Index text is too short: " + self.text)
             return
         if len(self.text) > 3000:
-            print("Index text is too long", self.text)
+            self.logger.warning("Index text is too long: " + self.text)
             return
         if self.types:
             self.refs = []
@@ -110,9 +124,9 @@ class IndexReference(BaseReference):
                 if self.types[0] in options.keys():
                     options[self.types[0]]()
                 else:
-                    print("No parsers for this index type yet", ", ".join(self.types), self.text)
-        # else:
-        #     print("Unclassified index: ", self.text)
+                    self.logger.warning("No parsers for the index types: %s", ", ".join(self.types))
+        else:
+            self.logger.warning("Unclassified index: ", self.text)
 
     def __parse_as_locorum(self):
         try:
@@ -121,13 +135,13 @@ class IndexReference(BaseReference):
             else:
                 return self.__parse_loop(self.__parse_pattern1)
         except ParseException:
-            print("Failed to parse index locorum: ", self.text)
+            self.logger.error("Failed to parse as index locorum: " + self.text)
 
     def __parse_as_rerum(self):
         try:
             self.__parse_loop(self.__parse_pattern2)
         except ParseException:
-            print("Failed to parse index rerum: ", self.text)
+            self.logger.error("Failed to parse as index rerum: " + self.text)
 
     def __parse_as_nominum_ancient(self):
         try:
@@ -135,7 +149,7 @@ class IndexReference(BaseReference):
             idx_ref = IndexReferencePart(label=" ".join(ref.label).strip(), occurrences=ref.occurrences, note=ref.rest)
             self.refs.append(idx_ref)
         except ParseException:
-            print("Failed to parse index nominum (ancient): ", self.text)
+            self.logger.error("Failed to parse as index nominum (ancient): ", self.text)
 
     def __parse_as_nominum_modern(self):
         try:
@@ -143,25 +157,25 @@ class IndexReference(BaseReference):
             idx_ref = IndexReferencePart(label=" ".join(ref.label).strip(), occurrences=ref.occurrences, note=ref.rest)
             self.refs.append(idx_ref)
         except ParseException:
-            print("Failed to parse index nominum (modern): ", self.text)
+            self.logger.error("Failed to parse as index nominum (modern): " + self.text)
 
     def __parse_as_verborum(self):
         try:
             self.__parse_loop(self.__parse_pattern2)
         except ParseException:
-            print("Failed to parse index verborum: ", self.text)
+            self.logger.error("Failed to parse as index verborum: " + self.text)
 
     def __parse_as_epigraphic(self):
-        print("No parser for index epigraphic: ", self.text)
+        self.logger.error("No parser for index epigraphic: " + self.text)
 
     def __parse_as_geographicus(self):
         try:
             self.__parse_loop(self.__parse_pattern2)
         except ParseException:
-            print("Failed to parse index geographicus: ", self.text)
+            self.logger.error("Failed to parse index geographicus: " + self.text)
 
     def __parse_as_bibliographicus(self):
-        print("No parser for index bibliographicus: ", self.text)
+        self.logger.error("No parser for index bibliographicus: " + self.text)
 
     def __parse_loop(self, processor):
         text = self.text
@@ -285,9 +299,7 @@ class IndexReference(BaseReference):
                         if hits[key] > max_hit:
                             max_hit = hits[key]
         if not bool(hits.keys()):
-            print(index_title)
             return ['unknown']
-        # return hits.keys()
         return [k for k, v in hits.items() if v == max_hit]
 
         # index of very specific stuff

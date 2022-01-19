@@ -1,12 +1,10 @@
 import csv
-import re
 import unittest
 from urllib.parse import quote
 import Levenshtein
 from model.disambiguate_bibliographic import DisambiguateBibliographic
 from model.batch import Batch
 from model.reference_bibliographic import Reference
-from model.publication import Publication
 
 
 def get_clustered_refs_flat(file_path) -> [str]:
@@ -95,23 +93,6 @@ class TestClassifier(unittest.TestCase):
         out.close()
         test_dataset.close()
 
-    # Disambiguate selected references
-    def test_disambiguation(self):
-        refs = [
-            "Vernant, Jean - Pierre, Mythe et société en Grèce ancienne (Paris, 2004).",
-            "Vernant, Jean - Pierre, Problèmes de la guerre en Grèce ancienne (Paris, 1999).",
-            ("Vernant, Jean-Pierre, “One ... Two ... Three: Eros,” in Before Sexuality: "
-                "The Construction of Erotic Experience in the Ancient Greek World, "
-                "ed. Donald M. Halperin, John J. Winkler, and Froma I. Zeitlin (Princeton, 1999), 465-478."),
-            "Syme, Ronald, The Roman Revolution (Oxford, 1939).",
-            "Syme, R., The Roman Revolution (Oxford, 1960)."
-        ]
-        for ref in refs:
-            parts = re.split('[;,()]', ref)
-            title = max(parts, key=len)
-            book_data = DisambiguateBibliographic.query_google_books(title, "")
-            self.assertGreaterEqual(int(book_data['totalItems']), 1)
-
     # Disambiguate parsed references from file
     def test_ref_parsing(self):
         data = get_clustered_refs_flat('data/41a8cdce8aae605806c445f28971f623/clusters.txt')
@@ -185,100 +166,6 @@ class TestClassifier(unittest.TestCase):
                     out_file.write("\t" + best_match_authors + ": " + best_match["title"] + "\n")
         print(str(found) + " out of " + str(len(data)))
         out_file.close()
-
-    # @unittest.skip("Query based on keywords + intitle should help to locate requested publication")
-    def test_google_api_format(self):
-        ref = "The Brazen House. A Study of the Vestibule of the Imperial Palace of Constantinople"
-        ext_text = "The Brazen House"
-        ext = "&intitle:" + quote(ext_text)
-        res = DisambiguateBibliographic.query_google_books(ref, ext)
-        self.assertEqual(10, len(res["items"]))
-        self.assertEqual("The Brazen House", res["items"][0]["volumeInfo"]["title"])
-
-    # Parsing of indices from zipped pdf files
-    def test_extract_and_parse_indices(self):
-        batch = Batch.from_zip('data/41a8cdce8aae605806c445f28971f623.zip', extract_index=True, extract_bib=False, size=5)
-        index_count = [0, 335, 14, 30, 100]
-        for idx, pub in enumerate(batch.publications):
-            self.assertEqual(len(pub.index_refs), index_count[idx])
-        batch.cluster()
-        index_clusters = [cluster for cluster in batch.cluster_set_index.clusters if len(cluster.refs) > 1]
-        self.assertGreaterEqual(len(index_clusters), 5)
-
-    # Evaluation of disambiguation on human labelled data
-    def test_evaluate_disambiguation(self):
-        with open('data_test/ref_sample_disambiguation_100.csv', "r", encoding='utf-8', newline="") as f:
-            reader = csv.reader(f, delimiter=",")
-            # Skip header
-            next(reader, None)
-            count = 0
-            google_count = 0
-            google_success = 0
-            crossref_count = 0
-            crossref_success = 0
-            for row in reader:
-                text = row[0]
-                ref = Reference(text)
-                # print(ref.authors, ref.title)
-                ext = "&intitle:" + quote(ref.title)
-                crossref = row[4]
-                google = row[5]
-                if google != 'n/a':
-                    google_count += 1
-                    res = DisambiguateBibliographic.query_google_books(ref.title, ext)
-                    items = res["items"]
-                    google_id = items[0]["selfLink"].split('/')[-1]
-                    given_google_id = google.split('=')[-1]
-                    print("Google API:", google_id, given_google_id)
-                    if google_id == given_google_id:
-                        google_success += 1
-                if crossref != 'n/a':
-                    crossref_count += 1
-                    res = DisambiguateBibliographic.query_crossref_pub(text)
-                    doi = res["DOI"].split('/')[-1]
-                    given_doi = crossref.split('/')[-1]
-                    print("Crossref API:", doi, given_doi)
-                    if given_doi.startswith(doi) or doi.startswith(given_doi):
-                        crossref_success += 1
-                count += 1
-                if count > 100:
-                    break
-            print(google_success, google_count)
-            print(crossref_success, crossref_count)
-
-    # Estimation of success rate of disambiguation
-    def test_self_evaluate_disambiguation(self):
-        header = ["Reference", "Google API", "CrossRef", "DOI", "ISBN", "Industry identifiers", "Remarks"]
-        f = open('data_test/ref_sample_disambiguation_revised.csv', "w", encoding='utf-8', newline="")
-        writer = csv.writer(f)
-        writer.writerow(header)
-        with open('data_test/ref_sample_disambiguation_100.csv', "r", encoding='utf-8', newline="") as f:
-            reader = csv.reader(f, delimiter=",")
-            next(reader, None)
-            count = 0
-            google_success = 0
-            crossref_success = 0
-            for row in reader:
-                text = row[0]
-                ref = Reference(text)
-                DisambiguateBibliographic.find_google_books(ref)
-                if ref.url_google:
-                    google_success += 1
-                DisambiguateBibliographic.find_crossref(ref)
-                if ref.url_crossref is not None or ref.doi is not None:
-                    crossref_success += 1
-                if ref.url_google is not None or ref.url_crossref is not None or ref.doi is not None:
-                    count += 1
-                print(text, ref.url_google, ref.url_crossref, ref.doi, ref.isbn, ref.industry_identifiers)
-            print(count, google_success, crossref_success)
-
-    # Disambiguation with OpenCitation API
-    def test_query_open_citations_pub(self):
-        pub = Publication.from_zip('./data_test/9789004188846_BITS.zip', extract_bib=True)
-        print(len(pub.bib_refs))
-        if pub.doi:
-            res = DisambiguateBibliographic.query_open_citations(pub.doi)
-            self.assertGreaterEqual(len(res), 3)
 
 
 if __name__ == '__main__':

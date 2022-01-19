@@ -14,7 +14,7 @@ from model.cluster_index import IndexClusterSet
 @dataclass
 class Batch:
     """A class for holding information about a batch of publications"""
-
+    # TODO add collected stats to the logs
     zip_path: str
     publications: [Publication]
     cluster_set_bib: ClusterSet = None
@@ -60,7 +60,6 @@ class Batch:
         end = m if size < 0 else min(start + size, m)
         batch = Batch(zip_path=zip_path, publications=[], start=start,
                       size=end-start, extract_bib=extract_bib, extract_index=extract_index)
-        # print(batch)
         batch_dir_path = os.path.splitext(zip_path)[0]
         for i in range(start, end):
             pub_zip_name = batch_zip.namelist()[i]

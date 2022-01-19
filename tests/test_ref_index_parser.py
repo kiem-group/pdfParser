@@ -1,13 +1,15 @@
 import unittest
-from model.publication import Publication
-from model.contributor import Contributor
-from model.reference_bibliographic import Reference
 from model.reference_index import IndexReference
-from dataclasses import asdict
-import json
+from model.batch import Batch
+from model.disambiguate_index import DisambiguateIndex
+from model.log_config import config_logger
+import csv
 
 
-class TestModel(unittest.TestCase):
+class TestIndexParser(unittest.TestCase):
+
+    def setUp(self):
+        self.logger = config_logger("test_ref_idx_parser.log")
 
     # Parse index locorum (occurence in the text)
     def test_index_locorum_inline_parser(self):
@@ -128,83 +130,6 @@ class TestModel(unittest.TestCase):
         self.assertEqual(15, len(nested_idx.refs))
         self.assertEqual("108–9/126–7", nested_idx.refs[14].locus)
 
-    # Test whether publication information is correctly extracted from JATS
-    def test_publication_parser(self):
-        zip_file = '../data_test/9783657782116_BITS.zip'
-        pub = Publication.from_zip(zip_file)
-        self.assertEqual("ger", pub.lang)
-        self.assertEqual("10.30965/9783657782116", pub.doi)
-        self.assertEqual(['9783506782113', '9783657782116'], pub.isbn)
-        self.assertIsNone(pub.issn)
-        self.assertEqual('Prosper Tiro Chronik - Laterculus regum Vandalorum et Alanorum', pub.title)
-        self.assertEqual(2, len(pub.editors))
-        self.assertEqual(0, len(pub.authors))
-        self.assertEqual('BRILL', pub.publisher)
-        self.assertEqual('Netherlands', pub.location)
-        self.assertEqual('2016', pub.year)
-        self.assertEqual('../data_test/9783657782116_BITS.zip', pub.zip_path)
-
-    # Parse bibliographic reference
-    def test_reference_parser(self):
-        data = [
-            "C. Lane, Venise, une République maritime, Paris, 1988, p. 344;",
-            "Lane, Frédéric Chapin. Venise : une république maritime, préface de Fernand Braudel; trail, de l'américain par Yannick Bourdoiseau et Marie Ymonel. Paris, Flammarion, coll. «Champs». 1988.",
-            "Coulon, V., ed. 1923-1930. Aristophane, 5 vols., trans. H. van Daele. Paris"
-        ]
-        for ref_text in data:
-            ref = Reference(ref_text)
-            self.assertIsNotNone(ref.year)
-            self.assertIsNotNone(ref.authors)
-            self.assertIsNotNone(ref.title)
-            # print(ref.authors, "#", ref.year, "#", ref.title)
-        ref = Reference("D’Andria, F. “Scavi nella zona del Kerameikos.” (NSA Supplement 29: Metaponto I) 355-452")
-        self.assertEqual("D’Andria, F.", "".join(ref.authors))
-        self.assertEqual("Scavi nella zona del Kerameikos", ref.title)
-
-    # Parse publication
-    def test_publication_bib_parser(self):
-        pub = Publication.from_zip('../data_test/9789004188846_BITS.zip', extract_bib=True)
-        # Check UUID
-        self.assertIsNotNone(pub.UUID)
-        # Check identifiers
-        self.assertGreaterEqual(len(pub.identifiers), 1)
-        self.assertEqual(pub.identifiers[0].format, 'print')
-        self.assertEqual(pub.identifiers[0].type, 'issn')
-        self.assertEqual(pub.identifiers[0].id, '1872-3357')
-        # Check contributors
-        self.assertGreaterEqual(len(pub.editors), 1)
-        self.assertEqual(pub.editors[0].surname, 'Dobrov')
-        self.assertEqual(pub.editors[0].given_names, 'Gregory W.')
-        # Check bibliographic references
-        self.assertEqual(1236, len(pub.bib_refs))
-        self.assertEqual('2003', pub.bib_refs[0].year)
-        self.assertEqual('1987', pub.bib_refs[5].year)
-        self.assertEqual(('Athena’s Epithets: Their Structural Significance in the Plays of '
-                         'Aristophanes (Beiträge zur Altertumskunde 67)'), pub.bib_refs[10].title)
-        pub.save("../tmp/9789004188846_BITS.pub")
-        # pub_copy = Publication.load("../tmp/9789004188846_BITS.pub")
-        # print(pub_copy)
-        for author in pub.editors:
-            x = json.dumps(asdict(author))
-            y = Contributor.from_json(x)
-            self.assertEqual(y.surname, 'Dobrov')
-            self.assertEqual(y.given_names, 'Gregory W.')
-
-    def test_props(self):
-        author = Contributor(UUID="3a9987f0-40c8-42d3-9ff8-24a5289ae978", type="author", surname="Smith", given_names="Mike")
-        s = author.serialize()
-        self.assertEqual('{type: "author", surname: "Smith", '
-                         'given_names: "Mike", full_name: "None", UUID: "3a9987f0-40c8-42d3-9ff8-24a5289ae978"}', s)
-        pub1 = Publication("Some book")
-        pub2 = Publication("Some other book")
-        self.assertNotEqual(pub1.UUID, pub2.UUID)
-        ref1 = Reference("Some reference")
-        ref2 = Reference("Some other reference")
-        self.assertNotEqual(ref1.UUID, ref2.UUID)
-        idx1 = IndexReference("Some index")
-        idx2 = IndexReference("Some other index")
-        self.assertNotEqual(idx1.UUID, idx2.UUID)
-
     # Index is disambiguated via Hucitlib
     def test_disambiguate_index_author(self):
         from model.disambiguate_index import DisambiguateIndex
@@ -212,6 +137,54 @@ class TestModel(unittest.TestCase):
         self.assertIsNotNone(ext_idx)
         ext_idx = DisambiguateIndex.find_hucitlib('Agamemnon')
         self.assertIsNotNone(ext_idx)
+        ext_idx = DisambiguateIndex.find_hucitlib("Jesus")
+        self.assertIsNotNone(ext_idx)
+
+    # Parsing of indices from zipped pdf files
+    def test_extract_and_parse_indices(self):
+        batch = Batch.from_zip('data/41a8cdce8aae605806c445f28971f623.zip', extract_index=True, extract_bib=False, size=5)
+        index_count = [0, 335, 14, 30, 100]
+        for idx, pub in enumerate(batch.publications):
+            self.assertEqual(len(pub.index_refs), index_count[idx])
+        batch.cluster()
+        index_clusters = [cluster for cluster in batch.cluster_set_index.clusters if len(cluster.refs) > 1]
+        self.assertGreaterEqual(len(index_clusters), 5)
+
+    # Estimation of success rate of disambiguation
+    def test_evaluate_index_disambiguation(self):
+        self.logger.info("Started test_evaluate_index_disambiguation")
+        header = ["Reference", "HucitLib", "HumanEvaluation", "HumanLink"]
+        with open('../data_test/test_evaluate_idx_disambiguation.csv', "w", encoding='utf-8', newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(header)
+            from model.db_connector import DBConnector
+            import os
+            pwd = os.environ.get('KIEM_NEO4J_PASSWORD')
+            db = DBConnector("neo4j+s://aeb0fdae.databases.neo4j.io:7687", "neo4j", pwd)
+            cql_refs = "MATCH (a:IndexReference) WHERE a.types CONTAINS 'locorum' OR a.types CONTAINS 'nominum' " \
+                       "return a, rand() as r ORDER BY r"
+            idx_refs = db.query_resource(cql_refs, IndexReference, 50)
+            success_hucitlib = 0
+            count = 0
+            self.logger.debug("Indices restored, starting disambiguation...")
+            for idx in idx_refs:
+                url_hucitlib = []
+                terms = idx.terms
+                print("Searching for: ", terms)
+                for term in terms:
+                    ext = DisambiguateIndex.find_hucitlib(term)
+                    if ext:
+                        self.logger.debug("Found corresponding external term: " + ext)
+                        idx.refers_to.append(ext)
+                if idx.refers_to is not None:
+                    url_hucitlib = [e.uri for e in idx.refers_to if e.uri is not None]
+                    success_hucitlib += 1 if len(url_hucitlib) > 0 else 0
+                out_hucitlib = ", ".join(url_hucitlib)
+                count += 1
+                self.logger.info(str(count) + " (" + ", ".join(terms) + ") " + out_hucitlib)
+                writer.writerow([idx.text, out_hucitlib])
+            self.logger.info("Success rate: %s/50", success_hucitlib)
+            self.logger.info("Finished test_evaluate_index_disambiguation")
 
 
 if __name__ == '__main__':

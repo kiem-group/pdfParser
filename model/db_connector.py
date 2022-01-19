@@ -337,7 +337,7 @@ class DBConnector:
             return pub
         return None
 
-    def process_base_refs(self, cql_refs: str, cls, limit: int = None):
+    def query_resource(self, cql_refs: str, cls, limit: int = None):
         refs = []
         if limit:
             cql_refs += " limit " + str(limit)
@@ -351,12 +351,12 @@ class DBConnector:
     # Retrieve all references
     def query_bib_refs(self, limit: int = None) -> List[Reference]:
         cql_refs = "MATCH (a:Reference) return a"
-        return self.process_base_refs(cql_refs, Reference, limit)
+        return self.query_resource(cql_refs, Reference, limit)
 
     # Retrieve all index references
     def query_index_refs(self, limit: int = None) -> List[IndexReference]:
         cql_refs = "MATCH (a:IndexReference) return a"
-        return self.process_base_refs(cql_refs, IndexReference, limit)
+        return self.query_resource(cql_refs, IndexReference, limit)
 
     # Retrieve bibliographic references for a cluster
     def query_cluster_bib_refs(self, cluster_uuid: str) -> List[Reference]:

@@ -66,7 +66,7 @@ class DisambiguateBibliographic:
         if ref is None or ref.text is None:
             return
         res = cls.query_crossref_pub(ref.text)
-        if "title" in res:
+        if res is not None and ("title" in res):
             if len(res["title"]) > 0:
                 ratio = Levenshtein.ratio(ref.title, res["title"][0])
                 if ratio >= threshold:
