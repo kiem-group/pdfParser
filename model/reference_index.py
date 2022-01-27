@@ -149,7 +149,7 @@ class IndexReference(BaseReference):
             idx_ref = IndexReferencePart(label=" ".join(ref.label).strip(), occurrences=ref.occurrences, note=ref.rest)
             self.refs.append(idx_ref)
         except ParseException:
-            self.logger.error("Failed to parse as index nominum (ancient): ", self.text)
+            self.logger.error("Failed to parse as index nominum (ancient): " + self.text)
 
     def __parse_as_nominum_modern(self):
         try:

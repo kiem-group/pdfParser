@@ -131,14 +131,29 @@ class TestIndexParser(unittest.TestCase):
         self.assertEqual("108–9/126–7", nested_idx.refs[14].locus)
 
     # Index is disambiguated via Hucitlib
-    def test_disambiguate_index_author(self):
-        from model.disambiguate_index import DisambiguateIndex
+    def test_disambiguate_index_hucitlib(self):
+        self.logger.info("Testing Hucitlib...")
+        ext_idx = DisambiguateIndex.find_hucitlib('Omero')
+        self.assertIsNotNone(ext_idx)
         ext_idx = DisambiguateIndex.find_hucitlib('Aeschylus')
         self.assertIsNotNone(ext_idx)
         ext_idx = DisambiguateIndex.find_hucitlib('Agamemnon')
         self.assertIsNotNone(ext_idx)
         ext_idx = DisambiguateIndex.find_hucitlib("Jesus")
         self.assertIsNotNone(ext_idx)
+
+    # Index is disambiguated via Wikidata
+    def test_disambiguate_index_wikidata(self):
+        self.logger.info("Testing Wikidata...")
+        ext_idx = DisambiguateIndex.find_wikidata('Aeschylus')
+        self.assertIsNotNone(ext_idx)
+        self.assertEqual(ext_idx.uri, "//www.wikidata.org/wiki/Q40939")
+        ext_idx = DisambiguateIndex.find_wikidata('Agamemnon')
+        self.assertIsNotNone(ext_idx)
+        ext_idx = DisambiguateIndex.find_wikidata("Omero")
+        self.assertIsNotNone(ext_idx)
+        ext_idx = DisambiguateIndex.find_wikidata('No-entry-rubbish-text')
+        self.assertIsNone(ext_idx)
 
     # Parsing of indices from zipped pdf files
     def test_extract_and_parse_indices(self):
@@ -153,8 +168,8 @@ class TestIndexParser(unittest.TestCase):
     # Estimation of success rate of disambiguation
     def test_evaluate_index_disambiguation(self):
         self.logger.info("Started test_evaluate_index_disambiguation")
-        header = ["Reference", "HucitLib", "HumanEvaluation", "HumanLink"]
-        with open('../data_test/test_evaluate_idx_disambiguation.csv', "w", encoding='utf-8', newline="") as f:
+        header = ["Reference", "Wikidata", "HumanEvaluation", "HumanLink"]
+        with open('../data_test/test_evaluate_idx_disambiguation_500.csv', "w", encoding='utf-8', newline="") as f:
             writer = csv.writer(f)
             writer.writerow(header)
             from model.db_connector import DBConnector
@@ -163,27 +178,28 @@ class TestIndexParser(unittest.TestCase):
             db = DBConnector("neo4j+s://aeb0fdae.databases.neo4j.io:7687", "neo4j", pwd)
             cql_refs = "MATCH (a:IndexReference) WHERE a.types CONTAINS 'locorum' OR a.types CONTAINS 'nominum' " \
                        "return a, rand() as r ORDER BY r"
-            idx_refs = db.query_resource(cql_refs, IndexReference, 50)
-            success_hucitlib = 0
+            idx_refs = db.query_resource(cql_refs, IndexReference, 500)
+            success_wikidata = 0
             count = 0
             self.logger.debug("Indices restored, starting disambiguation...")
             for idx in idx_refs:
-                url_hucitlib = []
+                url_wikidata = []
                 terms = idx.terms
-                print("Searching for: ", terms)
                 for term in terms:
-                    ext = DisambiguateIndex.find_hucitlib(term)
+                    self.logger.debug("Searching for: %s", term)
+                    ext = DisambiguateIndex.find_wikidata(term)
                     if ext:
-                        self.logger.debug("Found corresponding external term: " + ext)
+                        if idx.refers_to is None:
+                            idx.refers_to = []
                         idx.refers_to.append(ext)
                 if idx.refers_to is not None:
-                    url_hucitlib = [e.uri for e in idx.refers_to if e.uri is not None]
-                    success_hucitlib += 1 if len(url_hucitlib) > 0 else 0
-                out_hucitlib = ", ".join(url_hucitlib)
+                    url_wikidata = [e.uri for e in idx.refers_to if e.uri is not None]
+                    success_wikidata += 1 if len(url_wikidata) > 0 else 0
+                out_wikidata = ", ".join(url_wikidata)
                 count += 1
-                self.logger.info(str(count) + " (" + ", ".join(terms) + ") " + out_hucitlib)
-                writer.writerow([idx.text, out_hucitlib])
-            self.logger.info("Success rate: %s/50", success_hucitlib)
+                self.logger.info(str(count) + " (" + ", ".join(terms) + ") " + out_wikidata)
+                writer.writerow([idx.text, out_wikidata])
+            self.logger.info("Success rate: %s/50", success_wikidata)
             self.logger.info("Finished test_evaluate_index_disambiguation")
 
 
