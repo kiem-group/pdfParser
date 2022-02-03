@@ -116,9 +116,6 @@ class MapToSpar:
         g.add((ref_id, RDF.type, BIRO.BibliographicReference))
         g.add((ref_id, DCTERMS.bibliographicCitation, Literal(ref.text)))
         # Optional biro:references - point to disambiguation links
-        if ref.refers_to:
-            if ref.refers_to.url_google:
-                g.add((ref.id, BIRO.References, URIRef(ref.refers_to.url_google)))
-            if ref.refers_to.url_crossref:
-                g.add((ref.id, BIRO.References, URIRef(ref.refers_to.url_crossref)))
+        if ref.refers_to and ref.refers_to.url:
+            g.add((ref.id, BIRO.References, URIRef(ref.refers_to.url)))
 

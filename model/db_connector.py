@@ -2,6 +2,7 @@
 # Maps KIEM resources to Neo4j graph
 
 from neo4j import GraphDatabase, Session
+from model.publication_base import BasePublication
 from model.publication import Publication
 from model.contributor import Contributor
 from model.industry_identifier import IndustryIdentifier
@@ -21,7 +22,7 @@ class DBConnector:
     def __init__(self, uri: str, user: str, password: str):
         self.driver = GraphDatabase.driver(uri, auth=(user, password))
         self.logger = logging.getLogger('pdfParser.dbConnector.' + self.__class__.__name__)
-        self.logger.debug('Created an instance of: %s ', self.__class__.__name__)
+        # self.logger.debug('Created an instance of: %s ', self.__class__.__name__)
 
     def cdisconnected(self):
         self.driver.cdisconnected()
@@ -41,6 +42,12 @@ class DBConnector:
             session = self.driver.session()
         cql_delete_nodes = "MATCH (a {UUID: $node_uuid}) DETACH DELETE a"
         session.run(cql_delete_nodes, node_uuid=node_uuid)
+
+    def detach_delete_nodes(self, node_class: str, session: Session = None):
+        if session is None:
+            session = self.driver.session()
+        cql_delete_nodes = "MATCH (a: {node_class}) DETACH DELETE a".format(node_class=node_class)
+        session.run(cql_delete_nodes)
 
     def delete_empty_nodes(self, node_class: str, session: Session = None):
         if session is None:
@@ -111,28 +118,32 @@ class DBConnector:
         for industry_id in pub.identifiers:
             session.run(cql_create_id.format(industry_id.serialize()))
             session.run(cql_create_pub_has_identifier, pub_uuid=pub.UUID, id_uuid=industry_id.UUID)
-
         # Create contributors: editors or authors
-        cql_create_contributor = """CREATE (:Contributor {0})"""
-        cql_create_pub_has_contributor = """MATCH (a:Publication), (b:Contributor)
-                  WHERE a.UUID = $pub_uuid AND b.UUID = $c_uuid CREATE (a)-[:HasContributor {num: $num}]->(b)"""
-        # Create editors
-        for idx, editor in enumerate(pub.editors):
-            session.run(cql_create_contributor.format(editor.serialize()))
-            session.run(cql_create_pub_has_contributor, pub_uuid=pub.UUID, c_uuid=editor.UUID, num=idx)
-        # Create authors
-        for idx, author in enumerate(pub.authors):
-            session.run(cql_create_contributor.format(author.serialize()))
-            session.run(cql_create_pub_has_contributor, pub_uuid=pub.UUID, c_uuid=author.UUID, num=idx)
-
+        self.create_contributor(pub, session)
         # Create bibliographic references
         self.create_bib_refs(pub, session)
-
         # Create index references
         self.create_index_refs(pub, session)
-
         self.logger.debug("# nodes after adding publication data: %d", self.query_node_count())
 
+    def create_contributor(self, pub: BasePublication, session: Session = None):
+        if session is None:
+            session = self.driver.session()
+        # TODO check whether contributor already exists?
+        # Create contributors: editors or authors
+        cql_create_contributor = """CREATE (:Contributor {0})"""
+        cql_create_pub_has_contributor = """MATCH (a), (b:Contributor)
+                  WHERE a.UUID = $pub_uuid AND b.UUID = $c_uuid CREATE (a)-[:HasContributor {num: $num}]->(b)"""
+        # Create editors
+        if pub.editors:
+            for idx, editor in enumerate(pub.editors):
+                session.run(cql_create_contributor.format(editor.serialize()))
+                session.run(cql_create_pub_has_contributor, pub_uuid=pub.UUID, c_uuid=editor.UUID, num=idx)
+        # Create authors
+        if pub.authors:
+            for idx, author in enumerate(pub.authors):
+                session.run(cql_create_contributor.format(author.serialize()))
+                session.run(cql_create_pub_has_contributor, pub_uuid=pub.UUID, c_uuid=author.UUID, num=idx)
 
     # Create bibliographic references
     def create_bib_refs(self, pub: Publication, session: Session = None):
@@ -172,6 +183,8 @@ class DBConnector:
            WHERE a.UUID = $ref_uuid AND b.UUID = $ext_pub_uuid CREATE (a)-[:RefersTo]->(b)"""
         session.run(cql_create_ext_pub.format(ext_pub.serialize()))
         session.run(cql_create_ref_refers_to_ext_pub, ref_uuid=ref_uuid, ext_pub_uuid=ext_pub.UUID)
+        # Create contributors: editors or authors
+        self.create_contributor(ext_pub, session)
 
     # Create external nodes that disambiguate index references
     def create_ext_index(self, ext_idx: ExternalIndex, ref_uuid: str, session: Session = None):
@@ -232,7 +245,7 @@ class DBConnector:
                     try:
                         self.create_pub(pub, session)
                     except:
-                        self.logger.error("Failed to serialize publication: ", pub.UUID)
+                        self.logger.error("Failed to serialize publication: %s", pub.UUID)
             self.create_clusters(batch, session)
 
     # Query
@@ -369,7 +382,7 @@ class DBConnector:
                 refs.append(Reference.deserialize(db_ref["a"]))
         return refs
 
-    # Retrieve bibliographic references for a cluster
+    # Retrieve index references for a cluster
     def query_cluster_index_refs(self, cluster_uuid: str) -> List[IndexReference]:
         refs = []
         cql_pub_cites_ref = "MATCH (a:IndexReference)-[r:BelongsTo]->(b:IndexCluster) WHERE b.UUID = $cluster_uuid return a"

@@ -48,7 +48,9 @@ class Batch:
             self.cluster_set_index.add_references(pub.index_refs)
 
     def disambiguate(self):
-        pass
+        for pub in self.publications:
+            pub.disambiguate_bib()
+            pub.disambiguate_index()
 
     # Extract information about a batch of publications
     @classmethod

@@ -21,7 +21,7 @@ class BaseReference(object):
         if not self.UUID:
             self.UUID = str(uuid.uuid4())
         self.logger = logging.getLogger('pdfParser.reference.' + self.__class__.__name__)
-        self.logger.debug('Created an instance of %s for %s ', self.__class__.__name__, self.UUID)
+        # self.logger.debug('Created an instance of %s for %s ', self.__class__.__name__, self.UUID)
         self.parse()
 
     @abc.abstractmethod

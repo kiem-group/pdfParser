@@ -6,7 +6,7 @@ def config_logger(file_name: str = "pdf_parser.log"):
     pipeline_logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     # create file handler
-    fh = logging.FileHandler(file_name)
+    fh = logging.FileHandler(file_name, 'w', 'utf-8')
     fh.setLevel(logging.DEBUG)
     fh.setFormatter(formatter)
     pipeline_logger.addHandler(fh)

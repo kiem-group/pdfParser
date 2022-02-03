@@ -56,17 +56,3 @@ class DisambiguateIndex:
             module_logger.error("Failed to access Wikidata: \n\t %s", e)
             return None
 
-        # from wikidata.client import Client
-        # try:
-        #     client = Client()
-        #     entity = client.get(term, load=True)
-        #     print(entity)
-        #     # for key in image.keys:
-        #     #     print(key)
-        #     # else:
-        #     #     module_logger.debug("Wikidata - term not found: " + term)
-        #     #     return None
-        #     return ExternalIndex(uri="term", type="wikidata")
-        # except:
-        #     module_logger.error("Failed to access Wikidata")
-        #     return None

@@ -93,8 +93,8 @@ class PdfParser:
 
         if len(odd_starts) > 2 or len(even_starts) > 2:
             module_logger.warning("\tWarning: multi-column or unusual format")
-            module_logger.warning("\t\todd starts:", odd_starts)
-            module_logger.warning("\t\teven starts:", even_starts)
+            module_logger.warning("\t\todd starts: %s", ','.join([str(num) for num in odd_starts]))
+            module_logger.warning("\t\teven starts: %s", ','.join([str(num) for num in even_starts]))
 
         page_num = 0
         items: List[List[Any]] = []
@@ -114,7 +114,7 @@ class PdfParser:
                     else:
                         # Line looks unfinished
                         if curr_stripped.endswith(',') or curr_stripped.endswith('–'):
-                            module_logger.warning("Reference can't end like this: ", curr_stripped[-1])
+                            # module_logger.debug("Reference can't end like this: %s ", curr_stripped[-1])
                             incomplete.append(len(items))
                 if new_ref:
                     items.append(curr_ref_chars)
@@ -134,7 +134,7 @@ class PdfParser:
                 module_logger.warning(sys.exc_info()[0])
             return False
 
-        # TODO odd_starts and even_starts should ahve the same number of columns, trim otherwise
+        # TODO odd_starts and even_starts should have the same number of columns, trim otherwise
         if len(odd_starts) != len(even_starts):
             module_logger.warning("Layout differs for odd and even pages!")
 
@@ -169,7 +169,7 @@ class PdfParser:
                         except:
                              module_logger.error("Failed to get bbox", text_line)
                 else:
-                    module_logger.warning("Non-text element: " + element)
+                    module_logger.warning("Non-text element: " + str(type(element)))
         for curr in col_curr:
             if len(curr) > 0:
                 items.append(curr)

@@ -25,6 +25,8 @@ class IndexCluster(BaseCluster):
 class IndexClusterSet(BaseClusterSet):
     # Compute editing distance for local clustering of similar references
     def add_references(self, refs: [IndexReference]):
+        if refs is None:
+            return
         n = len(refs)
         for i in range(n):
             ref = refs[i]

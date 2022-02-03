@@ -116,7 +116,7 @@ class Publication(BasePublication):
                 if "author" in c.type:
                     self.authors.append(c)
                 else:
-                    self.logger.warning("Unknown contributor type: " + c)
+                    self.logger.warning("Unknown contributor type: %s", c.type)
         # Year
         year = book.xpath('.//book-meta/pub-date/year/text()')
         if len(year) > 0:
@@ -226,7 +226,7 @@ class Publication(BasePublication):
                 terms = idx.terms
                 for term in terms:
                     self.logger.debug("Trying to disambiguate term: " + term)
-                    ext = DisambiguateIndex.find_hucitlib(term)
+                    ext = DisambiguateIndex.find_wikidata(term)
                     if ext:
                         self.logger.debug("Found corresponding external term: " + ext)
                         idx.refers_to.append(ext)
@@ -249,7 +249,8 @@ class Publication(BasePublication):
         props["zip_path"] = self.zip_path
         props["jats_file"] = self.jats_file
         props["bib_file"] = self.bib_file
-        props["index_files"] = ";".join(self.index_files)
+        if self.index_files:
+            props["index_files"] = ";".join(self.index_files)
         return props
 
     @classmethod
