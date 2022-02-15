@@ -162,7 +162,6 @@ class PdfParser:
                                     if is_ref_added:
                                         col_curr[col_num] = line_chars
                                 else:
-                                    # print("SKIPPING: ", convert_to_str(line_chars))
                                     skipped.append(SkippedText(len(items), cls.__convert_to_str(line_chars)))
                             except:
                                 module_logger.error("Failed to process line", cls.__convert_to_str(line_chars))
@@ -176,7 +175,7 @@ class PdfParser:
         items = [item for item in items if config.min_length <= len(item) <= config.max_length]
         refs = []
         for item in items:
-            refs.append(cls.__convert_to_str(item))
+            refs.append(cls.__convert_to_str(item).strip())
         in_file.close()
         return [refs, skipped]
 
@@ -197,10 +196,16 @@ class PdfParser:
         for char in text_line:
             if isinstance(char, LTChar) or isinstance(char, LTAnno):
                 char_list.append(char.get_text())
-                # TODO pass this information the the index reference instance
-                # if 'Bold' in char.fontname:
-                #     print("Bold", char.get_text())
         return char_list
+
+    @classmethod
+    def __get_bold_text_idx(cls, text_line):
+        bold_idx = []
+        for idx, char in enumerate(text_line):
+            if isinstance(char, LTChar) or isinstance(char, LTAnno):
+                if 'Bold' in char.fontname:
+                    bold_idx.append(idx)
+        return bold_idx
 
     @classmethod
     def __get_offset_counter(cls, offset_counter, page_num, config):
@@ -213,4 +218,3 @@ class PdfParser:
         if len(offset_counter) == len(starts):
             module_logger.warning("\tNo-indent formatting!")
         return starts
-

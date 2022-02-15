@@ -8,13 +8,13 @@ import os
 from model.publication import Publication
 from model.cluster_bibliographic import ClusterSet
 from model.cluster_index import IndexClusterSet
+import logging
 
 
 @dataclass_json
 @dataclass
 class Batch:
     """A class for holding information about a batch of publications"""
-    # TODO add collected stats to the logs
     zip_path: str
     publications: [Publication]
     cluster_set_bib: ClusterSet = None
@@ -26,8 +26,10 @@ class Batch:
     count_index: int = 0
     count_bib: int = 0
     errors_xml: int = 0
-    errors_format: int = 0
     errors_other: int = 0
+
+    def __post_init__(self):
+        self.logger = logging.getLogger('pdfParser.batch.' + self.__class__.__name__)
 
     def add_publication(self, pub):
         if pub is None:
@@ -40,17 +42,32 @@ class Batch:
             self.errors_xml += 1
 
     def cluster(self):
+        # Cluster bibliographic references
         self.cluster_set_bib = ClusterSet()
         for pub in self.publications:
             self.cluster_set_bib.add_references(pub.bib_refs)
+        self.logger.info("\tNumber of bib clusters: %d", self.cluster_set_bib.num_clusters)
+        # Cluster index references
         self.cluster_set_index = IndexClusterSet()
         for pub in self.publications:
             self.cluster_set_index.add_references(pub.index_refs)
+        self.logger.info("\tNumber of index clusters: %d", self.cluster_set_index.num_clusters)
 
     def disambiguate(self):
         for pub in self.publications:
             pub.disambiguate_bib()
             pub.disambiguate_index()
+
+    def log_info(self):
+        self.logger.info("Created batch from zip file: %s", self.zip_path)
+        self.logger.info("\tStart and end indices: %d - %d", self.start, self.start + self.size)
+        self.logger.info("\tParsed bibliography: %r", self.extract_bib)
+        self.logger.info("\tParsed indices: %r", self.extract_index)
+        self.logger.info("\tNumber of publications: %d", len(self.publications))
+        self.logger.info("\tNumber of bibliography files: %d", self.count_bib)
+        self.logger.info("\tNumber of index files: %d", self.count_index)
+        self.logger.info("\tFailed to process JATS files: %d", self.errors_xml)
+        self.logger.info("\tFailed to process publications: %d", self.errors_other)
 
     # Extract information about a batch of publications
     @classmethod
@@ -69,11 +86,12 @@ class Batch:
             pub_dir_path = join(batch_dir_path, pub_dir_name)
             batch_zip.extract(pub_zip_name, pub_dir_path)
             pub_zip_path = join(pub_dir_path, pub_zip_name)
-            batch.add_publication(
-                Publication.from_zip(pub_zip_path, extract_bib=batch.extract_bib, extract_index=batch.extract_index))
             try:
+                pub = Publication.from_zip(pub_zip_path, extract_bib=batch.extract_bib, extract_index=batch.extract_index)
+                batch.add_publication(pub)
                 os.remove(pub_zip_path)
                 os.rmdir(pub_dir_path)
             except:
                 batch.errors_other += 1
+        batch.log_info()
         return batch

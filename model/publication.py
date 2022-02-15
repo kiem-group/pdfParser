@@ -170,12 +170,16 @@ class Publication(BasePublication):
                     self.bib_file = href
                     # Extract references and save skipped text from bibliography file for analysis
                     [items, self._bib_skipped] = PdfParser.parse_target_indent(target_pdf)
-                    for ref_num, ref_text in enumerate(items):
+                    for idx, ref_text in enumerate(items):
                         try:
-                            ref = Reference(text=ref_text, ref_num=ref_num+1, cited_by_doi=self.doi, cited_by_zip=self.zip_path)
+                            ref = Reference(text=ref_text, ref_num=idx+1, cited_by_doi=self.doi, cited_by_zip=self.zip_path)
+                            if ref_text.startswith('——') and idx > 0:
+                                ref.follows = self.bib_refs[idx-1]
                             self.bib_refs.append(ref)
-                        except:
+                        except Exception as e:
                             self.logger.warning("Failed to parse bibliographic reference: " + ref_text)
+                            self.logger.error(e)
+                            print(e)
                             self.bib_refs_with_errors.append(ref_text)
                 if self._extract_index and 'index' in title:
                     self.logger.info("Parsing index file: " + href)
@@ -201,8 +205,8 @@ class Publication(BasePublication):
                             if ref_text:
                                 ref_items.append(ref_text)
                             ref_text = text
-                    for ref_num, ref_text in enumerate(ref_items):
-                        ref = IndexReference(text=ref_text, ref_num=ref_num + 1, cited_by_doi=self.doi, cited_by_zip=self.zip_path,
+                    for idx, ref_text in enumerate(ref_items):
+                        ref = IndexReference(text=ref_text, ref_num=idx + 1, cited_by_doi=self.doi, cited_by_zip=self.zip_path,
                                              types=curr_index_types)
                         self.index_refs.append(ref)
                         if not ref.refs:

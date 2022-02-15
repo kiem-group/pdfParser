@@ -43,8 +43,14 @@ class TestModel(unittest.TestCase):
         self.assertEqual(1236, len(pub.bib_refs))
         self.assertEqual('2003', pub.bib_refs[0].year)
         self.assertEqual('1987', pub.bib_refs[5].year)
-        self.assertEqual(('Athena’s Epithets: Their Structural Significance in the Plays of '
-                         'Aristophanes (Beiträge zur Altertumskunde 67)'), pub.bib_refs[10].title)
+        self.assertEqual(("———. 2003. “The Gossiping Triremes in Aristophanes’ Knights, 1300–1315.”"
+                         " CJ dies.” In Studi classici in onore di Quinto Cataudella II, 155–179. Catania."),
+            pub.bib_refs[11].text)
+        self.assertEqual(("Anderson, C.A. 2003. “The Gossiping Triremes in Aristophanes’ Knights, 1300–1315.”"
+                         " CJ dies.” In Studi classici in onore di Quinto Cataudella II, 155–179. Catania."),
+              pub.bib_refs[11].derived_text)
+        self.assertEqual('Athena’s Epithets: Their Structural Significance in the Plays of Aristophanes',
+                         pub.bib_refs[10].title)
         pub.save("../tmp/9789004188846_BITS.pub")
         # pub_copy = Publication.load("../tmp/9789004188846_BITS.pub")
         # print(pub_copy)

@@ -52,7 +52,6 @@ class Reference(BaseReference):
             else:
                 parts = self.title.split('.')
                 self.title = parts[0]
-            # print("Reference parser: pattern 1")
         except ParseException:
             if len(self.text) > 10:
                 text_to_parse = self.text.replace(year_anywhere, "") if year_anywhere is not None else self.text
@@ -67,11 +66,20 @@ class Reference(BaseReference):
                 # Use anything before title as author string
                 text_to_parse = text_to_parse.replace("“", "")
                 self.author = text_to_parse.partition(self.title)[0].strip()
-                # print("Reference parser: pattern 0")
         if self.year is None and year_anywhere:
             self.year = year_anywhere
         self.title = self.title.strip()
-        # print(self.author, self.year, self.title)
+
+    @property
+    def derived_author(self) -> str:
+        if self.follows is not None:
+            return self.follows.author
+        else:
+            return self.author
+
+    @property
+    def derived_text(self) -> str:
+        return self.text.replace(self.author, self.derived_author).replace("..", ".").replace(" .", "")
 
     @property
     def props(self) -> dict:
@@ -79,11 +87,14 @@ class Reference(BaseReference):
         props["author"] = self.author
         props["title"] = self.title
         props["year"] = self.year
+        props["derived_author"] = self.derived_author
         return props
 
     @classmethod
     def deserialize(cls, props: dict) -> Reference:
         self = cls(UUID=props["UUID"])
+        if "derived_author" in props:
+            del props["derived_author"]
         if "author" in props:
             setattr(self, "author", props["author"])
             del props["author"]

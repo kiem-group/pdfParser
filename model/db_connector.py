@@ -15,6 +15,7 @@ from model.cluster_index import IndexCluster
 from model.batch import Batch
 from typing import List, Union
 import logging
+import uuid
 
 
 class DBConnector:
@@ -54,6 +55,28 @@ class DBConnector:
             session = self.driver.session()
         cql_delete_nodes = "MATCH (a: {node_class}) WHERE size((a)--())=0 DELETE a".format(node_class=node_class)
         session.run(cql_delete_nodes)
+
+    # Delete external publications
+    def delete_external_pub(self, session: Session = None):
+        if session is None:
+            session = self.driver.session()
+        cql_delete_relationships = "MATCH (a:ExternalPublication) -[r:HasContributor] -> (b:Contributor) DELETE r"
+        session.run(cql_delete_relationships)
+        self.delete_empty_nodes("Contributor")
+        self.detach_delete_nodes("ExternalPublication")
+
+    # Delete external indices
+    def delete_external_index(self, session: Session = None):
+        if session is None:
+            session = self.driver.session()
+        self.detach_delete_nodes("ExternalIndex")
+
+    # Delete external references (disambiguation results)
+    def delete_external(self, session: Session = None):
+        if session is None:
+            session = self.driver.session()
+        self.delete_external_pub(session)
+        self.delete_external_index(session)
 
     def delete_pub(self, pub: Publication, session: Session = None):
         if session is None:
@@ -95,7 +118,6 @@ class DBConnector:
         self.delete_empty_nodes(IndexCluster.__name__)
 
         self.logger.debug("# nodes after deleting publication data: %d", self.query_node_count())
-
 
     # Create
 
@@ -158,6 +180,11 @@ class DBConnector:
             if ref.refers_to is not None:
                 for ext_pub in ref.refers_to:
                     self.create_ext_pub(ext_pub, ref.UUID, session)
+            # Enable to save "follows" relationship (redundant in practice)
+            # if ref.follows is not None:
+            #     cql_create_ref_follows = """MATCH (a:Reference), (b:Reference)
+            #        WHERE a.UUID = $a_uuid AND b.UUID = $b_uuid CREATE (a)-[:Follows]->(b)"""
+            #     session.run(cql_create_ref_follows, a_uuid=ref.UUID, b_uuid=ref.follows.UUID)
 
     # Create index references
     def create_index_refs(self, pub: Publication, session: Session = None):
@@ -286,12 +313,16 @@ class DBConnector:
     # Retrieve bibliographic references for a publication
     def query_pub_bib_refs(self, pub_uuid: str) -> List[Reference]:
         refs = []
-        cql_pub_cites_ref = "MATCH (a:Publication)-[r:Cites]->(b:Reference) WHERE a.UUID = $pub_uuid return b"
+        cql_pub_cites_ref = "MATCH (a:Publication)-[r:Cites]->(b:Reference) WHERE a.UUID = $pub_uuid RETURN b " \
+                            "ORDER BY b.ref_num"
         with self.driver.session() as session:
             nodes = session.run(cql_pub_cites_ref, pub_uuid=pub_uuid)
             db_refs = [record for record in nodes.data()]
-            for db_ref in db_refs:
-                refs.append(Reference.deserialize(db_ref["b"]))
+            for idx, db_ref in enumerate(db_refs):
+                ref = Reference.deserialize(db_ref["b"])
+                refs.append(ref)
+                if ref.text.startswith('——') and idx > 0:
+                    ref.follows = refs[idx - 1]
         return refs
 
     # Retrieve index references for a publication
@@ -394,7 +425,7 @@ class DBConnector:
         return refs
 
     # Retrieve all bibliographic clusters
-    def query_clusters(self, limit: int = None) -> List[Cluster]:
+    def query_clusters(self, include_refs: bool = True, limit: int = None) -> List[Cluster]:
         clusters = []
         cql_refs = "MATCH (a:Cluster) return a"
         if limit:
@@ -402,10 +433,28 @@ class DBConnector:
         with self.driver.session() as session:
             nodes = session.run(cql_refs)
             db_clusters = [record for record in nodes.data()]
-            for db_cluster in db_clusters:
-                refs = self.query_cluster_bib_refs(db_cluster["a"]["UUID"])
-                clusters.append(Cluster.deserialize(db_cluster["a"], refs))
+            if include_refs:
+                for db_cluster in db_clusters:
+                    refs = self.query_cluster_bib_refs(db_cluster["a"]["UUID"])
+                    clusters.append(Cluster.deserialize(db_cluster["a"], refs))
         return clusters
+
+    def merge_clusters(self, threshold: float = 0.9):
+        clusters = self.query_clusters(include_refs=False)
+        start = 0
+        end = len(clusters)
+        batch_UUID = str(uuid.uuid4())
+        while start < end:
+            c1 = clusters[start]
+            c2 = clusters[end]
+            merge = c1.batch is None or c2.batch is None or c1.batch != c2.batch
+            if merge:
+                c1.refs = self.query_cluster_bib_refs(c1.UUID)
+                c2.refs = self.query_cluster_bib_refs(c2.UUID)
+                if c1.ref_lev_ratio(c2.refs[0], False) > threshold:
+                    c_new = Cluster(batch=batch_UUID, refs=[*c1.refs, *c2.refs])
+                    # TODO update cluster: reconnect references to c1, delete c2
+                    pass
 
     # Retrieve all bibliographic clusters
     def query_index_clusters(self, limit: int = None) -> List[IndexCluster]:

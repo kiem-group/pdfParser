@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from pyparsing import (Word, Literal, Group, ZeroOrMore, OneOrMore, oneOf, restOfLine, delimitedList, pyparsing_unicode as ppu,
-                       ParseException, Optional, CaselessKeyword)
+from pyparsing import (Word, Literal, Group, ZeroOrMore, OneOrMore, oneOf, restOfLine, delimitedList,
+                       pyparsing_unicode as ppu, ParseException, Optional, CaselessKeyword)
 from dataclasses_json import dataclass_json
 from model.reference_base import BaseReference
 from model.index_external import ExternalIndex
@@ -77,6 +77,26 @@ class IndexReference(BaseReference):
         return res
 
     @property
+    def labels(self) -> [str]:
+        res = []
+        if self.refs is not None:
+            for part in self.refs:
+                if part.label and len(part.label) >= 5:
+                    res.append(part.label)
+        return res
+
+    @property
+    def labels_ext(self) -> [str]:
+        res = self.labels
+        for label in res:
+            # Lesieur, Stephen -> Stephen Lesieur
+            parts = label.split(',')
+            if len(parts) > 1:
+                label_ext = parts[1].strip() + " " + parts[0]
+                res.append(label_ext)
+        return res
+
+    @property
     def props(self) -> dict:
         props = BaseReference.props.fget(self)
         props["types"] = ";".join(self.types)
@@ -112,7 +132,7 @@ class IndexReference(BaseReference):
             self.refs = []
             options = {
                 "verborum": self.__parse_as_verborum,
-                "locorum":  self.__parse_as_locorum,
+                "locorum": self.__parse_as_locorum,
                 "nominum_ancient": self.__parse_as_nominum_ancient,
                 "nominum_modern": self.__parse_as_nominum_modern,
                 "rerum": self.__parse_as_rerum,
@@ -196,11 +216,11 @@ class IndexReference(BaseReference):
     #   locorum: Adespota elegiaca (IEG)  23 206
     #     Aeschines 2.157 291
     def __parse_pattern1(self, text: str):
-        alphas = ppu.Latin1.alphas+ppu.LatinA.alphas+ppu.LatinB.alphas+ppu.Greek.alphas+"\"'.’-—:“”‘’&()/«»?"
+        alphas = ppu.Latin1.alphas + ppu.LatinA.alphas + ppu.LatinB.alphas + ppu.Greek.alphas + "\"'.’-—:“”‘’&()/«»?"
         occurrences = delimitedList(Word(ppu.Latin1.nums), delim=",")
-        locus_fragment = Word(ppu.Latin1.nums+".–=") + Optional(oneOf("ff."))
-        locus = locus_fragment + Optional('/'+locus_fragment)
-        label_chars = Word(alphas+',;')
+        locus_fragment = Word(ppu.Latin1.nums + ".–=") + Optional(oneOf("ff."))
+        locus = locus_fragment + Optional('/' + locus_fragment)
+        label_chars = Word(alphas + ',;')
         label = OneOrMore(label_chars.setParseAction(''.join))
         index = Optional(label("label")) + Optional(locus("locus").setParseAction(''.join) +
                                                     occurrences('occurrences') + restOfLine("rest"))
@@ -210,13 +230,14 @@ class IndexReference(BaseReference):
     #   rerum: Adonis (Plato Comicus), 160, 161, 207
     #   nominum: Antioch  10; 24; 79; 83; 85; 89–92;  105–107; 114–116; 118; 147–149; 152;  154–156; 173; 231
     def __parse_pattern2(self, text: str):
-        alphas = ppu.Latin1.alphas+ppu.LatinA.alphas+ppu.LatinB.alphas+ppu.Greek.alphas+"\"'.’-—:“”‘’&()/«»?"
-        occurrences_chars = Word(ppu.Latin1.nums+'n–') + Optional(oneOf("f."))
+        alphas = ppu.Latin1.alphas + ppu.LatinA.alphas + ppu.LatinB.alphas + ppu.Greek.alphas + "\"'.’-—:“”‘’&()/«»?"
+        occurrences_chars = Word(ppu.Latin1.nums + 'n–') + Optional(oneOf("f."))
         occurrences = OneOrMore(occurrences_chars + Optional(oneOf(", ;")).suppress())
-        label_chars = Word(alphas+',;')
+        label_chars = Word(alphas + ',;')
         label = OneOrMore(label_chars.setParseAction(''.join))
         # TODO generalize: after 'see' or 'see also' other index references with occurrences can appear
-        alias = CaselessKeyword("see") + Optional(CaselessKeyword("also")) + delimitedList(Word(alphas), delim=oneOf(", ;"))
+        alias = CaselessKeyword("see") + Optional(CaselessKeyword("also")) + delimitedList(Word(alphas),
+                                                                                           delim=oneOf(", ;"))
         # label.setName("label").setDebug()
         index = label("label") + Optional(occurrences("occurrences")) + Optional(alias("alias")) + restOfLine('rest')
         return index.parseString(text)

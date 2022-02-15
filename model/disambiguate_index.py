@@ -7,6 +7,7 @@ import json
 from typing import Union
 import logging
 from urllib.request import Request, urlopen
+from urllib.parse import quote
 
 module_logger = logging.getLogger('pdfParser.disambiguate_index')
 
@@ -41,7 +42,7 @@ class DisambiguateIndex:
 
     @classmethod
     def find_wikidata(cls, term: str, lang="en") -> Union[ExternalIndex, None]:
-        url = "https://www.wikidata.org/w/api.php?action=wbsearchentities&search=" + term
+        url = "https://www.wikidata.org/w/api.php?action=wbsearchentities&search=" + quote(term)
         url += "&language=" + lang
         url += "&format=json"
         try:
@@ -50,7 +51,7 @@ class DisambiguateIndex:
             wiki_data = json.load(resp)
             if len(wiki_data["search"]) > 0:
                 module_logger.debug("Wikidata - term match found: " + term)
-                return ExternalIndex(uri=wiki_data["search"][0]["url"], type="wikidata")
+                return ExternalIndex(uri=wiki_data["search"][0]["url"].replace("//", ""), type="wikidata")
             return None
         except Exception as e:
             module_logger.error("Failed to access Wikidata: \n\t %s", e)

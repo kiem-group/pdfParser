@@ -168,8 +168,8 @@ class TestIndexParser(unittest.TestCase):
     # Estimation of success rate of disambiguation
     def test_evaluate_index_disambiguation(self):
         self.logger.info("Started test_evaluate_index_disambiguation")
-        header = ["Reference", "Wikidata", "HumanEvaluation", "HumanLink"]
-        with open('../data_test/test_evaluate_idx_disambiguation_500.csv', "w", encoding='utf-8', newline="") as f:
+        header = ["Reference", "Labels", "Wikidata", "HumanEvaluation", "HumanLink"]
+        with open('../data_test/test_evaluate_idx_disambiguation_labels_4.csv', "w", encoding='utf-8', newline="") as f:
             writer = csv.writer(f)
             writer.writerow(header)
             from model.db_connector import DBConnector
@@ -184,7 +184,10 @@ class TestIndexParser(unittest.TestCase):
             self.logger.debug("Indices restored, starting disambiguation...")
             for idx in idx_refs:
                 url_wikidata = []
-                terms = idx.terms
+                # Searching for labels without splitting
+                terms = idx.labels_ext
+                # Enable for searching of individual words in index labels
+                # terms = idx.terms
                 for term in terms:
                     self.logger.debug("Searching for: %s", term)
                     ext = DisambiguateIndex.find_wikidata(term)
@@ -195,11 +198,11 @@ class TestIndexParser(unittest.TestCase):
                 if idx.refers_to is not None:
                     url_wikidata = [e.uri for e in idx.refers_to if e.uri is not None]
                     success_wikidata += 1 if len(url_wikidata) > 0 else 0
-                out_wikidata = ", ".join(url_wikidata)
+                out_wikidata = " \n".join(url_wikidata)
                 count += 1
                 self.logger.info(str(count) + " (" + ", ".join(terms) + ") " + out_wikidata)
-                writer.writerow([idx.text, out_wikidata])
-            self.logger.info("Success rate: %s/50", success_wikidata)
+                writer.writerow([idx.text, " \n".join(terms), out_wikidata])
+            self.logger.info("Success rate: %s/500", success_wikidata)
             self.logger.info("Finished test_evaluate_index_disambiguation")
 
 

@@ -12,6 +12,7 @@ from typing import Optional
 @dataclass
 class BaseCluster:
     refs: [BaseReference]
+    batch: str = None
     UUID: str = None
 
     def __post_init__(self):
@@ -36,6 +37,7 @@ class BaseCluster:
     def props(self) -> dict:
         return {
             "UUID": self.UUID,
+            "batch": self.batch,
             "size": len(self.refs),
         }
 
@@ -87,3 +89,7 @@ class BaseClusterSet:
                 cluster.add_reference(ref)
             else:
                 self.clusters.append(BaseCluster(refs=[ref]))
+
+    @property
+    def num_clusters(self) -> int:
+        return len(self.clusters) if self.clusters is not None else 0

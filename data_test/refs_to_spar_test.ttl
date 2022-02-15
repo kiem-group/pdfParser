@@ -1,0 +1,35 @@
+@prefix : <http://brill.com/kiem/> .
+@prefix biro: <http://purl.org/spar/biro> .
+@prefix co: <http://purl.org/co/> .
+@prefix frbr: <http://purl.org/vocab/frbr/core#> .
+@prefix ns1: <http://purl.org/dc/terms/> .
+
+<http://dx.doi.org/test> frbr:part :reference-list .
+
+:ref-1 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "D'Andria, F. “Scavi nella zona del Kerameikos.” (NSA Supplement 29: Metaponto I) 355-452" .
+
+:ref-2 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Abadie-Reynal, C. and J.-P. Darmon. 2003. “La maison et la mosaïque desSynaristosai (Les femmes au déjeuner de Ménandre).” In Zeugma: InterimReports (JRA Supplement 51), 79–99. Portsmouth, RI." .
+
+:ref-3 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Barral I Altet, Xavier. “Quelques observations sur les mosaïques de pavement,l’architecture, la liturgie et la symboliq" .
+
+:reference-list a biro:ReferenceList ;
+    co:firstItem :reference-1 ;
+    co:item :reference-1,
+        :reference-2,
+        :reference-3 ;
+    co:lastItem :reference-3 .
+
+:reference-1 a co:ListItem ;
+    co:ItemContent :ref-1 ;
+    co:NextItem :reference-2 .
+
+:reference-2 a co:ListItem ;
+    co:ItemContent :ref-2 ;
+    co:NextItem :reference-3 .
+
+:reference-3 a co:ListItem ;
+    co:ItemContent :ref-3 .
+

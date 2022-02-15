@@ -1,0 +1,2195 @@
+@prefix : <http://brill.com/kiem/> .
+@prefix biro: <http://purl.org/spar/biro> .
+@prefix co: <http://purl.org/co/> .
+@prefix frbr: <http://purl.org/vocab/frbr/core#> .
+@prefix ns1: <http://purl.org/dc/terms/> .
+
+<http://dx.doi.org/10.1163/9789004261648> frbr:part :reference-list .
+
+:ref-1 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Augustine Confessiones. Edited by Martin Skutella. Leipzig: Teubner, 1934. " .
+
+:ref-10 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "EI Expositio libri Sapientiae. In Die lateinischen Werke 2. " .
+
+:ref-100 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "EM In Pathmarks. Edited by William McNeill. Cambridge: Cambridge Univer- " .
+
+:ref-101 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "EOP sity Press, 1998. Pp. 277–290. " .
+
+:ref-102 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "EHP “Language.” In Poetry, Language, Thought. Translated by Albert Hofstad- " .
+
+:ref-103 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "FS ter. New York: Harper and Row, 1971. Pp. 187–210. " .
+
+:ref-104 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "GP “Letter on Humanism.” Translated by Frank A. Capuzzi. In Pathmarks. " .
+
+:ref-105 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "HBE Edited by William McNeill. Cambridge: Cambridge University Press, 1998. " .
+
+:ref-106 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Holzw. Holzwege. GA 5. Frankfurt: Klostermann, 1977. Engl. Trans. OBT Metaphysische Anfangsgründe der Logik im Ausgang von Leibniz. GA 26, " .
+
+:ref-107 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "ID 2. Auflage. Frankfurt: Klostermann 1990. Engl. Trans. MFL The Metaphysical Foundations of Logic. Translated by Michael Heim. Bloomington and Indianapolis: Indiana University Press, 1984. " .
+
+:ref-108 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Mindf. Mindfulness. Translated by Parvis Emad and Thomas Kalary. New York: Continuum, 2006. " .
+
+:ref-109 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "IWM Nietzsche. Vol. 4: Nihilism. Translated by Frank A. Capuzzi. Edited with " .
+
+:ref-11 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "ES Prologus generalis in Opus Tripartitum. In Die lateinischen Werke 1/1. " .
+
+:ref-110 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "MAL Notes and an Analysis by David Farrell Krell. New York: Harper and Row, " .
+
+:ref-111 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "LH Nietzsche. 2 volumes. Pfullingen: Neske, 1961. " .
+
+:ref-112 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "IM Off the Beaten Track. Translated by Julian Young and Kenneth Haynes. " .
+
+:ref-113 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "NI Cambridge: Cambridge University Press, 2002. " .
+
+:ref-114 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "OBT “The Onto-theo-logical Constitution of Metaphysics.” In Identity and Dif- " .
+
+:ref-115 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "OCM ference. Translated by Joan Stambaugh. New York: Harper and Row, 1969. " .
+
+:ref-116 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "OWL “The Origin of the Work of Art.” In Poetry, Language, Thought. Translated " .
+
+:ref-117 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Pathm. by Albert Hofstadter. New York: Harper and Row, 1971. Pp. 17–87. On the Way to Language. Translated by Peter D. Hertz and Joan Stam- baugh. New York: Harper and Row, 1971. Pathmarks. Edited by William McNeill. Cambridge: Cambridge University Press, 1998. " .
+
+:ref-118 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "PI “The Principle of Identity.” In Identity and Difference. Translated by Joan " .
+
+:ref-119 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "PIA Stambaugh. New York: Harper and Row, 1969. Pp. 23–41. " .
+
+:ref-12 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "PGOP Prologus in Opus Propositionum. In Die lateinischen Werke 1/1. " .
+
+:ref-120 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "PLT Phänomenologische Interpretationen zu Aristoteles. Einführung in die Phä- " .
+
+:ref-121 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "PR nomenologische Forschung. GA 61. 2. Auflage. Frankfurt: Klostermann, " .
+
+:ref-122 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "QB Poetry, Language, Thought. Translated by Albert Hofstadter. New York: " .
+
+:ref-123 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "SD The Principle of Reason. Translated by Reginald Lilly. Bloomington and " .
+
+:ref-124 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "SG Indianapolis: Indiana University Press, 1991. " .
+
+:ref-125 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "SZ Phänomenologie des religiösen Lebens. GA 60. Frankfurt: Klostermann, " .
+
+:ref-126 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "TK Vorträge und Aufsätze. 4. Auflage. Pfullingen: Neske, 1978. " .
+
+:ref-127 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "*UKW “Der Ursprung des Kunstwerkes.” In Holzwege. Pp. 7–68. " .
+
+:ref-128 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "US 2. Auflage. Frankfurt: Klostermann, 1997. Engl. Trans. ET " .
+
+:ref-129 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "VA What is Called Thinking. Translated by J. Glenn Gray. New York: Harper " .
+
+:ref-13 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "POP Predigten. In Die deutschen Werke 1–4. " .
+
+:ref-130 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "VWW Vom Wesen der Wahrheit. Zu Platons Höhlengleichnis und Theätet. GA 34. and Row, 1968. " .
+
+:ref-131 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "WCT Oeuvres complètes. Edited by Henri Mondor and Georges Jean-Aubry. " .
+
+:ref-132 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "OC Un Coup de dés jamais n’abolira le hasard. In OC 1, pp. 363–407. " .
+
+:ref-133 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "CD Un Coup de dés jamais n’abolira le hasard. Edited by Mitsou Ronat. Paris: " .
+
+:ref-134 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "OC 1–2 Oeuvres complètes. Edited by Bertrand Marchal. Paris: Gallimard, 1998– Change errant, 1980. " .
+
+:ref-135 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "236 Translated by Mary Ann Caws. In Stéphane Mallarmé. Selected Poetry and " .
+
+:ref-136 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Abbate, Michele. “Il ‘linguaggio dell’ineffabile’ nella concezione procliana dell’Uno- in-sé.” Elenchos 22 (2001): 305–327. " .
+
+:ref-137 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. Parmenide e i neoplatonici. Dall’Essere all’Uno a al di là dell’Uno. Alessandria: Edizioni dell’Orso, 2010. " .
+
+:ref-138 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Andia, Ysabel de. L’Union à Dieu chez Denys l’Aréopagite. Leiden: Brill, 1996. " .
+
+:ref-139 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Athanassiadi, Polymnia. La lutte pour l’orthodoxie dans le platonisme tardif de Numé- nius à Damascius. Paris: Les Belles Lettres, 2006. " .
+
+:ref-14 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "QP Maître Eckhart, Sermons. Introduction and Translation by Jeanne Ancelet- " .
+
+:ref-140 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Aubenque, Pierre. “Plotin et le dépassement de l’ ontologie grecque classique.” In Le néoplatonisme (Royaumont, 9–13 juin 1969). Paris: Éditions du Centre National de la Recherche Scientifique, 1971. Pp. 101–109. " .
+
+:ref-141 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Barbanti, Maria, Giardina, Giovanna R., Manganaro, P. eds. Henōsis kai philia. Unione e amicizia. Omaggio a Francesco Romano. Catania: CUCEM, 2002. " .
+
+:ref-142 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Beierwaltes, Werner. Identität und Differenz. Frankfurt a. M.: Klostermann, 1980. " .
+
+:ref-143 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Berchman, Robert and Finamore, John, eds. History of Platonism. Plato Redivivus. New Orleans: University Press of the South, 2005. " .
+
+:ref-144 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Boss, G. and Seel, G., eds. Proclus et son influence. Actes du colloque de Neuchâtel, juin 1985. Zürich: Editions du Grand Midi, 1987. " .
+
+:ref-145 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Boulez, Pierre. Points de repère. Edited by Jean-Jacques Nattiez. 2nd edition. Paris: Seuil, 1985. " .
+
+:ref-146 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “Sonate, ‘que me veux-tu’.” In Points de repère by Pierre Boulez. Edited by Jean-Jacques Nattiez. Pp. 163–175. " .
+
+:ref-147 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Boulnois, Olivier, “Quand commence l’onthothéologie? Aristote, Thomas d’Aquin et Duns Scot,” Revue Thomiste 95 (1995): 85–108. " .
+
+:ref-148 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Bréhier, Émile. “L’idée du néant et le problème de l’origine radicale dans le néopla- tonisme grec.” Revue de métaphysique et de morale 26 (1919): 443–475. Reprinted in Émile Bréhier. Études de philosophie antique. Pp. 248–283. " .
+
+:ref-149 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Bréhier, Émile. Études de philosophie antique. Préface de Georges Davy. Paris: Presses Universitaires de France, 1955. " .
+
+:ref-15 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Plato Hustache. Paris: Seuil, 1974–1979. " .
+
+:ref-150 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Brisson, Luc. “Damascius et l’Orphisme.” In Orphisme et Orphée. En l’honneur de Jean Rudhardt. Edited by P. Bourgeaud. Genève: Droz, 1991. Pp. 157–209. Re- printed in Luc Brisson, Orphée et l’Orphisme dans l’Antiquité gréco-romaine. " .
+
+:ref-151 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. Orphée et l’Orphisme dans l’Antiquité gréco-romaine. Aldershot: Ashgate, 1995. " .
+
+:ref-152 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Bussanich, John. “Mystical Theology and Spiritual Experience in Proclus’ Platonic Theology.” In Proclus et la Théologie Platonicienne. Actes du Colloque International de Louvain. Edited by A.-P. Segonds and C. Steel. Pp. 291–310. " .
+
+:ref-153 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Butler, Edward P. “Polytheism and Individuality in the Henadic Manifold.” Dionysius 23 (2005): 83–104. " .
+
+:ref-154 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “The Gods and Being in Proclus.” Dionysius 26 (2008): 93–113. " .
+
+:ref-155 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “The Intelligible Gods in the Platonic Theology of Proclus.” Methexis 21 (2008): 131–143. " .
+
+:ref-156 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Caputo, John D. The Mystical Element in Heidegger’s Thought. Athens, Ohio: Ohio University Press, 1978. " .
+
+:ref-157 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “The Nothingness of the Intellect in Meister Eckhart’s Parisian Questions.” The Thomist 39 (1975): 85–115. " .
+
+:ref-158 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Caputo, John D. and Scanlon, Michael J., eds. Augustine and Postmodernism. Con- fessions and Circumfession. Bloomington and Indianapolis: Indiana University Press, 2005. " .
+
+:ref-159 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. God, the Gift, and Postmodernism. Bloomington and Indianapolis: Indiana University Press, 1999. " .
+
+:ref-16 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Phaedr Quaestiones Parisienses. In Die lateinischen Werke 5. " .
+
+:ref-160 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “Introduction: The Postmodern Augustine.” In Augustine and Postmodern- ism. Confessions and Circumfession. Edited by J.D. Caputo and M.J. Scanlon. Pp. 1– 15. " .
+
+:ref-161 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Casel, Odo. De philosophorum Graecorum silentio mystico. Giessen: Toepelman, Plotin et Proclus. Paris: Les Belles Lettres, 1982. " .
+
+:ref-162 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Charles-Saget, Annick, L’architecture du divin. Mathématique et philosophie chez sity Press, 1997. " .
+
+:ref-163 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Cleary, John J., ed. The Perennial Tradition of Neoplatonism. Leuven: Leuven Univer- gate, 1999. " .
+
+:ref-164 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———., ed. Traditions of Platonism. Essays in Honour of John Dillon. Aldershot: Ash- 1919. " .
+
+:ref-165 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Cohn, Robert G. Mallarmé’s Masterwork, New Findings. The Hague / Paris: Mouton, 1966. " .
+
+:ref-166 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. Mallarmé: Igitur. Berkeley-Los Angeles: University of California Press, 1981. " .
+
+:ref-167 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Combès, Joseph. “Damascius lecteur du Parménide.” Archives de philosophie 38 (1975): 33–60. Reprinted in Joseph Combès. Études néoplatoniciennes. 1st ed. Pp. 63–99. " .
+
+:ref-168 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “Négativité et procession des principes chez Damascius,” Revue des étides augustiniennes 22 (1976): 114–133. Reprinted in Joseph Combés, Études néopla- toniciennes. 1st ed. Pp. 101–129. " .
+
+:ref-169 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “La théologie aporétique de Damascius,” in Néoplatonisme, Mélanges offerts à Jean Trouillard = Les cahiers de Fontenay 19–22 (1981): 125–139. Reprinted in Joseph Combès. Études néoplatoniciennes. 1st. ed. Pp. 199–221. " .
+
+:ref-17 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Soph. Sermones. In Die lateinischen Werke 4. " .
+
+:ref-170 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “Proclus et Damascius.” In Proclus et son influence. Actes du colloque de Neuchâtel, juin 1985. Edited by G. Boss and G. Seel. Zürich: Editions du Grand Midi, 1987. Pp. 221–246. Reprinted in Joseph Combès. Études néoplatoniciennes. 1st. ed. Pp. 245–271. " .
+
+:ref-171 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "238 Westerink. Buffalo, New York: Arethusa, 1988. Pp. 85–102. Reprinted in Joseph " .
+
+:ref-172 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “Damascius, ou la pensée de l’origine.” In Gonimos. Mélanges offerts à L.G. Combès. Études néoplatoniciennes. 1st ed. Pp. 273–295. " .
+
+:ref-173 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. Études néoplatoniciennes. [1st edition]. Grenoble: Millon, 1989. " .
+
+:ref-174 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “Symbolique de l’ intellect dans l’In Parmenidem de Damascius.” In Sophiēs Maiētores. Chercheurs de sagesse. Hommage à Jean Pépin. Edited by M.-O. Goulet- Cazé, etc. Pp. 433–450. " .
+
+:ref-175 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. Études néoplatoniciennes. 2nd Edition. Grenoble: Millon, 1996. " .
+
+:ref-176 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Corrigan, Kevin. “‘Solitary’ Mysticism in Plotinus, Proclus, Gregory of Nyssa, and Pseudo-Dionysius.” Journal of Religion 76 (1996): 28–42. " .
+
+:ref-177 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Cürsgen Dirk. Henologie und Ontologie. Die metaphysische Prinzipienlehre des späten Neuplatonismus. Würzburg: Kőnigshausen und Neumann, 2007. " .
+
+:ref-178 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "D’Ancona Costa, Cristina. “Plotinus and Later Platonic Philosophers on the Causality of the First Principle.” In The Cambridge Companion to Plotinus. Edited by L.P. Gerson. Cambridge: Cambridge University Press, 1996. Pp. 356– 385. " .
+
+:ref-179 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Des Places, Édouard. “Damascius et les Oracles Chaldaïques.” In Méthexis. Études néoplatoniciennes présentées au Professeur Evanghélos Moutsopoulos. Athens: Centre International d’ Études Platoniciennes et Aristotéliciennes, 1992. Pp. 182– 192. " .
+
+:ref-18 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Plotinus Symposium. In Platonis Opera. Vol. 2. Edited by John Burnet. Oxford: " .
+
+:ref-180 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Dillon, John. “Damascius on the Ineffable.” Archiv für die Geschichte der Philosophie 78 (1996): 120–129. " .
+
+:ref-181 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Fraenkel, Ernest. Les dessins trans-conscients de Stéphane Mallarmé. À propos de la typographie de “Un coup de dés.” Paris: Nizet, 1960. " .
+
+:ref-182 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Gersh, Stephen. Kinēsis Akinētos. A Study of Spiritual Motion in the Philosophy of Proclus. Leiden: Brill, 1973. " .
+
+:ref-183 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. From Iamblichus to Eriugena. An Investigation of the Prehistory and Evolution of the Pseudo-Dionysian Tradition. Leiden: Brill, 1978. " .
+
+:ref-184 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. Concord in Discourse. Harmonics and Semiotics in Late Classical and Early Medieval Platonism. Berlin-New York: Mouton-De Gruyter, 1996. " .
+
+:ref-185 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. Reading Plato, Tracing Plato. From Ancient Commentary to Medieval Recep- tion. Aldershot: Ashgate, 2005. " .
+
+:ref-186 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. Neoplatonism after Derrida. Parallelograms. Leiden: Brill, 2006. " .
+
+:ref-187 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “The Pseudonymity of Dionysius the Areopagite and the Platonic Tradition.” In Neoplatonismo pagano vs. Neoplatonismo cristiano. Identità e intersezioni. Atti del Colloquio 24–25 settembre 2004. Edited by Maria di Pasquale Barbanti and Concetto Martello. Catania: CUCEM, 2006. pp. 99–130. " .
+
+:ref-188 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. Da Giamblico a Eriugena. Origini e sviluppi della tradizione pseudo-dionisiana. Translated by Marialucrezia Leone and Christoph Helmig. Bari: Edizioni di pag- ina, 2009. " .
+
+:ref-189 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “Dionysius’ On Divine Names Revisited: A Structural Analysis.” Dionysius 28 (2010): 77–96. " .
+
+:ref-19 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Proclus Clarendon Press, 1901. " .
+
+:ref-190 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Gerson, Lloyd P., ed. The Cambridge History of Philosophy in Late Antiquity. 2 vols. Cambridge: Cambridge University Press, 2010. " .
+
+:ref-191 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Goris, Wouter. Einheit als Prinzip und Ziel. Versuch űber die Einheitsmetaphysik des “Opus tripartitum” Meister Eckharts. Leiden: Brill, 1997. " .
+
+:ref-192 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Goulet-Cazé, Marie-Odile; Madec, Goulven; O’Brien, Denis, eds. Sophiēs Maiētores. Chercheurs de sagesse. Hommage à Jean Pépin. Paris: Institut d’Études augustini- ennes, 1992. " .
+
+:ref-193 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Griffith, Rosemary. “Neo-Platonism and Christianity. Pseudo-Dionysius and Damas- cius.” In Studia Patristica 29 = Papers of the Twelfth International Patristic Confer- ence, Oxford 1995. Leuven: Peeters, 1997. Pp. 238–243. " .
+
+:ref-194 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Guérard, Christian. “La théorie des hénades et la mystique de Proclus.” Dionysius 6 (1982): 73–82. " .
+
+:ref-195 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “Le danger du néant et la négation selon Proclus” Revue philosophique de Louvain 83 (1985): 331–354. " .
+
+:ref-196 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Hadot, Pierre. “La distinction de l’être et de l’étant dans le ‘De Hebdomadibus’ de Boèce,” Miscellanea Mediaevalia 2 (1963): 147–153. " .
+
+:ref-197 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. Porphyre et Victorinus. Paris: Études augustinennes, 1968. " .
+
+:ref-198 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “Forma essendi. Interprétation philologique et interprétation philosophique d’une formule de Boèce.” Les études classiques 38 (1970): 143–156. " .
+
+:ref-199 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “L’être et l’étant dans le néoplatonisme” In Études néoplatoniciennes, (Neu- châtel: La Baconnière, 1973): 27–39. " .
+
+:ref-2 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Chaldaean Oracles Confessions. Translated by Henry Chadwick. Oxford: Oxford University " .
+
+:ref-20 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "CRemp In Platonis Rem Publicam Commentarii. Edited by Wilhelm Kroll. 2 vols. " .
+
+:ref-200 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Hankey, Wayne J. “Why Heidegger’s ‘History’ of Metaphysics is Dead” American Catholic Philosophical Quarterly 78 (2004): 425–443. " .
+
+:ref-201 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Harris, R. Baine, ed. Neoplatonism and Contemporary Thought. 2 vols. Albany: State University of New York Press, 2002. " .
+
+:ref-202 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “Proclus and Other Neoplatonists on Universals and Predication.” Documenti e Studi sulla Tradizione Filosofica Medievale 19 (2008): 347–380. " .
+
+:ref-203 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Hoffmann, Philippe. “Damascius.” In Dictionnaire des philosophes antiques. Vol. II. Edited by Richard Goulet. Paris: CNRS Éditions, 1994. Pp. 541–593. " .
+
+:ref-204 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “L’expression de l’indicible dans le néoplatonisme grec de Plotin à Damas- cius.” In Dire l’évidence. Philosophie et rhétorique antiques. Edited by C. Lévy and L. Pernot. Paris: L’ Harmattan, 1997. Pp. 335–390. " .
+
+:ref-205 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Hyppolite, Jean. “Le Coup de dés de Stéphane Mallarmé et le message.” Les études philosophiques 13 (1958): 463–468. " .
+
+:ref-206 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Klitenic Wear, Sarah and Dillon, John. Dionysius the Areopagite and the Neoplatonist Tradition. Despoiling the Hellenes. Aldershot: Ashgate, 2007. " .
+
+:ref-207 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Koch, Hugo. Pseudo-Dionysius Areopagita und seinen Beziehungen zum Neuplaton- ismus und Mysterienwesen. Eine literarhistorische Untersuchung. Mainz: Kirch- heim, 1900. " .
+
+:ref-208 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Kristeva, Julia. La révolution du langage poétique. Paris: Seuil, 1974 Late Antique Epistemology. Other Ways of Truth. Edited by P. Vassilopoulou and " .
+
+:ref-209 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Kutash, Emilie. F. “Eternal Time and Temporal Expansion: Proclus’ Golden Ratio.” In S.R.L. Clark. Pp. 44–66. " .
+
+:ref-21 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "CTim. Leipzig: Teubner, 1899–1901. In Platonis Timaeum Commentaria. Edited by Ernst Diehl. 3 vols. Leipzig: Teubner, 1903–1906. " .
+
+:ref-210 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "La Charité, Virginia A. The Dynamics of Space. Mallarmé’s Un Coup de dés jamais n’abolira le hasard. Lexington, Kentucky: French Forum, 1987. " .
+
+:ref-211 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Lavaud, Laurent. “L’ineffable et l’ impossible. Damascius au regard de la déconstruc- tion.” Philosophie 96 (2007): 46–66. " .
+
+:ref-212 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "240 ments d’Euclide. Villeneuve d’ Ascq: Presses Universitaires du Septentrion, 2010. " .
+
+:ref-213 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Lernould, Alain, ed. Études sur le Commentaire de Proclus au premier livre des Élé- antiques. Paris: L’Harmattan, 1997. " .
+
+:ref-214 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Lévy, Carlos and Pernod, Laurent, eds. Dire l’évidence. Philosophie et rhétorique Later Roman Empire. Cairo, 1956. Revised edition by M. Tardieu. Paris: Études " .
+
+:ref-215 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Lewy, Hans. Chaldaean Oracles and Theurgy. Mysticism, Magic, and Platonism in the augustinennes, 1978. " .
+
+:ref-216 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Libera, Alain de. “Les ‘raisons d’ Eckhart’.” In Maître Eckhart à Paris. Une critique médiévale de l’ ontothéologie. Edited by É. Zum Brunn, Z. Kaluza, A. de Libera, P. Vignaux, and É. Wéber. Pp. 109–140. " .
+
+:ref-217 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Lilla, Salvatore. “La teologia negativa dal pensiero greco classico a quello patristico e bizantino.” Helikon 31–32 (1991–1992): 3–72. " .
+
+:ref-218 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Linguiti, Alessandro. “Giamblico, Proclo e Damascio sul Principio anteriore all’ Uno.” Elenchos 9 (1988): 95–106. " .
+
+:ref-219 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. L’ultimo platonismo greco. Principi e conoscenza. Firenze: Olschki, 1990. " .
+
+:ref-22 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "228 Commentary on Plato’s Timaeus. Translated by Harold Tarrant, Dirk Balt- " .
+
+:ref-220 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "MacIsaac, D. Gregory. “Phantasia between Soul and Body in Proclus’ Euclid Com- mentary.” Dionysius 19 (2001): 125–135. " .
+
+:ref-221 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “Noēsis, dialectique et mathématiques dans le Commentaire aux Éléments d’Euclide de Proclus.” In Études sur le Commentaire de Proclus au premier livre des Éléments d’ Euclide, ed. A. Lernould. Pp. 125–138 fessions and Circumfession. Edited by John D. Caputo and Michael J. Scanlon. " .
+
+:ref-222 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Malabou, Catherine. “The Form of an ‘I’.” In Augustine and Postmodernism. Con- Pp. 127–143. " .
+
+:ref-223 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Marion, Jean-Luc. L’idole et la distance. Cinq études. Paris: Grasset, 1977. " .
+
+:ref-224 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “Saint Thomas d’ Aquin et l’onto-théo-logie,” Revue Thomiste 95 (1995): 31–61. " .
+
+:ref-225 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “In the Name. How to Avoid Speaking of ‘Negative Theology’.” In God, the Gift, and Postmodernism. Edited by John D. Caputo and Michael J. Scanlon. Bloomington and Indianapolis: Indiana University Press, 1999. Pp. 20–53. " .
+
+:ref-226 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Martijn, Marije. Proclus on Nature. Philosophy of Nature and its Methods in Proclus’ Commentary on Plato’s Timaeus. Leiden: Brill, 2010. " .
+
+:ref-227 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Mazzucchi, Beniamino. “Damascio autore del Corpus Dionysaiacum, e il dialogo Peri politikēs epistēmēs.” Aevum 80 (2006): 299–334. " .
+
+:ref-228 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Mensching, Gustav. Das heilige Schweigen. Eine religionsgeschichtliche Untrsuchung. Giessen: Toepelman, 1926. " .
+
+:ref-229 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Métry-Tresson, Carolle. L’aporie ou l’expérience des limites de la pensée dans le Péri Archôn de Damaskios. Leiden: Brill, 2012. " .
+
+:ref-23 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "ET zly, David T. Runia, and Michael Share. Cambridge: Cambridge University " .
+
+:ref-230 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Mojsisch, Burkhard. Meister Eckhart: Analogie, Univozität und Einheit. Hamburg: Meiner, 1983. " .
+
+:ref-231 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Mortley, Raoul. From Word to Silence I. The Rise and Fall of Logos; II. The Way of Negation. Bonn: Hannstein 1986. " .
+
+:ref-232 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Mueller, Ian, “Mathematics and Philosophy in Proclus’ Commentary on Book I of Euclid’s Elements,” in Proclus, Lecteur et interprète des anciens. Edited by. J. Pépin and H.-D. Saffrey. Pp. 305–318 ed esegesi in Damaxcio. Catania: CUCEM, 2008. " .
+
+:ref-233 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Napoli, Valerio. Epekeina tou henos. Il principio totalmente ineffabile tra dialettica heideggérienne de l’Un plotinien.” Les études philosophiques (1999): 105–121. " .
+
+:ref-234 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Narbonne, Jean-Marc. “‘Henôsis’ et ‘Ereignis.’ Remarques sur une interprétation Les Belles Lettres, 2001. " .
+
+:ref-235 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. Jean-Marc. Hénologie, Ontologie, et Ereignis (Plotin-Proclus-Heidegger). Paris: occasione del V. centenario della morte di Nicolò Cusano, Bressanone 6–10 settem- " .
+
+:ref-236 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Nicolò Cusano agli inizi del mondo moderno, Atti del Congresso Internazionale in bre 1964. Firenze: Sansoni, 1970. " .
+
+:ref-237 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Ninci, Marco. L’universo e il non-essere. Roma: Edizioni di Storia e Letteratura, 1980. " .
+
+:ref-238 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "O’Meara, Dominic J. Pythagoras Revived. Mathematics and Philosophy in Late Antiq- uity. Oxford: Clarendon Press, 1989. " .
+
+:ref-239 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “Le problème du discours sur l’indicible cheaz Plotin.” Revue de théologie et de philosophie 122 (1990): 145–156. " .
+
+:ref-24 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "PF The Elements of Theology. A Revised Text with Translation, Introduction, " .
+
+:ref-240 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “Scepticism and Ineffability in Plotinus.” Phronesis 45 (2000): 240–251. " .
+
+:ref-241 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “Notes on the Aporetics of the One in Greek Neoplatonism.” In Pensées de l’Un dans l’histoire de la philosiophie. Études en hommage àu professeur Werner Beierwaltes. Presses de l’Université Laval, Vrin: Québec, Paris, 2004. Pp. 98–107. " .
+
+:ref-242 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "O’Neill, William. “Time and Eternity in Proclus.” Phronesis 7 (1962): 161–165. " .
+
+:ref-243 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Pépin, Jean, and Saffrey, Henri-Dominique, eds. Proclus, Lecteur et interprète des anciens. Actes du colloque international du Centre National de la Recherche Sci- entifique (Paris, 2–4 octobre 1985). Paris: Éditions du CNRS, 1987. " .
+
+:ref-244 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Perl, Eric. D. “Signifying Nothing. Being as Sign in Neoplatonism and Derrida.” In Neoplatonism and Contemporary Thought. Vol. II. Edited by R. Baine Harris. Albany: State University of New York Press, 2002. Pp. 125–151. " .
+
+:ref-245 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Rappe, Sara. “Damascius’ Skeptical Affiliations.” The Ancient World 29 (1998): 111– cerning First Principles.” Journal of the History of Philosophy 36 (1998): 337–363. " .
+
+:ref-246 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “Scepticism in the Sixth Century? Damascius’ Doubts and Solutions Con- 125. " .
+
+:ref-247 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “The Vanishing Point, or Speculative Mathemes in Neoplatonism.” Helios 31 (2004): 187–221. " .
+
+:ref-248 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Richard, Jean-Pierre. L’univers imaginaire de Mallarmé. Paris: Seuil, 1961. " .
+
+:ref-249 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Roger, Thierry, L’Archive du Coup de dés. Étude critique de la réception d’Un Coup de dés jamais n’abolira le hasard de Stéphane Mallarmé (1897–2007). Paris: Garnier, 2010. " .
+
+:ref-25 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "PT and Commentary. Edited by Eric R. Dodds. 2nd Edition. Oxford: Claren- " .
+
+:ref-250 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Roth, Veronika M. Das Ewige Nun. Ein Paradoxon in der Philosophie des Proklos. Berlin: Druncker u. Humbolt, 2008. " .
+
+:ref-251 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Sambursky, Samuel and Pines, Solomon. The Concept of Time in Late Neoplatonism. Texts with Translation, Introduction and Notes. Jerusalem: Israel Academy of Arts and Sciences, 1971. " .
+
+:ref-252 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Schmitz, Markus. Euklids Geometrie und ihre mathematiktheoretische Grundlegung in der neuplaqtonischen Philosophie des Proklus. Würzburg: Königshausen und Neumann, 1997. " .
+
+:ref-253 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Schürmann, Reiner, “L’hénologie comme dépassement de la métaphysique,” Les études philosophiques 86 (1982): 331–350. " .
+
+:ref-254 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Segonds, Alain-Philippe and Steel, Carlos (eds.). Proclus et la Théologie Platonici- enne. Actes du Colloque International de Louvain (13–16 mai, 1998). En l’honneur de H.-D. Saffrey et L.G. Westerink. Leuven / Paris: Leuven University Press / Les Belles Lettres, 2000. " .
+
+:ref-255 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Steel, Carlos. The Changing Self. A Study on the Soul in Later Neoplatonism: Iambli- chus, Damascius, and Priscianus. Brussel: Paleis der Academiën, 1978. " .
+
+:ref-256 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "242 of the Parmenides.” In Traditions of Platonism. Essays in Honour of John Dillon. " .
+
+:ref-257 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “Negatio negationis. Proclus on the Final Lemma of the First Hypothesis Edited by J.J. Cleary. Pp. 351–368. " .
+
+:ref-258 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “Breathing Thought. Proclus on the Innate Knowledge of the Soul.” In The Perennial Tradition of Neoplatonism. Edited by J.J. Cleary. Pp. 293–309. " .
+
+:ref-259 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Sweeney, Leo. “Deconstruction and Neoplatonism. Jacques Derrida and Dionysius the Areopagite.” In Neoplatonism and Contemporary Thought. Vol. II. Edited by R. Baine Harris. Pp. 93–123. " .
+
+:ref-26 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "AL Translated by Robbert M. van den Berg. In Proclus’ Hymns. Essays, Trans- " .
+
+:ref-260 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Trabattoni, F. “Filosofia e dialettica in Damascio.” In Henōsis kai philia. Unione e amicizia. Omaggio a Francesco Romano. Edited by M. Barbanti, G.R. Giardina, P. Manganaro. Pp. 477–494. " .
+
+:ref-261 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Trouillard, Jean. “La notion de dunamis chez Damascius.” Revue des études grecques 85 (1972): 353–363. " .
+
+:ref-262 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Valéry, Paul. Leonardo, Poe, Mallarmé. Translated by Malcolm Cowley and James R. Lawler. Princeton, NJ: Princeton University Press, 1972. " .
+
+:ref-263 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “On ‘A Throw of the Dice’.” In Leonardo, Poe, Mallarmé. Translated by Mal- colm Cowley and James R. Lawler. Pp. 309–310. " .
+
+:ref-264 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Vanneste, Jean. Le Mystère de Dieu. Essai sur la structure rationelle de la doctrine mystique du pseudo-Denys l’Aréopagite. Bruges: Desclée de Brouwer, 1959. " .
+
+:ref-265 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Van Riel, Gerd. “Damascius.” In The Cambridge History of Philosophy in Late Antiq- uity. Edited by Lloyd P. Gerson. Vol. II. Pp. 667–696. " .
+
+:ref-266 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "———. “Les hénades de Proclus sont-elles composées de limite et d’illimité?” Revue des sciences philosophiques et théologiques 85 (2001): 417–432. " .
+
+:ref-267 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Vassilopoulou, Panayiota and Clark, Stephen R.L., eds. Late Antique Epistemology. Other Ways of Truth. Basingstoke: Palgrave-Macmillan, 2009. " .
+
+:ref-268 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Vlad, Marilena. “De principiis. De l’aporétique de l’ Un à l’aporétique de l’Ineffable.” Chora. Revue d’ études anciennes et médiévales 2 (2004): 125–148. " .
+
+:ref-269 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Wackerzapp, Herbert. Der Einfluss Meister Eckharts auf die ersten philosophischen Schriften des Nikolaus von Kues (1440–1450). Műnster i. W.: Aschendorff, 1962. " .
+
+:ref-27 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "AOF lations, Commentary. Leiden: E.J. Brill, 2001. " .
+
+:ref-270 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Wyller, Egil A. “Zum Begriff ‘non aliud’ bei Cusanus.” In Nicolò Cusano agli inizi del mondo moderno, Atti del Congresso Internazionale in occasione del V. centenario della morte di Nicolò Cusano, Bressanone 6–10 settembre 1964. Firenze: Sansoni, 1970. Pp. 419–443. " .
+
+:ref-271 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Yannaras, Christos. On the Absence and Unknowability of God. Heidegger and the Areopagite. Translated by H. Ventis. London-New York: T and T. Clark, 2005. " .
+
+:ref-272 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Zum Brunn, Émilie. “Dieu n’est pas être.” In Maître Eckhart à Paris. Une critique médiévale de l’ontothéologie. Edited by É. Zum Brunn, Z. Kaluza, A. de Libera, P. Vignaux, and É. Wéber. Pp. 85–108. " .
+
+:ref-273 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Zum Brunn, Émilie; Kaluza, Zénon; Libera, Alain de; Vignaux, Paul; and Wéber, Édouard, eds. Maître Eckhart à Paris. Une critique médiévale de l’ontothéologie. Études, textes, et introductions. Paris: Presses Universitaires de France, 1984 " .
+
+:ref-28 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "CI De Philosophia Chaldaica (Eclogae). In Oracles Chaldaïques. Edited by " .
+
+:ref-29 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "CNPP and Jacques Derrida, Jacques Derrida. Translated by Geoffrey Bennington. " .
+
+:ref-3 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "CO Oracles Chaldaïques. Edited by Édouard des Places. Paris: Les Belles Let- tres, 1971. " .
+
+:ref-30 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Comp “Confessions and ‘Circumfession.’ A Roundtable Discussion with Jacques " .
+
+:ref-31 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Dissém. La Dissémination. Paris: Seuil, 1972. Engl. Trans. DI Derrida.” In Augustine and Postmodernism. Confessions and Circumfession. " .
+
+:ref-32 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "DM Edited by John D. Caputo and Michael J. Scanlon. Bloomington and Indi- " .
+
+:ref-33 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Conf anapolis: Indiana University Press, 2005. Pp. 28–49. " .
+
+:ref-34 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "CP La carte postale de Socrate à Freud et au-delà. Paris: Flammarion, 1980. " .
+
+:ref-35 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "DS Dissemination. Translated by Barbara Johnson. Chicago: University of " .
+
+:ref-36 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "ED “Différance.” In Margins of Philosophy. Translated by Alan Bass. Chicago: " .
+
+:ref-37 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "EHOG University of Chicago Press, 1982. Pp. 1–27. " .
+
+:ref-38 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "EJ “Dissemination.” In Dissemination. Translated by Barbara Johnson. Chi- " .
+
+:ref-39 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "EO cago: University of Chicago Press, 1981. Pp. 287–366. " .
+
+:ref-4 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "ps.-Dionysius De Divinis Nominibus. In Corpus Dionysiacum I. Edited by Beata Regina " .
+
+:ref-40 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "EOM “Donner la mort.” In L’éthique du don. Jacques Derrida et la penseé du don. " .
+
+:ref-41 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Fors Paris: Métailié-Transition, 1992. Engl. Trans. GD " .
+
+:ref-42 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "230 “Force and Signification.” In Writing and Difference. Translated by Alan " .
+
+:ref-43 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "FS Bass. Chicago: University of Chicago Press, 1978. Pp. 3–30. " .
+
+:ref-44 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "FSW “Freud and the Scene of Writing.” In Writing and Difference. Translated by " .
+
+:ref-45 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "GD Alan Bass. Chicago: University of Chicago Press, 1978. Pp. 196–231. The Gift of Death. Translated by David Wills. Chicago and London: Univer- sity of Chicago Press, 1995. " .
+
+:ref-46 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Gesch1 “Geschlecht: Sexual Difference and Ontological Difference.” Translated by Ruben Bevezdivin. In A Derrida Reader. Between the Blinds. Edited with an Introduction and Notes by Peggy Kamuf. New York: Columbia University Press, 1991. Pp. 380–402. " .
+
+:ref-47 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "GL Deconstruction and Philosophy. The Texts of Jacques Derrida. Edited by " .
+
+:ref-48 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Glas “ ‘Genesis and Structure’ and Phenomenology.” In Writing and Difference. " .
+
+:ref-49 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Gramm. De la Grammatologie. Paris: Minuit, 1967. Engl. Trans. OG Translated by Alan Bass. Chicago: University of Chicago Press, 1978. Pp. " .
+
+:ref-5 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "DN Suchla. Berlin-New York: De Gruyter, 1990. " .
+
+:ref-50 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "GT “Mes chances. Au rendez-vous de quelques stéréophonies épicuriennes.” " .
+
+:ref-51 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "HTAS In Tijdschrift voor Filosofie 45 (1983): 3–40. Engl. Trans. MyC " .
+
+:ref-52 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "KH Margins of Philosophy. Translated by Alan Bass. Chicago: University of " .
+
+:ref-53 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "LI “My Chances / Mes Chances. A Rendezvous with Some Epicurean Stereo- " .
+
+:ref-54 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "LJF phonies.” In Taking Chances. Derrida, Psychoanalysis and Literature. " .
+
+:ref-55 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Marges. Marges de la philosophie. Paris: Minuit, 1972. Engl. Trans. MP Edited by Joseph H. Smith and William Kerrigan. Baltimore and London: " .
+
+:ref-56 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "MesC Johns Hopkins University Press, 1984. Pp. 1–32. " .
+
+:ref-57 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "MP Of Grammatology. Translated by Gayatri C. Spivak. Baltimore and London: " .
+
+:ref-58 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "MyC Johns Hopkins University Press, 1974. " .
+
+:ref-59 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "OG On the Name Edited by Thomas Dutoit. Translated by David Wood, John " .
+
+:ref-6 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "EH De Ecclesiastica Hierarchia. In Corpus Dionysiacum II. Edited by Günter " .
+
+:ref-60 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "ON P. Leavey, Jr. and Ian McLoed. Stanford: Stanford University Press, 1995. " .
+
+:ref-61 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "ORH “On Reading Heidegger.” Research in Phenomenology 17 (1987): 171–188. " .
+
+:ref-62 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "OS Of Spirit. Heidegger and the Question. Translated by Geoffrey Bennington " .
+
+:ref-63 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Ousia and Rachel Bowlby. Chicago and London: University of Chicago Press, " .
+
+:ref-64 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Parages Parages. Paris: Galilée, 1986. " .
+
+:ref-65 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Parerg. “Parergon.” In The Truth in Painting. Translated by Geoffrey Bennington and Ian McLeod. Chicago and London: University of Chicago of Press, 1987. Pp. 15–147. “Pas.” In Parages. Paris: Galilée, 1986. Pp. 19–116. " .
+
+:ref-66 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Pas The Post Card. From Socrates to Freud and Beyond. Translated by Alan Bass. " .
+
+:ref-67 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Passions Passions. Paris: Galilée, 1993. Engl. Trans. ON, pp. 1–31. " .
+
+:ref-68 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "PIO Edited by Julian Wolfreys. Lincoln: University of Nebraska Press, 1998. " .
+
+:ref-69 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "PR Raising the Tone of Philosophy. Late Essays by Immanuel Kant. Transfor- " .
+
+:ref-7 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Eckhart, Meister Die deutschen und lateinischen Werke, herausgegeben im Auftrage der Deutschen Forschungsgemeinschaft, Stuttgart: Kohlhammer, 1936– Expositio libri Exodi. In Die lateinischen Werke 2. " .
+
+:ref-70 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "PS mative Critique by Jacques Derrida. Edited by Peter Fenves. Baltimore and " .
+
+:ref-71 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "QQ London: Johns Hopkins University Press, 1993. " .
+
+:ref-72 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "RM Sauf le nom. Paris: Galilée, 1993. " .
+
+:ref-73 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "232 “The Supplement of Copula. Philosophy before Linguistics.” In Margins of " .
+
+:ref-74 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "RTP Philosophy. Translated by Alan Bass. Chicago: University of Chicago Press, " .
+
+:ref-75 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "SC “Signature, Event, Context.” In Margins of Philosophy. Translated by Alan " .
+
+:ref-76 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "SEC Bass. Chicago: University of Chicago Press, 1982. Pp. 307–330. " .
+
+:ref-77 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "SICL “This Strange Institution Called Literature: An Interview with Jacques " .
+
+:ref-78 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "SLN Derrida.” In Acts of Literature. Edited by Derek Attridge. New York and " .
+
+:ref-79 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "SOM London: Routledge, 1992. Pp. 33–75. " .
+
+:ref-8 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "EE Expositio libri Geneseos. In Die lateinischen Werke 1/1. " .
+
+:ref-80 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "SP Signéponge/Signsponge. Translated by Richard Rand. New York: Colum- " .
+
+:ref-81 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Spurs bia University Press, 1984. " .
+
+:ref-82 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "SSP “Sauf le nom (Post-Scriptum).” In On the Name. Edited by Thomas Dutoit. " .
+
+:ref-83 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "TDB Translated by John P. Leavey, Jr. Stanford: Stanford University Press, 1995. " .
+
+:ref-84 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "Tours Specters of Marx. The State of the Debt, the Work of Mourning, and the New " .
+
+:ref-85 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "TP International. Translated by Peggy Kamuf. New York-London: Routledge, " .
+
+:ref-86 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "VM Elucidations of Hölderlin’s Poetry. Translated by Keith Hoeller. Amherst: " .
+
+:ref-87 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "VP Einführung in die Metaphysik. GA 40. Frankfurt: Klostermann, 1983. Engl. " .
+
+:ref-88 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "WM The End of Philosophy. Translated by Joan Stambaugh. New York: Harper " .
+
+:ref-89 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "AS The Essence of Truth. On Plato’s Cave Allegory and Theaetetus. Translated " .
+
+:ref-9 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "226 Expositio sancti Evangelii secundum Iohannem. In Die lateinischen Werke " .
+
+:ref-90 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "BDT by Ted Sadler. London and New York: Continuum, 2002. " .
+
+:ref-91 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "BP Frühe Schriften. GA 1. Frankfurt: Klostermann, 1978. " .
+
+:ref-92 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "BPP Die Grundprobleme der Phänomenologie. GA 24. 2. Auflage. Frankfurt: " .
+
+:ref-93 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "BT Klostermann, 1989. Engl. Transl. BPP. " .
+
+:ref-94 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "BWD “Hegels Begriff der Erfahrung.” In Holzwege. Pp. 105–192. Engl. Trans. HCE. " .
+
+:ref-95 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "CP “Hegel’s Concept of Experience.” In Off the Beaten Track. Pp. 86–156. " .
+
+:ref-96 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "EG Identity and Difference. Translated by Joan Stambaugh. New York: Harper " .
+
+:ref-97 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "*EHD An Introduction to Metaphysics. Translated by Ralph Manheim. New " .
+
+:ref-98 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "234 Haven: Yale University Press, 1959. " .
+
+:ref-99 a biro:BibliographicReference ;
+    ns1:bibliographicCitation "ET “Introduction to ‘What is Metaphysics?’.” Translated by Walter Kaufmann. " .
+
+:reference-100 a co:ListItem ;
+    co:ItemContent :ref-100 ;
+    co:NextItem :reference-101 .
+
+:reference-list a biro:ReferenceList ;
+    co:firstItem :reference-1 ;
+    co:item :reference-1,
+        :reference-10,
+        :reference-100,
+        :reference-101,
+        :reference-102,
+        :reference-103,
+        :reference-104,
+        :reference-105,
+        :reference-106,
+        :reference-107,
+        :reference-108,
+        :reference-109,
+        :reference-11,
+        :reference-110,
+        :reference-111,
+        :reference-112,
+        :reference-113,
+        :reference-114,
+        :reference-115,
+        :reference-116,
+        :reference-117,
+        :reference-118,
+        :reference-119,
+        :reference-12,
+        :reference-120,
+        :reference-121,
+        :reference-122,
+        :reference-123,
+        :reference-124,
+        :reference-125,
+        :reference-126,
+        :reference-127,
+        :reference-128,
+        :reference-129,
+        :reference-13,
+        :reference-130,
+        :reference-131,
+        :reference-132,
+        :reference-133,
+        :reference-134,
+        :reference-135,
+        :reference-136,
+        :reference-137,
+        :reference-138,
+        :reference-139,
+        :reference-14,
+        :reference-140,
+        :reference-141,
+        :reference-142,
+        :reference-143,
+        :reference-144,
+        :reference-145,
+        :reference-146,
+        :reference-147,
+        :reference-148,
+        :reference-149,
+        :reference-15,
+        :reference-150,
+        :reference-151,
+        :reference-152,
+        :reference-153,
+        :reference-154,
+        :reference-155,
+        :reference-156,
+        :reference-157,
+        :reference-158,
+        :reference-159,
+        :reference-16,
+        :reference-160,
+        :reference-161,
+        :reference-162,
+        :reference-163,
+        :reference-164,
+        :reference-165,
+        :reference-166,
+        :reference-167,
+        :reference-168,
+        :reference-169,
+        :reference-17,
+        :reference-170,
+        :reference-171,
+        :reference-172,
+        :reference-173,
+        :reference-174,
+        :reference-175,
+        :reference-176,
+        :reference-177,
+        :reference-178,
+        :reference-179,
+        :reference-18,
+        :reference-180,
+        :reference-181,
+        :reference-182,
+        :reference-183,
+        :reference-184,
+        :reference-185,
+        :reference-186,
+        :reference-187,
+        :reference-188,
+        :reference-189,
+        :reference-19,
+        :reference-190,
+        :reference-191,
+        :reference-192,
+        :reference-193,
+        :reference-194,
+        :reference-195,
+        :reference-196,
+        :reference-197,
+        :reference-198,
+        :reference-199,
+        :reference-2,
+        :reference-20,
+        :reference-200,
+        :reference-201,
+        :reference-202,
+        :reference-203,
+        :reference-204,
+        :reference-205,
+        :reference-206,
+        :reference-207,
+        :reference-208,
+        :reference-209,
+        :reference-21,
+        :reference-210,
+        :reference-211,
+        :reference-212,
+        :reference-213,
+        :reference-214,
+        :reference-215,
+        :reference-216,
+        :reference-217,
+        :reference-218,
+        :reference-219,
+        :reference-22,
+        :reference-220,
+        :reference-221,
+        :reference-222,
+        :reference-223,
+        :reference-224,
+        :reference-225,
+        :reference-226,
+        :reference-227,
+        :reference-228,
+        :reference-229,
+        :reference-23,
+        :reference-230,
+        :reference-231,
+        :reference-232,
+        :reference-233,
+        :reference-234,
+        :reference-235,
+        :reference-236,
+        :reference-237,
+        :reference-238,
+        :reference-239,
+        :reference-24,
+        :reference-240,
+        :reference-241,
+        :reference-242,
+        :reference-243,
+        :reference-244,
+        :reference-245,
+        :reference-246,
+        :reference-247,
+        :reference-248,
+        :reference-249,
+        :reference-25,
+        :reference-250,
+        :reference-251,
+        :reference-252,
+        :reference-253,
+        :reference-254,
+        :reference-255,
+        :reference-256,
+        :reference-257,
+        :reference-258,
+        :reference-259,
+        :reference-26,
+        :reference-260,
+        :reference-261,
+        :reference-262,
+        :reference-263,
+        :reference-264,
+        :reference-265,
+        :reference-266,
+        :reference-267,
+        :reference-268,
+        :reference-269,
+        :reference-27,
+        :reference-270,
+        :reference-271,
+        :reference-272,
+        :reference-273,
+        :reference-28,
+        :reference-29,
+        :reference-3,
+        :reference-30,
+        :reference-31,
+        :reference-32,
+        :reference-33,
+        :reference-34,
+        :reference-35,
+        :reference-36,
+        :reference-37,
+        :reference-38,
+        :reference-39,
+        :reference-4,
+        :reference-40,
+        :reference-41,
+        :reference-42,
+        :reference-43,
+        :reference-44,
+        :reference-45,
+        :reference-46,
+        :reference-47,
+        :reference-48,
+        :reference-49,
+        :reference-5,
+        :reference-50,
+        :reference-51,
+        :reference-52,
+        :reference-53,
+        :reference-54,
+        :reference-55,
+        :reference-56,
+        :reference-57,
+        :reference-58,
+        :reference-59,
+        :reference-6,
+        :reference-60,
+        :reference-61,
+        :reference-62,
+        :reference-63,
+        :reference-64,
+        :reference-65,
+        :reference-66,
+        :reference-67,
+        :reference-68,
+        :reference-69,
+        :reference-7,
+        :reference-70,
+        :reference-71,
+        :reference-72,
+        :reference-73,
+        :reference-74,
+        :reference-75,
+        :reference-76,
+        :reference-77,
+        :reference-78,
+        :reference-79,
+        :reference-8,
+        :reference-80,
+        :reference-81,
+        :reference-82,
+        :reference-83,
+        :reference-84,
+        :reference-85,
+        :reference-86,
+        :reference-87,
+        :reference-88,
+        :reference-89,
+        :reference-9,
+        :reference-90,
+        :reference-91,
+        :reference-92,
+        :reference-93,
+        :reference-94,
+        :reference-95,
+        :reference-96,
+        :reference-97,
+        :reference-98,
+        :reference-99 ;
+    co:lastItem :reference-273 .
+
+:reference-1 a co:ListItem ;
+    co:ItemContent :ref-1 ;
+    co:NextItem :reference-2 .
+
+:reference-10 a co:ListItem ;
+    co:ItemContent :ref-10 ;
+    co:NextItem :reference-11 .
+
+:reference-101 a co:ListItem ;
+    co:ItemContent :ref-101 ;
+    co:NextItem :reference-102 .
+
+:reference-102 a co:ListItem ;
+    co:ItemContent :ref-102 ;
+    co:NextItem :reference-103 .
+
+:reference-103 a co:ListItem ;
+    co:ItemContent :ref-103 ;
+    co:NextItem :reference-104 .
+
+:reference-104 a co:ListItem ;
+    co:ItemContent :ref-104 ;
+    co:NextItem :reference-105 .
+
+:reference-105 a co:ListItem ;
+    co:ItemContent :ref-105 ;
+    co:NextItem :reference-106 .
+
+:reference-106 a co:ListItem ;
+    co:ItemContent :ref-106 ;
+    co:NextItem :reference-107 .
+
+:reference-107 a co:ListItem ;
+    co:ItemContent :ref-107 ;
+    co:NextItem :reference-108 .
+
+:reference-108 a co:ListItem ;
+    co:ItemContent :ref-108 ;
+    co:NextItem :reference-109 .
+
+:reference-109 a co:ListItem ;
+    co:ItemContent :ref-109 ;
+    co:NextItem :reference-110 .
+
+:reference-11 a co:ListItem ;
+    co:ItemContent :ref-11 ;
+    co:NextItem :reference-12 .
+
+:reference-110 a co:ListItem ;
+    co:ItemContent :ref-110 ;
+    co:NextItem :reference-111 .
+
+:reference-111 a co:ListItem ;
+    co:ItemContent :ref-111 ;
+    co:NextItem :reference-112 .
+
+:reference-112 a co:ListItem ;
+    co:ItemContent :ref-112 ;
+    co:NextItem :reference-113 .
+
+:reference-113 a co:ListItem ;
+    co:ItemContent :ref-113 ;
+    co:NextItem :reference-114 .
+
+:reference-114 a co:ListItem ;
+    co:ItemContent :ref-114 ;
+    co:NextItem :reference-115 .
+
+:reference-115 a co:ListItem ;
+    co:ItemContent :ref-115 ;
+    co:NextItem :reference-116 .
+
+:reference-116 a co:ListItem ;
+    co:ItemContent :ref-116 ;
+    co:NextItem :reference-117 .
+
+:reference-117 a co:ListItem ;
+    co:ItemContent :ref-117 ;
+    co:NextItem :reference-118 .
+
+:reference-118 a co:ListItem ;
+    co:ItemContent :ref-118 ;
+    co:NextItem :reference-119 .
+
+:reference-119 a co:ListItem ;
+    co:ItemContent :ref-119 ;
+    co:NextItem :reference-120 .
+
+:reference-12 a co:ListItem ;
+    co:ItemContent :ref-12 ;
+    co:NextItem :reference-13 .
+
+:reference-120 a co:ListItem ;
+    co:ItemContent :ref-120 ;
+    co:NextItem :reference-121 .
+
+:reference-121 a co:ListItem ;
+    co:ItemContent :ref-121 ;
+    co:NextItem :reference-122 .
+
+:reference-122 a co:ListItem ;
+    co:ItemContent :ref-122 ;
+    co:NextItem :reference-123 .
+
+:reference-123 a co:ListItem ;
+    co:ItemContent :ref-123 ;
+    co:NextItem :reference-124 .
+
+:reference-124 a co:ListItem ;
+    co:ItemContent :ref-124 ;
+    co:NextItem :reference-125 .
+
+:reference-125 a co:ListItem ;
+    co:ItemContent :ref-125 ;
+    co:NextItem :reference-126 .
+
+:reference-126 a co:ListItem ;
+    co:ItemContent :ref-126 ;
+    co:NextItem :reference-127 .
+
+:reference-127 a co:ListItem ;
+    co:ItemContent :ref-127 ;
+    co:NextItem :reference-128 .
+
+:reference-128 a co:ListItem ;
+    co:ItemContent :ref-128 ;
+    co:NextItem :reference-129 .
+
+:reference-129 a co:ListItem ;
+    co:ItemContent :ref-129 ;
+    co:NextItem :reference-130 .
+
+:reference-13 a co:ListItem ;
+    co:ItemContent :ref-13 ;
+    co:NextItem :reference-14 .
+
+:reference-130 a co:ListItem ;
+    co:ItemContent :ref-130 ;
+    co:NextItem :reference-131 .
+
+:reference-131 a co:ListItem ;
+    co:ItemContent :ref-131 ;
+    co:NextItem :reference-132 .
+
+:reference-132 a co:ListItem ;
+    co:ItemContent :ref-132 ;
+    co:NextItem :reference-133 .
+
+:reference-133 a co:ListItem ;
+    co:ItemContent :ref-133 ;
+    co:NextItem :reference-134 .
+
+:reference-134 a co:ListItem ;
+    co:ItemContent :ref-134 ;
+    co:NextItem :reference-135 .
+
+:reference-135 a co:ListItem ;
+    co:ItemContent :ref-135 ;
+    co:NextItem :reference-136 .
+
+:reference-136 a co:ListItem ;
+    co:ItemContent :ref-136 ;
+    co:NextItem :reference-137 .
+
+:reference-137 a co:ListItem ;
+    co:ItemContent :ref-137 ;
+    co:NextItem :reference-138 .
+
+:reference-138 a co:ListItem ;
+    co:ItemContent :ref-138 ;
+    co:NextItem :reference-139 .
+
+:reference-139 a co:ListItem ;
+    co:ItemContent :ref-139 ;
+    co:NextItem :reference-140 .
+
+:reference-14 a co:ListItem ;
+    co:ItemContent :ref-14 ;
+    co:NextItem :reference-15 .
+
+:reference-140 a co:ListItem ;
+    co:ItemContent :ref-140 ;
+    co:NextItem :reference-141 .
+
+:reference-141 a co:ListItem ;
+    co:ItemContent :ref-141 ;
+    co:NextItem :reference-142 .
+
+:reference-142 a co:ListItem ;
+    co:ItemContent :ref-142 ;
+    co:NextItem :reference-143 .
+
+:reference-143 a co:ListItem ;
+    co:ItemContent :ref-143 ;
+    co:NextItem :reference-144 .
+
+:reference-144 a co:ListItem ;
+    co:ItemContent :ref-144 ;
+    co:NextItem :reference-145 .
+
+:reference-145 a co:ListItem ;
+    co:ItemContent :ref-145 ;
+    co:NextItem :reference-146 .
+
+:reference-146 a co:ListItem ;
+    co:ItemContent :ref-146 ;
+    co:NextItem :reference-147 .
+
+:reference-147 a co:ListItem ;
+    co:ItemContent :ref-147 ;
+    co:NextItem :reference-148 .
+
+:reference-148 a co:ListItem ;
+    co:ItemContent :ref-148 ;
+    co:NextItem :reference-149 .
+
+:reference-149 a co:ListItem ;
+    co:ItemContent :ref-149 ;
+    co:NextItem :reference-150 .
+
+:reference-15 a co:ListItem ;
+    co:ItemContent :ref-15 ;
+    co:NextItem :reference-16 .
+
+:reference-150 a co:ListItem ;
+    co:ItemContent :ref-150 ;
+    co:NextItem :reference-151 .
+
+:reference-151 a co:ListItem ;
+    co:ItemContent :ref-151 ;
+    co:NextItem :reference-152 .
+
+:reference-152 a co:ListItem ;
+    co:ItemContent :ref-152 ;
+    co:NextItem :reference-153 .
+
+:reference-153 a co:ListItem ;
+    co:ItemContent :ref-153 ;
+    co:NextItem :reference-154 .
+
+:reference-154 a co:ListItem ;
+    co:ItemContent :ref-154 ;
+    co:NextItem :reference-155 .
+
+:reference-155 a co:ListItem ;
+    co:ItemContent :ref-155 ;
+    co:NextItem :reference-156 .
+
+:reference-156 a co:ListItem ;
+    co:ItemContent :ref-156 ;
+    co:NextItem :reference-157 .
+
+:reference-157 a co:ListItem ;
+    co:ItemContent :ref-157 ;
+    co:NextItem :reference-158 .
+
+:reference-158 a co:ListItem ;
+    co:ItemContent :ref-158 ;
+    co:NextItem :reference-159 .
+
+:reference-159 a co:ListItem ;
+    co:ItemContent :ref-159 ;
+    co:NextItem :reference-160 .
+
+:reference-16 a co:ListItem ;
+    co:ItemContent :ref-16 ;
+    co:NextItem :reference-17 .
+
+:reference-160 a co:ListItem ;
+    co:ItemContent :ref-160 ;
+    co:NextItem :reference-161 .
+
+:reference-161 a co:ListItem ;
+    co:ItemContent :ref-161 ;
+    co:NextItem :reference-162 .
+
+:reference-162 a co:ListItem ;
+    co:ItemContent :ref-162 ;
+    co:NextItem :reference-163 .
+
+:reference-163 a co:ListItem ;
+    co:ItemContent :ref-163 ;
+    co:NextItem :reference-164 .
+
+:reference-164 a co:ListItem ;
+    co:ItemContent :ref-164 ;
+    co:NextItem :reference-165 .
+
+:reference-165 a co:ListItem ;
+    co:ItemContent :ref-165 ;
+    co:NextItem :reference-166 .
+
+:reference-166 a co:ListItem ;
+    co:ItemContent :ref-166 ;
+    co:NextItem :reference-167 .
+
+:reference-167 a co:ListItem ;
+    co:ItemContent :ref-167 ;
+    co:NextItem :reference-168 .
+
+:reference-168 a co:ListItem ;
+    co:ItemContent :ref-168 ;
+    co:NextItem :reference-169 .
+
+:reference-169 a co:ListItem ;
+    co:ItemContent :ref-169 ;
+    co:NextItem :reference-170 .
+
+:reference-17 a co:ListItem ;
+    co:ItemContent :ref-17 ;
+    co:NextItem :reference-18 .
+
+:reference-170 a co:ListItem ;
+    co:ItemContent :ref-170 ;
+    co:NextItem :reference-171 .
+
+:reference-171 a co:ListItem ;
+    co:ItemContent :ref-171 ;
+    co:NextItem :reference-172 .
+
+:reference-172 a co:ListItem ;
+    co:ItemContent :ref-172 ;
+    co:NextItem :reference-173 .
+
+:reference-173 a co:ListItem ;
+    co:ItemContent :ref-173 ;
+    co:NextItem :reference-174 .
+
+:reference-174 a co:ListItem ;
+    co:ItemContent :ref-174 ;
+    co:NextItem :reference-175 .
+
+:reference-175 a co:ListItem ;
+    co:ItemContent :ref-175 ;
+    co:NextItem :reference-176 .
+
+:reference-176 a co:ListItem ;
+    co:ItemContent :ref-176 ;
+    co:NextItem :reference-177 .
+
+:reference-177 a co:ListItem ;
+    co:ItemContent :ref-177 ;
+    co:NextItem :reference-178 .
+
+:reference-178 a co:ListItem ;
+    co:ItemContent :ref-178 ;
+    co:NextItem :reference-179 .
+
+:reference-179 a co:ListItem ;
+    co:ItemContent :ref-179 ;
+    co:NextItem :reference-180 .
+
+:reference-18 a co:ListItem ;
+    co:ItemContent :ref-18 ;
+    co:NextItem :reference-19 .
+
+:reference-180 a co:ListItem ;
+    co:ItemContent :ref-180 ;
+    co:NextItem :reference-181 .
+
+:reference-181 a co:ListItem ;
+    co:ItemContent :ref-181 ;
+    co:NextItem :reference-182 .
+
+:reference-182 a co:ListItem ;
+    co:ItemContent :ref-182 ;
+    co:NextItem :reference-183 .
+
+:reference-183 a co:ListItem ;
+    co:ItemContent :ref-183 ;
+    co:NextItem :reference-184 .
+
+:reference-184 a co:ListItem ;
+    co:ItemContent :ref-184 ;
+    co:NextItem :reference-185 .
+
+:reference-185 a co:ListItem ;
+    co:ItemContent :ref-185 ;
+    co:NextItem :reference-186 .
+
+:reference-186 a co:ListItem ;
+    co:ItemContent :ref-186 ;
+    co:NextItem :reference-187 .
+
+:reference-187 a co:ListItem ;
+    co:ItemContent :ref-187 ;
+    co:NextItem :reference-188 .
+
+:reference-188 a co:ListItem ;
+    co:ItemContent :ref-188 ;
+    co:NextItem :reference-189 .
+
+:reference-189 a co:ListItem ;
+    co:ItemContent :ref-189 ;
+    co:NextItem :reference-190 .
+
+:reference-19 a co:ListItem ;
+    co:ItemContent :ref-19 ;
+    co:NextItem :reference-20 .
+
+:reference-190 a co:ListItem ;
+    co:ItemContent :ref-190 ;
+    co:NextItem :reference-191 .
+
+:reference-191 a co:ListItem ;
+    co:ItemContent :ref-191 ;
+    co:NextItem :reference-192 .
+
+:reference-192 a co:ListItem ;
+    co:ItemContent :ref-192 ;
+    co:NextItem :reference-193 .
+
+:reference-193 a co:ListItem ;
+    co:ItemContent :ref-193 ;
+    co:NextItem :reference-194 .
+
+:reference-194 a co:ListItem ;
+    co:ItemContent :ref-194 ;
+    co:NextItem :reference-195 .
+
+:reference-195 a co:ListItem ;
+    co:ItemContent :ref-195 ;
+    co:NextItem :reference-196 .
+
+:reference-196 a co:ListItem ;
+    co:ItemContent :ref-196 ;
+    co:NextItem :reference-197 .
+
+:reference-197 a co:ListItem ;
+    co:ItemContent :ref-197 ;
+    co:NextItem :reference-198 .
+
+:reference-198 a co:ListItem ;
+    co:ItemContent :ref-198 ;
+    co:NextItem :reference-199 .
+
+:reference-199 a co:ListItem ;
+    co:ItemContent :ref-199 ;
+    co:NextItem :reference-200 .
+
+:reference-2 a co:ListItem ;
+    co:ItemContent :ref-2 ;
+    co:NextItem :reference-3 .
+
+:reference-20 a co:ListItem ;
+    co:ItemContent :ref-20 ;
+    co:NextItem :reference-21 .
+
+:reference-200 a co:ListItem ;
+    co:ItemContent :ref-200 ;
+    co:NextItem :reference-201 .
+
+:reference-201 a co:ListItem ;
+    co:ItemContent :ref-201 ;
+    co:NextItem :reference-202 .
+
+:reference-202 a co:ListItem ;
+    co:ItemContent :ref-202 ;
+    co:NextItem :reference-203 .
+
+:reference-203 a co:ListItem ;
+    co:ItemContent :ref-203 ;
+    co:NextItem :reference-204 .
+
+:reference-204 a co:ListItem ;
+    co:ItemContent :ref-204 ;
+    co:NextItem :reference-205 .
+
+:reference-205 a co:ListItem ;
+    co:ItemContent :ref-205 ;
+    co:NextItem :reference-206 .
+
+:reference-206 a co:ListItem ;
+    co:ItemContent :ref-206 ;
+    co:NextItem :reference-207 .
+
+:reference-207 a co:ListItem ;
+    co:ItemContent :ref-207 ;
+    co:NextItem :reference-208 .
+
+:reference-208 a co:ListItem ;
+    co:ItemContent :ref-208 ;
+    co:NextItem :reference-209 .
+
+:reference-209 a co:ListItem ;
+    co:ItemContent :ref-209 ;
+    co:NextItem :reference-210 .
+
+:reference-21 a co:ListItem ;
+    co:ItemContent :ref-21 ;
+    co:NextItem :reference-22 .
+
+:reference-210 a co:ListItem ;
+    co:ItemContent :ref-210 ;
+    co:NextItem :reference-211 .
+
+:reference-211 a co:ListItem ;
+    co:ItemContent :ref-211 ;
+    co:NextItem :reference-212 .
+
+:reference-212 a co:ListItem ;
+    co:ItemContent :ref-212 ;
+    co:NextItem :reference-213 .
+
+:reference-213 a co:ListItem ;
+    co:ItemContent :ref-213 ;
+    co:NextItem :reference-214 .
+
+:reference-214 a co:ListItem ;
+    co:ItemContent :ref-214 ;
+    co:NextItem :reference-215 .
+
+:reference-215 a co:ListItem ;
+    co:ItemContent :ref-215 ;
+    co:NextItem :reference-216 .
+
+:reference-216 a co:ListItem ;
+    co:ItemContent :ref-216 ;
+    co:NextItem :reference-217 .
+
+:reference-217 a co:ListItem ;
+    co:ItemContent :ref-217 ;
+    co:NextItem :reference-218 .
+
+:reference-218 a co:ListItem ;
+    co:ItemContent :ref-218 ;
+    co:NextItem :reference-219 .
+
+:reference-219 a co:ListItem ;
+    co:ItemContent :ref-219 ;
+    co:NextItem :reference-220 .
+
+:reference-22 a co:ListItem ;
+    co:ItemContent :ref-22 ;
+    co:NextItem :reference-23 .
+
+:reference-220 a co:ListItem ;
+    co:ItemContent :ref-220 ;
+    co:NextItem :reference-221 .
+
+:reference-221 a co:ListItem ;
+    co:ItemContent :ref-221 ;
+    co:NextItem :reference-222 .
+
+:reference-222 a co:ListItem ;
+    co:ItemContent :ref-222 ;
+    co:NextItem :reference-223 .
+
+:reference-223 a co:ListItem ;
+    co:ItemContent :ref-223 ;
+    co:NextItem :reference-224 .
+
+:reference-224 a co:ListItem ;
+    co:ItemContent :ref-224 ;
+    co:NextItem :reference-225 .
+
+:reference-225 a co:ListItem ;
+    co:ItemContent :ref-225 ;
+    co:NextItem :reference-226 .
+
+:reference-226 a co:ListItem ;
+    co:ItemContent :ref-226 ;
+    co:NextItem :reference-227 .
+
+:reference-227 a co:ListItem ;
+    co:ItemContent :ref-227 ;
+    co:NextItem :reference-228 .
+
+:reference-228 a co:ListItem ;
+    co:ItemContent :ref-228 ;
+    co:NextItem :reference-229 .
+
+:reference-229 a co:ListItem ;
+    co:ItemContent :ref-229 ;
+    co:NextItem :reference-230 .
+
+:reference-23 a co:ListItem ;
+    co:ItemContent :ref-23 ;
+    co:NextItem :reference-24 .
+
+:reference-230 a co:ListItem ;
+    co:ItemContent :ref-230 ;
+    co:NextItem :reference-231 .
+
+:reference-231 a co:ListItem ;
+    co:ItemContent :ref-231 ;
+    co:NextItem :reference-232 .
+
+:reference-232 a co:ListItem ;
+    co:ItemContent :ref-232 ;
+    co:NextItem :reference-233 .
+
+:reference-233 a co:ListItem ;
+    co:ItemContent :ref-233 ;
+    co:NextItem :reference-234 .
+
+:reference-234 a co:ListItem ;
+    co:ItemContent :ref-234 ;
+    co:NextItem :reference-235 .
+
+:reference-235 a co:ListItem ;
+    co:ItemContent :ref-235 ;
+    co:NextItem :reference-236 .
+
+:reference-236 a co:ListItem ;
+    co:ItemContent :ref-236 ;
+    co:NextItem :reference-237 .
+
+:reference-237 a co:ListItem ;
+    co:ItemContent :ref-237 ;
+    co:NextItem :reference-238 .
+
+:reference-238 a co:ListItem ;
+    co:ItemContent :ref-238 ;
+    co:NextItem :reference-239 .
+
+:reference-239 a co:ListItem ;
+    co:ItemContent :ref-239 ;
+    co:NextItem :reference-240 .
+
+:reference-24 a co:ListItem ;
+    co:ItemContent :ref-24 ;
+    co:NextItem :reference-25 .
+
+:reference-240 a co:ListItem ;
+    co:ItemContent :ref-240 ;
+    co:NextItem :reference-241 .
+
+:reference-241 a co:ListItem ;
+    co:ItemContent :ref-241 ;
+    co:NextItem :reference-242 .
+
+:reference-242 a co:ListItem ;
+    co:ItemContent :ref-242 ;
+    co:NextItem :reference-243 .
+
+:reference-243 a co:ListItem ;
+    co:ItemContent :ref-243 ;
+    co:NextItem :reference-244 .
+
+:reference-244 a co:ListItem ;
+    co:ItemContent :ref-244 ;
+    co:NextItem :reference-245 .
+
+:reference-245 a co:ListItem ;
+    co:ItemContent :ref-245 ;
+    co:NextItem :reference-246 .
+
+:reference-246 a co:ListItem ;
+    co:ItemContent :ref-246 ;
+    co:NextItem :reference-247 .
+
+:reference-247 a co:ListItem ;
+    co:ItemContent :ref-247 ;
+    co:NextItem :reference-248 .
+
+:reference-248 a co:ListItem ;
+    co:ItemContent :ref-248 ;
+    co:NextItem :reference-249 .
+
+:reference-249 a co:ListItem ;
+    co:ItemContent :ref-249 ;
+    co:NextItem :reference-250 .
+
+:reference-25 a co:ListItem ;
+    co:ItemContent :ref-25 ;
+    co:NextItem :reference-26 .
+
+:reference-250 a co:ListItem ;
+    co:ItemContent :ref-250 ;
+    co:NextItem :reference-251 .
+
+:reference-251 a co:ListItem ;
+    co:ItemContent :ref-251 ;
+    co:NextItem :reference-252 .
+
+:reference-252 a co:ListItem ;
+    co:ItemContent :ref-252 ;
+    co:NextItem :reference-253 .
+
+:reference-253 a co:ListItem ;
+    co:ItemContent :ref-253 ;
+    co:NextItem :reference-254 .
+
+:reference-254 a co:ListItem ;
+    co:ItemContent :ref-254 ;
+    co:NextItem :reference-255 .
+
+:reference-255 a co:ListItem ;
+    co:ItemContent :ref-255 ;
+    co:NextItem :reference-256 .
+
+:reference-256 a co:ListItem ;
+    co:ItemContent :ref-256 ;
+    co:NextItem :reference-257 .
+
+:reference-257 a co:ListItem ;
+    co:ItemContent :ref-257 ;
+    co:NextItem :reference-258 .
+
+:reference-258 a co:ListItem ;
+    co:ItemContent :ref-258 ;
+    co:NextItem :reference-259 .
+
+:reference-259 a co:ListItem ;
+    co:ItemContent :ref-259 ;
+    co:NextItem :reference-260 .
+
+:reference-26 a co:ListItem ;
+    co:ItemContent :ref-26 ;
+    co:NextItem :reference-27 .
+
+:reference-260 a co:ListItem ;
+    co:ItemContent :ref-260 ;
+    co:NextItem :reference-261 .
+
+:reference-261 a co:ListItem ;
+    co:ItemContent :ref-261 ;
+    co:NextItem :reference-262 .
+
+:reference-262 a co:ListItem ;
+    co:ItemContent :ref-262 ;
+    co:NextItem :reference-263 .
+
+:reference-263 a co:ListItem ;
+    co:ItemContent :ref-263 ;
+    co:NextItem :reference-264 .
+
+:reference-264 a co:ListItem ;
+    co:ItemContent :ref-264 ;
+    co:NextItem :reference-265 .
+
+:reference-265 a co:ListItem ;
+    co:ItemContent :ref-265 ;
+    co:NextItem :reference-266 .
+
+:reference-266 a co:ListItem ;
+    co:ItemContent :ref-266 ;
+    co:NextItem :reference-267 .
+
+:reference-267 a co:ListItem ;
+    co:ItemContent :ref-267 ;
+    co:NextItem :reference-268 .
+
+:reference-268 a co:ListItem ;
+    co:ItemContent :ref-268 ;
+    co:NextItem :reference-269 .
+
+:reference-269 a co:ListItem ;
+    co:ItemContent :ref-269 ;
+    co:NextItem :reference-270 .
+
+:reference-27 a co:ListItem ;
+    co:ItemContent :ref-27 ;
+    co:NextItem :reference-28 .
+
+:reference-270 a co:ListItem ;
+    co:ItemContent :ref-270 ;
+    co:NextItem :reference-271 .
+
+:reference-271 a co:ListItem ;
+    co:ItemContent :ref-271 ;
+    co:NextItem :reference-272 .
+
+:reference-272 a co:ListItem ;
+    co:ItemContent :ref-272 ;
+    co:NextItem :reference-273 .
+
+:reference-28 a co:ListItem ;
+    co:ItemContent :ref-28 ;
+    co:NextItem :reference-29 .
+
+:reference-29 a co:ListItem ;
+    co:ItemContent :ref-29 ;
+    co:NextItem :reference-30 .
+
+:reference-3 a co:ListItem ;
+    co:ItemContent :ref-3 ;
+    co:NextItem :reference-4 .
+
+:reference-30 a co:ListItem ;
+    co:ItemContent :ref-30 ;
+    co:NextItem :reference-31 .
+
+:reference-31 a co:ListItem ;
+    co:ItemContent :ref-31 ;
+    co:NextItem :reference-32 .
+
+:reference-32 a co:ListItem ;
+    co:ItemContent :ref-32 ;
+    co:NextItem :reference-33 .
+
+:reference-33 a co:ListItem ;
+    co:ItemContent :ref-33 ;
+    co:NextItem :reference-34 .
+
+:reference-34 a co:ListItem ;
+    co:ItemContent :ref-34 ;
+    co:NextItem :reference-35 .
+
+:reference-35 a co:ListItem ;
+    co:ItemContent :ref-35 ;
+    co:NextItem :reference-36 .
+
+:reference-36 a co:ListItem ;
+    co:ItemContent :ref-36 ;
+    co:NextItem :reference-37 .
+
+:reference-37 a co:ListItem ;
+    co:ItemContent :ref-37 ;
+    co:NextItem :reference-38 .
+
+:reference-38 a co:ListItem ;
+    co:ItemContent :ref-38 ;
+    co:NextItem :reference-39 .
+
+:reference-39 a co:ListItem ;
+    co:ItemContent :ref-39 ;
+    co:NextItem :reference-40 .
+
+:reference-4 a co:ListItem ;
+    co:ItemContent :ref-4 ;
+    co:NextItem :reference-5 .
+
+:reference-40 a co:ListItem ;
+    co:ItemContent :ref-40 ;
+    co:NextItem :reference-41 .
+
+:reference-41 a co:ListItem ;
+    co:ItemContent :ref-41 ;
+    co:NextItem :reference-42 .
+
+:reference-42 a co:ListItem ;
+    co:ItemContent :ref-42 ;
+    co:NextItem :reference-43 .
+
+:reference-43 a co:ListItem ;
+    co:ItemContent :ref-43 ;
+    co:NextItem :reference-44 .
+
+:reference-44 a co:ListItem ;
+    co:ItemContent :ref-44 ;
+    co:NextItem :reference-45 .
+
+:reference-45 a co:ListItem ;
+    co:ItemContent :ref-45 ;
+    co:NextItem :reference-46 .
+
+:reference-46 a co:ListItem ;
+    co:ItemContent :ref-46 ;
+    co:NextItem :reference-47 .
+
+:reference-47 a co:ListItem ;
+    co:ItemContent :ref-47 ;
+    co:NextItem :reference-48 .
+
+:reference-48 a co:ListItem ;
+    co:ItemContent :ref-48 ;
+    co:NextItem :reference-49 .
+
+:reference-49 a co:ListItem ;
+    co:ItemContent :ref-49 ;
+    co:NextItem :reference-50 .
+
+:reference-5 a co:ListItem ;
+    co:ItemContent :ref-5 ;
+    co:NextItem :reference-6 .
+
+:reference-50 a co:ListItem ;
+    co:ItemContent :ref-50 ;
+    co:NextItem :reference-51 .
+
+:reference-51 a co:ListItem ;
+    co:ItemContent :ref-51 ;
+    co:NextItem :reference-52 .
+
+:reference-52 a co:ListItem ;
+    co:ItemContent :ref-52 ;
+    co:NextItem :reference-53 .
+
+:reference-53 a co:ListItem ;
+    co:ItemContent :ref-53 ;
+    co:NextItem :reference-54 .
+
+:reference-54 a co:ListItem ;
+    co:ItemContent :ref-54 ;
+    co:NextItem :reference-55 .
+
+:reference-55 a co:ListItem ;
+    co:ItemContent :ref-55 ;
+    co:NextItem :reference-56 .
+
+:reference-56 a co:ListItem ;
+    co:ItemContent :ref-56 ;
+    co:NextItem :reference-57 .
+
+:reference-57 a co:ListItem ;
+    co:ItemContent :ref-57 ;
+    co:NextItem :reference-58 .
+
+:reference-58 a co:ListItem ;
+    co:ItemContent :ref-58 ;
+    co:NextItem :reference-59 .
+
+:reference-59 a co:ListItem ;
+    co:ItemContent :ref-59 ;
+    co:NextItem :reference-60 .
+
+:reference-6 a co:ListItem ;
+    co:ItemContent :ref-6 ;
+    co:NextItem :reference-7 .
+
+:reference-60 a co:ListItem ;
+    co:ItemContent :ref-60 ;
+    co:NextItem :reference-61 .
+
+:reference-61 a co:ListItem ;
+    co:ItemContent :ref-61 ;
+    co:NextItem :reference-62 .
+
+:reference-62 a co:ListItem ;
+    co:ItemContent :ref-62 ;
+    co:NextItem :reference-63 .
+
+:reference-63 a co:ListItem ;
+    co:ItemContent :ref-63 ;
+    co:NextItem :reference-64 .
+
+:reference-64 a co:ListItem ;
+    co:ItemContent :ref-64 ;
+    co:NextItem :reference-65 .
+
+:reference-65 a co:ListItem ;
+    co:ItemContent :ref-65 ;
+    co:NextItem :reference-66 .
+
+:reference-66 a co:ListItem ;
+    co:ItemContent :ref-66 ;
+    co:NextItem :reference-67 .
+
+:reference-67 a co:ListItem ;
+    co:ItemContent :ref-67 ;
+    co:NextItem :reference-68 .
+
+:reference-68 a co:ListItem ;
+    co:ItemContent :ref-68 ;
+    co:NextItem :reference-69 .
+
+:reference-69 a co:ListItem ;
+    co:ItemContent :ref-69 ;
+    co:NextItem :reference-70 .
+
+:reference-7 a co:ListItem ;
+    co:ItemContent :ref-7 ;
+    co:NextItem :reference-8 .
+
+:reference-70 a co:ListItem ;
+    co:ItemContent :ref-70 ;
+    co:NextItem :reference-71 .
+
+:reference-71 a co:ListItem ;
+    co:ItemContent :ref-71 ;
+    co:NextItem :reference-72 .
+
+:reference-72 a co:ListItem ;
+    co:ItemContent :ref-72 ;
+    co:NextItem :reference-73 .
+
+:reference-73 a co:ListItem ;
+    co:ItemContent :ref-73 ;
+    co:NextItem :reference-74 .
+
+:reference-74 a co:ListItem ;
+    co:ItemContent :ref-74 ;
+    co:NextItem :reference-75 .
+
+:reference-75 a co:ListItem ;
+    co:ItemContent :ref-75 ;
+    co:NextItem :reference-76 .
+
+:reference-76 a co:ListItem ;
+    co:ItemContent :ref-76 ;
+    co:NextItem :reference-77 .
+
+:reference-77 a co:ListItem ;
+    co:ItemContent :ref-77 ;
+    co:NextItem :reference-78 .
+
+:reference-78 a co:ListItem ;
+    co:ItemContent :ref-78 ;
+    co:NextItem :reference-79 .
+
+:reference-79 a co:ListItem ;
+    co:ItemContent :ref-79 ;
+    co:NextItem :reference-80 .
+
+:reference-8 a co:ListItem ;
+    co:ItemContent :ref-8 ;
+    co:NextItem :reference-9 .
+
+:reference-80 a co:ListItem ;
+    co:ItemContent :ref-80 ;
+    co:NextItem :reference-81 .
+
+:reference-81 a co:ListItem ;
+    co:ItemContent :ref-81 ;
+    co:NextItem :reference-82 .
+
+:reference-82 a co:ListItem ;
+    co:ItemContent :ref-82 ;
+    co:NextItem :reference-83 .
+
+:reference-83 a co:ListItem ;
+    co:ItemContent :ref-83 ;
+    co:NextItem :reference-84 .
+
+:reference-84 a co:ListItem ;
+    co:ItemContent :ref-84 ;
+    co:NextItem :reference-85 .
+
+:reference-85 a co:ListItem ;
+    co:ItemContent :ref-85 ;
+    co:NextItem :reference-86 .
+
+:reference-86 a co:ListItem ;
+    co:ItemContent :ref-86 ;
+    co:NextItem :reference-87 .
+
+:reference-87 a co:ListItem ;
+    co:ItemContent :ref-87 ;
+    co:NextItem :reference-88 .
+
+:reference-88 a co:ListItem ;
+    co:ItemContent :ref-88 ;
+    co:NextItem :reference-89 .
+
+:reference-89 a co:ListItem ;
+    co:ItemContent :ref-89 ;
+    co:NextItem :reference-90 .
+
+:reference-9 a co:ListItem ;
+    co:ItemContent :ref-9 ;
+    co:NextItem :reference-10 .
+
+:reference-90 a co:ListItem ;
+    co:ItemContent :ref-90 ;
+    co:NextItem :reference-91 .
+
+:reference-91 a co:ListItem ;
+    co:ItemContent :ref-91 ;
+    co:NextItem :reference-92 .
+
+:reference-92 a co:ListItem ;
+    co:ItemContent :ref-92 ;
+    co:NextItem :reference-93 .
+
+:reference-93 a co:ListItem ;
+    co:ItemContent :ref-93 ;
+    co:NextItem :reference-94 .
+
+:reference-94 a co:ListItem ;
+    co:ItemContent :ref-94 ;
+    co:NextItem :reference-95 .
+
+:reference-95 a co:ListItem ;
+    co:ItemContent :ref-95 ;
+    co:NextItem :reference-96 .
+
+:reference-96 a co:ListItem ;
+    co:ItemContent :ref-96 ;
+    co:NextItem :reference-97 .
+
+:reference-97 a co:ListItem ;
+    co:ItemContent :ref-97 ;
+    co:NextItem :reference-98 .
+
+:reference-98 a co:ListItem ;
+    co:ItemContent :ref-98 ;
+    co:NextItem :reference-99 .
+
+:reference-99 a co:ListItem ;
+    co:ItemContent :ref-99 .
+
+:reference-273 a co:ListItem ;
+    co:ItemContent :ref-273 ;
+    co:NextItem :reference-274 .
+

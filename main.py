@@ -7,8 +7,10 @@ from os.path import isfile, join
 import os
 
 if __name__ == '__main__':
+
+    # Parse publication archive and save knowledge graph in a DB
     def populate_db(db, logger):
-        db.clear_graph()
+        #db.clear_graph()
         # Process publication archives in batches
         dir_path = "data"
         zip_arr = [f for f in listdir(dir_path) if isfile(join(dir_path, f))]
@@ -22,18 +24,17 @@ if __name__ == '__main__':
             while start_idx < end_idx:
                 batch = Batch.from_zip(zip_path=corpus_zip_path, start=start_idx, size=batch_size,
                                        extract_bib=True, extract_index=True)
-                logger.info("Started batch: %d - %d", start_idx, start_idx + batch_size)
                 # 2. Cluster similar references in the corpus
                 batch.cluster()
                 # 3. Add batch to the knowledge graph
-                db.create_graph(batch)
+                #db.create_graph(batch)
                 start_idx += batch_size
-                logger.info("Finished batch!")
+                logger.info("Processed and saved the batch!")
 
-    def disambiguate_existing(db, logger):
+    # Disambiguate bibliographic references from the DB
+    def disambiguate_bib(db, logger):
         count = 0
-        # TODO delete external publication contributors
-        # db.detach_delete_nodes("ExternalPublication")
+        db.delete_external_pub()
         refs = db.query_bib_refs(100)
         total = len(refs)
         for ref in refs:
@@ -45,13 +46,20 @@ if __name__ == '__main__':
                 db.create_ext_pub(ext_pub, ref.UUID)
         logger.info("Disambiguated: %d out of %d bibliographic references!", count, total)
 
+
+    # Disambiguate index references from the DB
+
+
+    def merge_clusters(db, logger):
+        pass
+
     # -1. Create logger
     logger = config_logger()
-
     # 0. Prepare storage
     pwd = os.environ.get('KIEM_NEO4J_PASSWORD')
     db = DBConnector("neo4j+s://aeb0fdae.databases.neo4j.io:7687", "neo4j", pwd)
-    # populate_db(db, logger)
-    disambiguate_existing(db, logger)
+    populate_db(db, logger)
+    #disambiguate_bib(db, logger)
+    #disambiguate_index(db, logger)
 
 
