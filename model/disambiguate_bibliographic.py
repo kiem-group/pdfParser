@@ -36,36 +36,28 @@ class DisambiguateBibliographic:
         ext = "&intitle:" + quote(ref.title) if ref.title is not None else ""
         book_data = cls.query_google_books(term, ext)
         if "items" in book_data:
-            items = book_data["items"]
-            if len(items) >= 0:
-                if "volumeInfo" in items[0]:
-                    volumeInfo = items[0]["volumeInfo"]
-                    google_title = volumeInfo["title"]
-                    ratio = Levenshtein.ratio(ref.title, google_title)
-                    if ratio > threshold:
-                        ext_pub = ExternalPublication(confidence=ratio)
-                        if "selfLink" in items[0]:
-                            ext_pub.url = items[0]["selfLink"]
-                            ext_pub.type = "google"
-                        if "industryIdentifiers" in volumeInfo:
-                            ext_pub.identifiers = []
-                            for obj in volumeInfo["industryIdentifiers"]:
-                                id_obj = IndustryIdentifier(obj["identifier"], obj["type"].lower(), "")
-                                ext_pub.identifiers.append(id_obj)
-                        # Extract publication details
-                        ext_pub.title = google_title
-                        if "authors" in volumeInfo:
-                            ext_pub.authors = []
-                            for author in volumeInfo["authors"]:
-                                ext_pub.authors.append(Contributor(full_name=author, type="author"))
-                        if "publishedDate" in volumeInfo:
-                            ext_pub.year = volumeInfo["publishedDate"]
-                        if "language" in volumeInfo:
-                            ext_pub.lang = volumeInfo["language"]
-                        # Save external publication
-                        if ref.refers_to is None:
-                            ref.refers_to = []
-                        ref.refers_to.append(ext_pub)
+            items = [item for item in book_data["items"] if "volumeInfo" in item]
+            max_ratio = 0
+            best_match = None
+            for res in items:
+                volume_info = res["volumeInfo"]
+                ratio = Levenshtein.ratio(ref.title, volume_info["title"])
+                if ratio >= threshold:
+                    volume_date = None
+                    if ref.year is not None and "publishedDate" in volume_info:
+                        volume_date = volume_info["publishedDate"]
+                        if ref.year[0:4] == volume_date[0:4]:
+                            ratio = 0.99
+                    if ratio > max_ratio:
+                        max_ratio = ratio
+                        best_match = res
+                # Optimization assuming that Google returns titles sorted by highest score
+                else:
+                    break
+            if best_match is not None:
+                if ref.refers_to is None:
+                    ref.refers_to = []
+                ref.refers_to.append(cls.google_book_to_ext_pub(best_match, max_ratio))
 
     # CrossRef
     @classmethod
@@ -73,44 +65,14 @@ class DisambiguateBibliographic:
         if ref is None or ref.text is None:
             return
         res = cls.query_crossref_pub(ref.text)
-        if res is not None and ("title" in res):
-            if len(res["title"]) > 0:
-                ratio = Levenshtein.ratio(ref.title, res["title"][0])
-                if ratio >= threshold:
-                    ext_pub = ExternalPublication(confidence=ratio)
-                    ext_pub.identifiers = []
-                    if "DOI" in res:
-                        ext_pub.identifiers.append(IndustryIdentifier(res["DOI"], "doi", ""))
-                    if "ISBN" in res:
-                        ext_pub.identifiers.append(IndustryIdentifier(res["ISBN"], "isbn", ""))
-                    if "URL" in res:
-                        ext_pub.url = res["URL"]
-                        ext_pub.type = "crossref"
-                    # @Example: 'published': {'date-parts': [[2001, 4]]}}
-                    if "published" in res:
-                        if "date-parts" in res["published"]:
-                            date_parts = res["published"]["date-parts"]
-                            if len(date_parts) > 0:
-                                if len(date_parts[0]) > 0:
-                                    ext_pub.year = date_parts[0][0]
-                    # @Example: 'author': [{'given': 'William', 'family': 'Allan', 'sequence': 'first', 'affiliation': []}]
-                    if "author" in res:
-                        for author in res["author"]:
-                            ext_pub.authors = []
-                            if "family" in author and "given" in author:
-                                ext_pub.authors.append(Contributor(surname=author["family"], given_names=author["given"], type="author"))
-                    # @Example: 'title': ['Euripides in Megale Hellas: some aspects of the early reception of tragedy'],
-                    if "title" in res and len(res["title"]) > 0:
-                        ext_pub.title = res["title"][0]
-                    # @Example: 'publisher': 'Oxford University Press'
-                    if "publisher" in res:
-                        ext_pub.publisher = res["publisher"]
-                    # @Example: 'language': 'en'
-                    if "language" in res:
-                        ext_pub.lang = res["language"]
-                    if ref.refers_to is None:
-                        ref.refers_to = []
-                    ref.refers_to.append(ext_pub)
+        # Here we just get the first returned, no date match
+        if res is not None:
+            max_ratio = 0
+            ratio = Levenshtein.ratio(ref.title, res["title"][0])
+            if ratio >= threshold:
+                if ref.refers_to is None:
+                    ref.refers_to = []
+                ref.refers_to.append(cls.crossref_to_ext_pub(res, max_ratio))
 
     # Brill catalogue
     @classmethod
@@ -151,11 +113,72 @@ class DisambiguateBibliographic:
                         ext_pub.identifiers.append(IndustryIdentifier(res["isbn"], "isbn", ""))
                     ref.refers_to.append(ext_pub)
 
+    # Create external publication from CrossRef resource
+    @classmethod
+    def crossref_to_ext_pub(cls, res, ratio: float):
+        ext_pub = ExternalPublication(confidence=ratio)
+        ext_pub.identifiers = []
+        if "DOI" in res:
+            ext_pub.identifiers.append(IndustryIdentifier(res["DOI"], "doi", ""))
+        if "ISBN" in res:
+            ext_pub.identifiers.append(IndustryIdentifier(res["ISBN"], "isbn", ""))
+        if "URL" in res:
+            ext_pub.url = res["URL"]
+            ext_pub.type = "crossref"
+        # @Example: 'published': {'date-parts': [[2001, 4]]}}
+        if "published" in res:
+            if "date-parts" in res["published"]:
+                date_parts = res["published"]["date-parts"]
+                if len(date_parts) > 0:
+                    if len(date_parts[0]) > 0:
+                        ext_pub.year = date_parts[0][0]
+        # @Example: 'author': [{'given': 'William', 'family': 'Allan', 'sequence': 'first', 'affiliation': []}]
+        if "author" in res:
+            for author in res["author"]:
+                ext_pub.authors = []
+                if "family" in author and "given" in author:
+                    ext_pub.authors.append(
+                        Contributor(surname=author["family"], given_names=author["given"], type="author"))
+        # @Example: 'title': ['Euripides in Megale Hellas: some aspects of the early reception of tragedy'],
+        if "title" in res and len(res["title"]) > 0:
+            ext_pub.title = res["title"][0].replace('"', '”')
+        # @Example: 'publisher': 'Oxford University Press'
+        if "publisher" in res:
+            ext_pub.publisher = res["publisher"]
+        # @Example: 'language': 'en'
+        if "language" in res:
+            ext_pub.lang = res["language"]
+        return ext_pub
+
+    # Create external publication from Google books resource
+    @classmethod
+    def google_book_to_ext_pub(cls, res, ratio: float):
+        ext_pub = ExternalPublication(confidence=ratio)
+        if "selfLink" in res:
+            ext_pub.url = res["selfLink"]
+            ext_pub.type = "google"
+        volume_info = res["volumeInfo"]
+        ext_pub.title = volume_info["title"].replace('"', '”')
+        if "authors" in volume_info:
+            ext_pub.authors = []
+            for author in volume_info["authors"]:
+                ext_pub.authors.append(Contributor(full_name=author, type="author"))
+        if "publishedDate" in volume_info:
+            ext_pub.year = volume_info["publishedDate"]
+        if "language" in volume_info:
+            ext_pub.lang = volume_info["language"]
+        if "industryIdentifiers" in volume_info:
+            ext_pub.identifiers = []
+            for obj in volume_info["industryIdentifiers"]:
+                id_obj = IndustryIdentifier(obj["identifier"], obj["type"].lower(), "")
+                ext_pub.identifiers.append(id_obj)
+        return ext_pub
+
     @classmethod
     def query_google_books(cls, ref: str, ext: str = ""):
         url = "https://www.googleapis.com/books/v1/volumes?q=" + quote(ref) + ext
-        resp = urlopen(url)
-        book_data = json.load(resp)
+        res = urlopen(url)
+        book_data = json.load(res)
         return book_data
 
     @classmethod
@@ -163,7 +186,24 @@ class DisambiguateBibliographic:
         works = Works()
         res = works.query(bibliographic=ref)
         for item in res:
-            return item
+           return item
+
+    # @classmethod
+    # def query_worldcat(cls, ref: str):
+    #     # This returns HTML page, an API Key is needed for programmatic requests
+    #     url = "https://www.worldcat.org/search?q=" + quote(ref)
+    #     res = urlopen(url)
+    #     book_data = json.load(res)
+    #     return book_data
+
+    # @classmethod
+    # def query_jstore(cls, ref: str):
+    #     # This returns HTML page, an API Key is needed for programmatic requests
+    #     url = "https://www.jstor.org/action/doBasicSearch?Query=" + quote(ref)
+    #     # url = "https://constellate.org/builder/?title=" + quote(ref)
+    #     res = urlopen(url)
+    #     book_data = json.load(res)
+    #     return book_data
 
     @classmethod
     def query_open_citations(cls, doi: str) -> json:

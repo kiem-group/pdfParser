@@ -179,7 +179,6 @@ class Publication(BasePublication):
                         except Exception as e:
                             self.logger.warning("Failed to parse bibliographic reference: " + ref_text)
                             self.logger.error(e)
-                            print(e)
                             self.bib_refs_with_errors.append(ref_text)
                 if self._extract_index and 'index' in title:
                     self.logger.info("Parsing index file: " + href)
@@ -223,29 +222,7 @@ class Publication(BasePublication):
     def disambiguate_index(self):
         if self.index_refs:
             for idx in self.index_refs:
-                # Many repeated terms
-                # TODO optimize via cache dictionary {term: ExternalIndex}?
-                # TODO optimize via clustering
-                idx.refers_to = []
-                terms = idx.terms
-                for term in terms:
-                    self.logger.debug("Trying to disambiguate term: " + term)
-                    ext = DisambiguateIndex.find_wikidata(term)
-                    if ext:
-                        self.logger.debug("Found corresponding external term: " + ext)
-                        idx.refers_to.append(ext)
-
-    def save(self, out_path: str):
-        # TODO override to be able to load correctly
-        with open(out_path, "w", encoding='utf-8') as out_file:
-            data = json.dumps(asdict(self))
-            out_file.write(data)
-
-    @classmethod
-    def load(cls, in_path: str) -> Publication:
-        with open(in_path, "r", encoding='utf-8') as in_file:
-            data = in_file.read()
-            return cls.from_json(data)
+                DisambiguateIndex.find_wikidata(idx)
 
     @property
     def props(self) -> dict:

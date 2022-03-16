@@ -9,6 +9,7 @@ class ExternalIndex:
     """A class for holding information about index disambiguation"""
     uri: str = None
     type: str = None
+    text: str = None
     UUID: str = None
 
     def __post_init__(self):
@@ -20,7 +21,8 @@ class ExternalIndex:
         return {
             "UUID": self.UUID,
             "uri": self.uri,
-            "type": self.type
+            "type": self.type,
+            "text": self.text
         }
 
     def serialize(self):

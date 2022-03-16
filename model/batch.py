@@ -9,7 +9,7 @@ from model.publication import Publication
 from model.cluster_bibliographic import ClusterSet
 from model.cluster_index import IndexClusterSet
 import logging
-
+import uuid
 
 @dataclass_json
 @dataclass
@@ -27,8 +27,11 @@ class Batch:
     count_bib: int = 0
     errors_xml: int = 0
     errors_other: int = 0
+    UUID: str = None
 
     def __post_init__(self):
+        if not self.UUID:
+            self.UUID = str(uuid.uuid4())
         self.logger = logging.getLogger('pdfParser.batch.' + self.__class__.__name__)
 
     def add_publication(self, pub):
@@ -43,12 +46,12 @@ class Batch:
 
     def cluster(self):
         # Cluster bibliographic references
-        self.cluster_set_bib = ClusterSet()
+        self.cluster_set_bib = ClusterSet(batch=self.UUID)
         for pub in self.publications:
             self.cluster_set_bib.add_references(pub.bib_refs)
         self.logger.info("\tNumber of bib clusters: %d", self.cluster_set_bib.num_clusters)
         # Cluster index references
-        self.cluster_set_index = IndexClusterSet()
+        self.cluster_set_index = IndexClusterSet(batch=self.UUID, threshold=0.9)
         for pub in self.publications:
             self.cluster_set_index.add_references(pub.index_refs)
         self.logger.info("\tNumber of index clusters: %d", self.cluster_set_index.num_clusters)
@@ -71,12 +74,12 @@ class Batch:
 
     # Extract information about a batch of publications
     @classmethod
-    def from_zip(cls, zip_path, extract_bib=True, extract_index=False, start=0, size=-1):
+    def from_zip(cls, zip_path, extract_bib: bool = True, extract_index: bool = False, start: int = 0, size: int = -1):
         batch_zip = zipfile.ZipFile(zip_path)
         m = len(batch_zip.namelist())
-        if m < start:
-            return
         end = m if size < 0 else min(start + size, m)
+        if m < start or end > m:
+            return None
         batch = Batch(zip_path=zip_path, publications=[], start=start,
                       size=end-start, extract_bib=extract_bib, extract_index=extract_index)
         batch_dir_path = os.path.splitext(zip_path)[0]

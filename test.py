@@ -3,6 +3,7 @@ import unittest
 import Levenshtein
 from model.batch import Batch
 from model.reference_bibliographic import Reference
+from model.disambiguate_bibliographic import DisambiguateBibliographic
 
 
 class TestClassifier(unittest.TestCase):
@@ -65,6 +66,69 @@ class TestClassifier(unittest.TestCase):
         self.assertGreaterEqual(success_rate, 0.9)
         out.close()
         test_dataset.close()
+
+    # Revised disambiguation via analysis of all Google API results
+    def test_improved_disambiguation(self):
+        test_dataset = open('data_test/test_evaluate_disambiguation_annotated.tsv', encoding='utf-8')
+        reader = csv.reader(test_dataset, delimiter="\t")
+        header = next(reader, None)
+        out_path = 'data_test/test_evaluate_disambiguation_annotated_revised.csv'
+        writer = csv.writer(open(out_path, "w", encoding='utf-8', newline=""))
+        header.append("GoogleAPI_new")
+        writer.writerow(header)
+        delta = 0
+        for row in reader:
+            url_google = []
+            if row[0] and ("1" not in row[3]) and ("doi" in row[4]):
+                ref = Reference(row[0])
+                DisambiguateBibliographic.find_google_books(ref, 0.6)
+                if ref.refers_to is not None:
+                    url_google = [e.url for e in ref.refers_to if e.url is not None and e.type == "google"]
+            out_google = ", ".join(url_google)
+            if len(out_google) > 0:
+                if row[1] != out_google:
+                    delta += 1
+            row.append(out_google)
+            writer.writerow(row)
+        print(delta)
+
+    def test_analyze_disambiguation(self):
+        test_dataset = open('data_test/test_evaluate_disambiguation_annotated_revised.tsv', encoding='utf-8')
+        reader = csv.reader(test_dataset, delimiter="\t")
+        count_filled = 0
+        count_filled_human = 0
+        count_good = 0
+        for row in reader:
+            found = True if row[1] or row[2] or row[5] else False
+            if found:
+                count_filled += 1
+            if (not found) and row[3] == "0" and ("https" in row[4]):
+                count_filled_human += 1
+            if row[3] == "1":
+                count_good += 1
+            if row[3] == "0.5":
+                count_good += 0.5
+        print(count_good, count_filled)
+        print(count_good, count_filled + count_filled_human)
+
+    # Revised disambiguation via analysis of all Google API results
+    def test_analyze_index_disambiguation(self):
+        test_dataset = open('data_test/test_evaluate_idx_disambiguation_labels_annotated.tsv', encoding='utf-8')
+        reader = csv.reader(test_dataset, delimiter="\t")
+        count_filled = 0
+        count_filled_human = 0
+        count_good = 0
+        for row in reader:
+            if row[2]:
+                count_filled += 1
+            if row[3] == "0" and ("https" in row[4]):
+                count_filled_human += 1
+            if row[3] == "1":
+                count_good += 1
+            if row[3] == "0.5":
+                count_good += 0.5
+        print(count_good, count_filled)
+        print(count_good, count_filled + count_filled_human)
 
 
 if __name__ == '__main__':

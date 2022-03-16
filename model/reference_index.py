@@ -121,7 +121,7 @@ class IndexReference(BaseReference):
         # TODO Can parsing benefit from special spacing?
         self.text = self.text.replace(" ", " ")
         self.text = self.text.replace(" ", " ")
-        self.logger.debug("Parsing index text as %s: %s", ' or '.join(self.types), self.text)
+        # self.logger.debug("Parsing index text as %s: %s", ' or '.join(self.types), self.text)
         if len(self.text) < 5:
             self.logger.warning("Index text is too short: " + self.text)
             return

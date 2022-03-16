@@ -25,9 +25,6 @@ class DBConnector:
         self.logger = logging.getLogger('pdfParser.dbConnector.' + self.__class__.__name__)
         # self.logger.debug('Created an instance of: %s ', self.__class__.__name__)
 
-    def cdisconnected(self):
-        self.driver.cdisconnected()
-
     # Delete
 
     def clear_graph(self, session: Session = None):
@@ -62,14 +59,16 @@ class DBConnector:
             session = self.driver.session()
         cql_delete_relationships = "MATCH (a:ExternalPublication) -[r:HasContributor] -> (b:Contributor) DELETE r"
         session.run(cql_delete_relationships)
-        self.delete_empty_nodes("Contributor")
-        self.detach_delete_nodes("ExternalPublication")
+        self.delete_empty_nodes(Contributor.__name__)
+        self.detach_delete_nodes(ExternalPublication.__name__, session)
+        self.clean_disambiguated_all("Reference", session)
 
     # Delete external indices
     def delete_external_index(self, session: Session = None):
         if session is None:
             session = self.driver.session()
-        self.detach_delete_nodes("ExternalIndex")
+        self.detach_delete_nodes(ExternalIndex.__name__, session)
+        self.clean_disambiguated_all(IndexReference.__name__, session)
 
     # Delete external references (disambiguation results)
     def delete_external(self, session: Session = None):
@@ -90,8 +89,6 @@ class DBConnector:
         self.delete_empty_nodes(Contributor.__name__)
 
         # Delete disconnected industry identifiers
-        # TODO remove obsolete class 'Identifier'
-        self.delete_empty_nodes("Identifier")
         self.delete_empty_nodes(IndustryIdentifier.__name__)
 
         # Delete references
@@ -105,16 +102,12 @@ class DBConnector:
                 self.delete_node(ref.UUID, session)
         self.delete_empty_nodes(IndexReference.__name__)
 
-        # TODO test if this works as references are connected to clusters
-
-        # Delete disconnected external publications and external index references
+        # Delete disconnected external publications and their empty clusters
         self.delete_empty_nodes(ExternalPublication.__name__)
-
-        self.delete_empty_nodes(ExternalIndex.__name__)
-
-        # Delete empty clusters
         self.delete_empty_nodes(Cluster.__name__)
 
+        # Delete disconnected external indices and their empty clusters
+        self.delete_empty_nodes(ExternalIndex.__name__)
         self.delete_empty_nodes(IndexCluster.__name__)
 
         self.logger.debug("# nodes after deleting publication data: %d", self.query_node_count())
@@ -125,7 +118,6 @@ class DBConnector:
     def create_pub(self, pub: Publication, session: Session = None):
         if session is None:
             session = self.driver.session()
-        # TODO create or update
 
         self.logger.debug("# nodes before adding publication data: %d", self.query_node_count())
 
@@ -151,7 +143,7 @@ class DBConnector:
     def create_contributor(self, pub: BasePublication, session: Session = None):
         if session is None:
             session = self.driver.session()
-        # TODO check whether contributor already exists?
+        # TODO cluster contributors?
         # Create contributors: editors or authors
         cql_create_contributor = """CREATE (:Contributor {0})"""
         cql_create_pub_has_contributor = """MATCH (a), (b:Contributor)
@@ -171,40 +163,65 @@ class DBConnector:
     def create_bib_refs(self, pub: Publication, session: Session = None):
         if session is None:
             session = self.driver.session()
-        cql_create_ref = """CREATE (:Reference {0})"""
         cql_create_pub_cites_ref = """MATCH (a:Publication), (b:Reference)
            WHERE a.UUID = $pub_uuid AND b.UUID = $ref_uuid CREATE (a)-[:Cites]->(b)"""
         for ref in pub.bib_refs:
-            session.run(cql_create_ref.format(ref.serialize()))
+            self.create_bib_ref(ref, session)
             session.run(cql_create_pub_cites_ref, pub_uuid=pub.UUID, ref_uuid=ref.UUID)
-            if ref.refers_to is not None:
-                for ext_pub in ref.refers_to:
-                    self.create_ext_pub(ext_pub, ref.UUID, session)
-            # Enable to save "follows" relationship (redundant in practice)
-            # if ref.follows is not None:
-            #     cql_create_ref_follows = """MATCH (a:Reference), (b:Reference)
-            #        WHERE a.UUID = $a_uuid AND b.UUID = $b_uuid CREATE (a)-[:Follows]->(b)"""
-            #     session.run(cql_create_ref_follows, a_uuid=ref.UUID, b_uuid=ref.follows.UUID)
 
     # Create index references
-    def create_index_refs(self, pub: Publication, session: Session = None):
+    def create_index_refs(self, pub: Publication, session: Session = None, save_parts: bool = False):
         if session is None:
             session = self.driver.session()
-        cql_create_idx = """CREATE (:IndexReference {0})"""
         cql_create_pub_includes_idx = """MATCH (a:Publication), (b:IndexReference)
            WHERE a.UUID = $pub_uuid AND b.UUID = $ref_uuid CREATE (a)-[:Includes]->(b)"""
         for idx in pub.index_refs:
-            session.run(cql_create_idx.format(idx.serialize()))
+            self.create_index_ref(idx, session, save_parts)
             session.run(cql_create_pub_includes_idx, pub_uuid=pub.UUID, ref_uuid=idx.UUID)
-            if idx.refers_to is not None:
-                for ext_idx in idx.refers_to:
-                    self.create_ext_index(ext_idx, idx.UUID, session)
+
+    # Create bibliographic reference
+    def create_bib_ref(self, ref: Reference, session: Session = None):
+        if session is None:
+            session = self.driver.session()
+        cql_create_ref = """CREATE (:Reference {0})"""
+        session.run(cql_create_ref.format(ref.serialize()))
+        if ref.refers_to is not None:
+            for ext_pub in ref.refers_to:
+                self.create_ext_pub(ext_pub, ref.UUID, session)
+        # Save "follows" relationship (redundant in practice)
+        # if ref.follows is not None:
+        #     cql_create_ref_follows = """MATCH (a:Reference), (b:Reference)
+        #        WHERE a.UUID = $a_uuid AND b.UUID = $b_uuid CREATE (a)-[:Follows]->(b)"""
+        #     session.run(cql_create_ref_follows, a_uuid=ref.UUID, b_uuid=ref.follows.UUID)
+
+    # Create index reference
+    def create_index_ref(self, idx: IndexReference, session: Session = None, save_parts: bool = False):
+        if session is None:
+            session = self.driver.session()
+        cql_create_idx = """CREATE (:IndexReference {0})"""
+        session.run(cql_create_idx.format(idx.serialize()))
+        if idx.refers_to is not None:
+            for ext_idx in idx.refers_to:
+                self.create_ext_index(ext_idx, idx.UUID, session)
+        # Save parsed index parts (redundant as they can be restored)
+        if save_parts:
+            self.create_index_part(idx, session)
+
+    def create_index_part(self, idx: IndexReference, session: Session = None):
+        if session is None:
+            session = self.driver.session()
+        cql_create_idx_part = """CREATE (:IndexReferencePart {0})"""
+        cql_create_idx_has_part = """MATCH (a:IndexReference), (b:IndexReferencePart)
+           WHERE a.UUID = $idx_uuid AND b.UUID = $part_uuid CREATE (a)-[:HasPart]->(b)"""
+        for part in idx.refs:
+            session.run(cql_create_idx_part.format(idx.serialize()))
+            session.run(cql_create_idx_has_part, idx_uuid=idx.UUID, part_uuid=part.UUID)
 
     # Create external publications that disambiguate references
     def create_ext_pub(self, ext_pub: ExternalPublication, ref_uuid: str, session: Session = None):
         if session is None:
             session = self.driver.session()
-        # TODO check if it already exists?
+        # Several nodes with the same uri can be created - they are merged later
         cql_create_ext_pub = """CREATE (b:ExternalPublication {0})"""
         cql_create_ref_refers_to_ext_pub = """MATCH (a:Reference), (b:ExternalPublication)
            WHERE a.UUID = $ref_uuid AND b.UUID = $ext_pub_uuid CREATE (a)-[:RefersTo]->(b)"""
@@ -213,11 +230,25 @@ class DBConnector:
         # Create contributors: editors or authors
         self.create_contributor(ext_pub, session)
 
+    def set_disambiguated(self, node_class: str, ref_uuid: str, session: Session = None):
+        if session is None:
+            session = self.driver.session()
+        cql_update_ref_disambiguated = """MATCH (a: {node_class}) WHERE a.UUID = $ref_uuid 
+            SET a.disambiguated = true""".format(node_class=node_class)
+        session.run(cql_update_ref_disambiguated, ref_uuid=ref_uuid)
+
+    def clean_disambiguated_all(self, node_class: str, session: Session = None):
+        if session is None:
+            session = self.driver.session()
+        cql_update_ref_disambiguated = "MATCH (a: {node_class}) SET a.disambiguated = NULL"\
+            .format(node_class=node_class)
+        session.run(cql_update_ref_disambiguated)
+
     # Create external nodes that disambiguate index references
     def create_ext_index(self, ext_idx: ExternalIndex, ref_uuid: str, session: Session = None):
         if session is None:
             session = self.driver.session()
-        # TODO check if it already exists?
+        # Several nodes with the same uri can be created - they are merged later
         cql_create_ext_idx = """CREATE (b:ExternalIndex {0})"""
         cql_create_ref_refers_to_ext_idx = """MATCH (a:IndexReference), (b:ExternalIndex)
            WHERE a.UUID = $ref_uuid AND b.UUID = $ext_pub_uuid CREATE (a)-[:RefersTo]->(b)"""
@@ -225,11 +256,11 @@ class DBConnector:
         session.run(cql_create_ref_refers_to_ext_idx, ref_uuid=ref_uuid, ext_pub_uuid=ext_idx.UUID)
 
     # Create cluster of bibliographic references
-    def create_cluster(self, cluster: Cluster, session: Session = None):
+    def create_cluster(self, cluster: Cluster, session: Session = None, min_size: int = 2):
         if session is None:
             session = self.driver.session()
         # Save only meaningful clusters
-        if len(cluster.refs) > 1:
+        if len(cluster.refs) >= min_size:
             cql_create_cluster = """CREATE (b:Cluster {0})"""
             session.run(cql_create_cluster.format(cluster.serialize()))
             for ref in cluster.refs:
@@ -238,11 +269,11 @@ class DBConnector:
                 session.run(cql_create_ref_belongs_to_cluster, ref_uuid=ref.UUID, cluster_uuid=cluster.UUID)
 
     # Create cluster of index references
-    def create_index_cluster(self, cluster: IndexCluster, session: Session = None):
+    def create_index_cluster(self, cluster: IndexCluster, session: Session = None, min_size: int = 2):
         if session is None:
             session = self.driver.session()
         # Save only meaningful clusters
-        if len(cluster.refs) > 1:
+        if len(cluster.refs) >= min_size:
             cql_create_cluster = """CREATE (b:IndexCluster {0})"""
             session.run(cql_create_cluster.format(cluster.serialize()))
             for ref in cluster.refs:
@@ -271,10 +302,50 @@ class DBConnector:
                 for pub in batch.publications:
                     try:
                         self.create_pub(pub, session)
-                    except:
+                    except Exception as e:
                         self.logger.error("Failed to serialize publication: %s", pub.UUID)
+                        self.logger.error(e)
             self.create_clusters(batch, session)
 
+    # Refine
+    def merge_ext_pub(self, session: Session = None):
+        if session is None:
+            session = self.driver.session()
+        cql_merge_ext_pub = """MATCH (n:ExternalPublication) 
+            WITH n.url as url, collect(n) as nodes
+            CALL apoc.refactor.mergeNodes(nodes) yield node
+            RETURN *"""
+        session.run(cql_merge_ext_pub)
+
+    # Refine
+    def merge_ext_idx(self, session: Session = None):
+        if session is None:
+            session = self.driver.session()
+        cql_merge_ext_idx = """MATCH (n:ExternalIndex) 
+            WITH n.url as url, collect(n) as nodes
+            CALL apoc.refactor.mergeNodes(nodes) yield node
+            RETURN *"""
+        session.run(cql_merge_ext_idx)
+
+    def merge_clusters(self, threshold: float = 0.75, session: Session = None):
+        if session is None:
+            session = self.driver.session()
+        clusters = self.query_clusters()
+        m = len(clusters)
+        merged = [False for e in range(m)]
+        for i in range(m):
+            c1 = clusters[i]
+            for j in range(i + 1, m):
+                c2 = clusters[j]
+                if not merged[i] and not merged[j] and c1.batch != c2.batch:
+                    if c1.ref_lev_ratio(c2.refs[0], False) > threshold:
+                        cql_merge_clusters = """MATCH (r:Reference)-[b:BelongsTo]->
+                            (c1:Cluster {UUID: $c1_uuid}), 
+                            (c2:Cluster {UUID: $c2_uuid}) DETACH DELETE b,c1  
+                            WITH collect(r) as refs,c2
+                            FOREACH(a in refs | MERGE (a)-[:BelongsTo]->(c2))"""
+                        session.run(cql_merge_clusters, c1_uuid=c1.UUID, c2_uuid=c2.UUID)
+                        merged[j] = True
     # Query
 
     # Retrieve all publications
@@ -339,7 +410,8 @@ class DBConnector:
     # Retrieve publication identifiers
     def query_pub_identifiers(self, pub_uuid: str) -> List[IndustryIdentifier]:
         identifiers = []
-        cql_pub_incl_idx = "MATCH (a:Publication)-[r:HasIdentifier]->(b:IndustryIdentifier) WHERE a.UUID = $pub_uuid return b"
+        cql_pub_incl_idx = """MATCH (a:Publication)-[r:HasIdentifier]->(b:IndustryIdentifier) 
+            WHERE a.UUID = $pub_uuid return b"""
         with self.driver.session() as session:
             nodes = session.run(cql_pub_incl_idx, pub_uuid=pub_uuid)
             db_refs = [record for record in nodes.data()]
@@ -392,14 +464,16 @@ class DBConnector:
                 refs.append(cls.deserialize(db_ref["a"]))
         return refs
 
-    # Retrieve all references
-    def query_bib_refs(self, limit: int = None) -> List[Reference]:
-        cql_refs = "MATCH (a:Reference) return a"
+    # Retrieve references
+    def query_bib_refs(self, limit: int = None, unprocessed_only: bool = True) -> List[Reference]:
+        cql_condition = "WHERE a.disambiguated IS NULL" if unprocessed_only else ""
+        cql_refs = "MATCH (a:Reference) {condition} return a".format(condition=cql_condition)
         return self.query_resource(cql_refs, Reference, limit)
 
-    # Retrieve all index references
-    def query_index_refs(self, limit: int = None) -> List[IndexReference]:
-        cql_refs = "MATCH (a:IndexReference) return a"
+    # Retrieve index references
+    def query_index_refs(self, limit: int = None, unprocessed_only: bool = True) -> List[IndexReference]:
+        cql_condition = "WHERE a.disambiguated IS NULL" if unprocessed_only else ""
+        cql_refs = "MATCH (a:IndexReference) {condition} return a".format(condition=cql_condition)
         return self.query_resource(cql_refs, IndexReference, limit)
 
     # Retrieve bibliographic references for a cluster
@@ -416,7 +490,8 @@ class DBConnector:
     # Retrieve index references for a cluster
     def query_cluster_index_refs(self, cluster_uuid: str) -> List[IndexReference]:
         refs = []
-        cql_pub_cites_ref = "MATCH (a:IndexReference)-[r:BelongsTo]->(b:IndexCluster) WHERE b.UUID = $cluster_uuid return a"
+        cql_pub_cites_ref = """MATCH (a:IndexReference)-[r:BelongsTo]->(b:IndexCluster) 
+            WHERE b.UUID = $cluster_uuid return a"""
         with self.driver.session() as session:
             nodes = session.run(cql_pub_cites_ref, cluster_uuid=cluster_uuid)
             db_refs = [record for record in nodes.data()]
@@ -428,7 +503,7 @@ class DBConnector:
     def query_clusters(self, include_refs: bool = True, limit: int = None) -> List[Cluster]:
         clusters = []
         cql_refs = "MATCH (a:Cluster) return a"
-        if limit:
+        if limit is not None:
             cql_refs += " limit " + str(limit)
         with self.driver.session() as session:
             nodes = session.run(cql_refs)
@@ -438,23 +513,6 @@ class DBConnector:
                     refs = self.query_cluster_bib_refs(db_cluster["a"]["UUID"])
                     clusters.append(Cluster.deserialize(db_cluster["a"], refs))
         return clusters
-
-    def merge_clusters(self, threshold: float = 0.9):
-        clusters = self.query_clusters(include_refs=False)
-        start = 0
-        end = len(clusters)
-        batch_UUID = str(uuid.uuid4())
-        while start < end:
-            c1 = clusters[start]
-            c2 = clusters[end]
-            merge = c1.batch is None or c2.batch is None or c1.batch != c2.batch
-            if merge:
-                c1.refs = self.query_cluster_bib_refs(c1.UUID)
-                c2.refs = self.query_cluster_bib_refs(c2.UUID)
-                if c1.ref_lev_ratio(c2.refs[0], False) > threshold:
-                    c_new = Cluster(batch=batch_UUID, refs=[*c1.refs, *c2.refs])
-                    # TODO update cluster: reconnect references to c1, delete c2
-                    pass
 
     # Retrieve all bibliographic clusters
     def query_index_clusters(self, limit: int = None) -> List[IndexCluster]:

@@ -133,26 +133,26 @@ class TestIndexParser(unittest.TestCase):
     # Index is disambiguated via Hucitlib
     def test_disambiguate_index_hucitlib(self):
         self.logger.info("Testing Hucitlib...")
-        ext_idx = DisambiguateIndex.find_hucitlib('Omero')
+        ext_idx = DisambiguateIndex.query_hucitlib('Omero')
         self.assertIsNotNone(ext_idx)
-        ext_idx = DisambiguateIndex.find_hucitlib('Aeschylus')
+        ext_idx = DisambiguateIndex.query_hucitlib('Aeschylus')
         self.assertIsNotNone(ext_idx)
-        ext_idx = DisambiguateIndex.find_hucitlib('Agamemnon')
+        ext_idx = DisambiguateIndex.query_hucitlib('Agamemnon')
         self.assertIsNotNone(ext_idx)
-        ext_idx = DisambiguateIndex.find_hucitlib("Jesus")
+        ext_idx = DisambiguateIndex.query_hucitlib("Jesus")
         self.assertIsNotNone(ext_idx)
 
     # Index is disambiguated via Wikidata
     def test_disambiguate_index_wikidata(self):
         self.logger.info("Testing Wikidata...")
-        ext_idx = DisambiguateIndex.find_wikidata('Aeschylus')
+        ext_idx = DisambiguateIndex.query_wikidata('Aeschylus')
         self.assertIsNotNone(ext_idx)
-        self.assertEqual(ext_idx.uri, "//www.wikidata.org/wiki/Q40939")
-        ext_idx = DisambiguateIndex.find_wikidata('Agamemnon')
+        self.assertEqual(ext_idx.uri, "www.wikidata.org/wiki/Q40939")
+        ext_idx = DisambiguateIndex.query_wikidata('Agamemnon')
         self.assertIsNotNone(ext_idx)
-        ext_idx = DisambiguateIndex.find_wikidata("Omero")
+        ext_idx = DisambiguateIndex.query_wikidata("Omero")
         self.assertIsNotNone(ext_idx)
-        ext_idx = DisambiguateIndex.find_wikidata('No-entry-rubbish-text')
+        ext_idx = DisambiguateIndex.query_wikidata('No-entry-rubbish-text')
         self.assertIsNone(ext_idx)
 
     # Parsing of indices from zipped pdf files
@@ -169,7 +169,7 @@ class TestIndexParser(unittest.TestCase):
     def test_evaluate_index_disambiguation(self):
         self.logger.info("Started test_evaluate_index_disambiguation")
         header = ["Reference", "Labels", "Wikidata", "HumanEvaluation", "HumanLink"]
-        with open('../data_test/test_evaluate_idx_disambiguation_labels_4.csv', "w", encoding='utf-8', newline="") as f:
+        with open('../data_test/test_evaluate_idx_disambiguation_labels.csv', "w", encoding='utf-8', newline="") as f:
             writer = csv.writer(f)
             writer.writerow(header)
             from model.db_connector import DBConnector
@@ -183,17 +183,14 @@ class TestIndexParser(unittest.TestCase):
             count = 0
             self.logger.debug("Indices restored, starting disambiguation...")
             for idx in idx_refs:
+                idx.refers_to = []
                 url_wikidata = []
-                # Searching for labels without splitting
+                # Searching for labels and revised labels
                 terms = idx.labels_ext
-                # Enable for searching of individual words in index labels
-                # terms = idx.terms
                 for term in terms:
                     self.logger.debug("Searching for: %s", term)
-                    ext = DisambiguateIndex.find_wikidata(term)
+                    ext = DisambiguateIndex.query_wikidata(term)
                     if ext:
-                        if idx.refers_to is None:
-                            idx.refers_to = []
                         idx.refers_to.append(ext)
                 if idx.refers_to is not None:
                     url_wikidata = [e.uri for e in idx.refers_to if e.uri is not None]

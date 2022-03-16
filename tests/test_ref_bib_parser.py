@@ -38,22 +38,9 @@ class TestRefBibParser(unittest.TestCase):
         self.assertEqual("D’Andria, F.", ref.author)
         self.assertEqual("Scavi nella zona del Kerameikos", ref.title)
 
-    # Estimation of success rate of disambiguation
-    # def test_evaluate_disambiguation(self):
-    #     self.logger.info("Started test_evaluate_deserialization")
-    #     from model.db_connector import DBConnector
-    #     import os
-    #     pwd = os.environ.get('KIEM_NEO4J_PASSWORD')
-    #     db = DBConnector("neo4j+s://aeb0fdae.databases.neo4j.io:7687", "neo4j", pwd)
-    #     cql_refs = "MATCH (a:Reference) WHERE NOT a.author STARTS WITH '—' return a, rand() as r ORDER BY r"
-    #     num_refs = 10
-    #     refs = db.query_resource(cql_refs, Reference, num_refs)
-    #     for ref in refs:
-    #         print(ref.author)
-
     # Disambiguate selected references via GoogleAPI
     def test_disambiguation_google(self):
-        refs = [
+        text_refs = [
             "Vernant, Jean - Pierre, Mythe et société en Grèce ancienne (Paris, 2004).",
             "Vernant, Jean - Pierre, Problèmes de la guerre en Grèce ancienne (Paris, 1999).",
             ("Vernant, Jean-Pierre, “One ... Two ... Three: Eros,” in Before Sexuality: "
@@ -62,13 +49,22 @@ class TestRefBibParser(unittest.TestCase):
             "Syme, Ronald, The Roman Revolution (Oxford, 1939).",
             "Syme, R., The Roman Revolution (Oxford, 1960)."
         ]
-        for ref in refs:
-            parts = re.split('[;,()]', ref)
-            title = max(parts, key=len)
-            book_data = DisambiguateBibliographic.query_google_books(title, "")
+        for text in text_refs:
+            ref = Reference(text)
+            book_data = DisambiguateBibliographic.query_google_books(ref.title, "")
             self.assertGreaterEqual(int(book_data['totalItems']), 1)
 
-    # Disambiguate selected references via Brills catalogue
+    # def test_disambiguation_worldcat_jstore(self):
+    #     text_refs = [("Wallace, Daniel B.Granville Sharp’s Canon and Its Kin: Semantics and Significance."
+    #              "New york: peter lang, 2009.")]
+    #     for text in text_refs:
+    #         ref = Reference(text)
+    #           book_data = DisambiguateBibliographic.query_worldcat(ref.title)
+    #           print(book_data)
+    #         book_data1 = DisambiguateBibliographic.query_jstore(ref.title)
+    #         print(book_data1)
+
+    # Disambiguate selected references via Brill's catalogue
     def test_disambiguation_brill(self):
         text_refs = [
             "Gentili, B.: Theatrical Performances in the Ancient World: Hellenistic and Early Roman Theatre",

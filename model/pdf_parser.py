@@ -168,7 +168,8 @@ class PdfParser:
                         except:
                              module_logger.error("Failed to get bbox", text_line)
                 else:
-                    module_logger.warning("Non-text element: " + str(type(element)))
+                    pass
+                    # module_logger.warning("Non-text element: " + str(type(element)))
         for curr in col_curr:
             if len(curr) > 0:
                 items.append(curr)

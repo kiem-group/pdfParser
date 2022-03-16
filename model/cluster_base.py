@@ -46,22 +46,26 @@ class BaseCluster:
 
     @classmethod
     def deserialize(cls, props: dict, refs):
-        return cls(UUID=props["UUID"], refs=refs)
+        self = cls(UUID=props["UUID"], refs=refs)
+        for key in props.keys():
+            setattr(self, key, props[key])
+        return self
 
 
 @dataclass_json
 @dataclass
 class BaseClusterSet:
     clusters: [BaseCluster] = None
-    threshold: float = 0.9
+    threshold: float = 0.75
+    batch: str = None
 
     def __post_init__(self):
         if not self.clusters:
             self.clusters = []
 
-    # checks if similar references already exists in clusters
+    # Checks if similar references already exist in clusters
     # by matching with first sample in a cluster or with all samples in a cluster
-    def get_ref_cluster(self, ref: BaseReference, match_all=False) -> Optional[BaseCluster]:
+    def get_ref_cluster(self, ref: BaseReference, match_all: bool = False) -> Optional[BaseCluster]:
         if not self.clusters:
             return None
         for cluster in self.clusters:
@@ -81,14 +85,13 @@ class BaseClusterSet:
 
     # Compute editing distance for local clustering of similar references
     def add_references(self, refs: [BaseReference]):
-        n = len(refs)
-        for i in range(n):
-            ref = refs[i]
-            cluster = self.get_ref_cluster(ref)
-            if cluster is not None:
-                cluster.add_reference(ref)
-            else:
-                self.clusters.append(BaseCluster(refs=[ref]))
+        if refs is not None:
+            for ref in refs:
+                cluster = self.get_ref_cluster(ref)
+                if cluster is not None:
+                    cluster.add_reference(ref)
+                else:
+                    self.clusters.append(BaseCluster(refs=[ref], batch=self.batch))
 
     @property
     def num_clusters(self) -> int:

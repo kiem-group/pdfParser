@@ -10,7 +10,7 @@ class ExternalPublication(BasePublication):
     # properties
     confidence: float = 0
     url: str = None
-    type: str = None  # google, crossref, brill
+    type: str = None  # google, crossref, brill, etc.
 
     @property
     def props(self) -> dict:

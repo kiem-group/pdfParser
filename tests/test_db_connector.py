@@ -2,6 +2,8 @@ import unittest
 from model.publication import Publication
 from model.db_connector import DBConnector
 from model.log_config import config_logger
+from model.reference_bibliographic import Reference
+from model.cluster_bibliographic import ClusterSet
 import os
 
 
@@ -30,7 +32,7 @@ class TestDBConnector(unittest.TestCase):
         # Create and add publication
         data_dir = "data\\41a8cdce8aae605806c445f28971f623\\"
         data_test_dir = "..\\data_test\\"
-        pub_dir = "9783657782116_BITS" # 9789004188846_BITS
+        pub_dir = "9783657782116_BITS"
         pub_zip = data_dir + pub_dir + "\\" + pub_dir + ".zip"
 
         self.logger.info("Creating test publication: " + pub_zip)
@@ -68,8 +70,10 @@ class TestDBConnector(unittest.TestCase):
         db_pub_idx_refs = self.db.query_pub_index_refs(pub.UUID)
         self.assertEqual(len(db_pub_idx_refs), len(pub.index_refs))
 
-        # # TODO Test external references
-        # # TODO Test clusters
+        bib_refs = self.db.query_bib_refs()
+        idx_refs = self.db.query_index_refs()
+        self.assertGreater(len(bib_refs), 0)
+        self.assertGreater(len(idx_refs), 0)
 
         # Delete test publication
         self.db.delete_pub(pub)
@@ -82,11 +86,60 @@ class TestDBConnector(unittest.TestCase):
         self.assertEqual(node_count_after, node_count_before)
         self.assertEqual(rel_count_after, rel_count_before)
 
-    def test_query_count(self):
-        node_count = self.db.query_node_count()
-        rel_count = self.db.query_rel_count()
-        self.assertGreaterEqual(node_count, 10215)
-        self.assertGreaterEqual(rel_count, 10108)
+    # Test that cluster merging works
+    # Attention: test clears the database!
+    def test_merge_clusters(self):
+        # Clear
+        self.db.clear_graph()
+        after_test = self.db.query_node_count()
+        self.assertEqual(after_test, 0)
+        # Create references
+        text_refs = [
+            "Vernant, Jean - Pierre, Mythe et société en Grèce ancienne (Paris, 2004).",
+            "Vernant, Jean - Pierre, Problèmes de la guerre en Grèce ancienne (Paris, 1999).",
+            ("Vernant, Jean-Pierre, “One ... Two ... Three: Eros,” in Before Sexuality: "
+                "The Construction of Erotic Experience in the Ancient Greek World, "
+                "ed. Donald M. Halperin, John J. Winkler, and Froma I. Zeitlin (Princeton, 1999), 465-478."),
+            "Syme, Ronald, The Roman Revolution (Oxford, 1939).",
+            "Ronald Syme, The Roman Revolution (Oxford, 1939).",
+            "Syme, R., The Roman Revolution (Oxford, 1960).",
+            "Vernant, Jean - Pierre, Mythe et société en Grece ancienne (Paris, 2004).",
+        ]
+        refs = []
+        for text in text_refs:
+            ref = Reference(text)
+            refs.append(ref)
+        for ref in refs:
+            self.db.create_bib_ref(ref)
+        after_refs = self.db.query_node_count()
+        # Assert that number of nodes equals number of references
+        self.assertEqual(after_test + len(refs), after_refs)
 
+        # Create first batch of clusters
+        cluster_set_1 = ClusterSet(batch="1")
+        cluster_set_1.add_references(refs)
+        for cluster in cluster_set_1.clusters:
+            self.db.create_cluster(cluster)
+        # Assert that clusters were added to the DB
+        after_cluster_1 = self.db.query_node_count()
+        self.assertGreater(after_cluster_1, after_refs)
 
+        # Create second batch of clusters
+        cluster_set_2 = ClusterSet(batch="2")
+        cluster_set_2.add_references(refs)
+        for cluster in cluster_set_2.clusters:
+            self.db.create_cluster(cluster)
+        # Assert that clusters were added to the DB
+        after_cluster_2 = self.db.query_node_count()
+        self.assertGreater(after_cluster_2, after_cluster_1)
 
+        # Merge clusters
+        self.db.merge_clusters()
+        after_cluster_merge = self.db.query_node_count()
+        # Assert that second batch of clusters is gone
+        self.assertEqual(after_cluster_merge, after_cluster_1)
+
+        # Clear
+        self.db.clear_graph()
+        after_test = self.db.query_node_count()
+        self.assertEqual(after_test, 0)
