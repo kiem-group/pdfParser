@@ -51,14 +51,30 @@ class TestModel(unittest.TestCase):
               pub.bib_refs[11].derived_text)
         self.assertEqual('Athena’s Epithets: Their Structural Significance in the Plays of Aristophanes',
                          pub.bib_refs[10].title)
-        pub.save("../tmp/9789004188846_BITS.pub")
-        # pub_copy = Publication.load("../tmp/9789004188846_BITS.pub")
-        # print(pub_copy)
         for author in pub.editors:
             x = json.dumps(asdict(author))
             y = Contributor.from_json(x)
             self.assertEqual(y.surname, 'Dobrov')
             self.assertEqual(y.given_names, 'Gregory W.')
+
+    # Parse publication
+    def test_publication_bib_parser_internal(self):
+        pub = Publication.from_zip('../data_test/9789004382855_BITS.zip ', extract_bib=True, extract_index=True)
+        # Check UUID
+        self.assertIsNotNone(pub.UUID)
+        # Check identifiers
+        self.assertGreaterEqual(len(pub.identifiers), 1)
+        self.assertEqual(pub.identifiers[0].format, 'online')
+        self.assertEqual(pub.identifiers[0].type, 'doi')
+        self.assertEqual(pub.identifiers[0].id, '10.1163/9789004382855')
+        # Check contributors
+        self.assertGreaterEqual(len(pub.authors), 1)
+        self.assertEqual(pub.authors[0].surname, 'Fossey')
+        self.assertEqual(pub.authors[0].given_names, 'John M.')
+        # Check bibliographic references
+        self.assertEqual(274, len(pub.bib_refs))
+        # Check index references
+        self.assertEqual(1204, len(pub.index_refs))
 
     # Check that generated uuid are distinct
     def test_resource_uuid(self):

@@ -12,7 +12,7 @@ import os
 if __name__ == '__main__':
 
     # Parse publication archive and save knowledge graph in a DB
-    def populate_db(db, logger, limit: int = None, batch_size: int = 50):
+    def populate_db(limit: int = None, batch_size: int = 20):
         # Process publication archives in batches
         dir_path = "data"
         zip_arr = [f for f in listdir(dir_path) if isfile(join(dir_path, f))]
@@ -37,7 +37,7 @@ if __name__ == '__main__':
             logger.info("Finished corpus processing!")
 
     # Disambiguate bibliographic references from the DB
-    def disambiguate_bib(db, logger, unprocessed_only: bool = True, limit: int = 100):
+    def disambiguate_bib(unprocessed_only: bool = True, limit: int = 100):
         count_found = 0
         count_links = 0
         refs = db.query_bib_refs(limit, unprocessed_only)
@@ -60,7 +60,7 @@ if __name__ == '__main__':
         logger.info("Disambiguated: %d out of %d bibliographic references!", count_found, total)
 
     # Disambiguate index references from the DB
-    def disambiguate_index(db, logger, unprocessed_only: bool = True, limit: int = 100):
+    def disambiguate_index(unprocessed_only: bool = True, limit: int = 100):
         count_found = 0
         count_links = 0
         refs = db.query_index_refs(limit, unprocessed_only)
@@ -87,17 +87,17 @@ if __name__ == '__main__':
     db = DBConnector("neo4j+s://aeb0fdae.databases.neo4j.io:7687", "neo4j", pwd)
 
     # Step 1: extract publications from archive, parse references and indices, cluster, populate the database
-    # db.clear_graph()
-    populate_db(db, logger)
+    db.clear_graph()
+    populate_db()
     db.merge_clusters()
 
     # Step 2: disambiguate a given number of references
     # db.delete_external_pub()
-    # disambiguate_bib(db, logger, True)
+    # disambiguate_bib(True)
 
     # Step 3: disambiguate a given number of indices
     # db.delete_external_index()
-    # disambiguate_index(db, logger, True)
+    # disambiguate_index(True)
 
 
 

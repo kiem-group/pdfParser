@@ -15,7 +15,6 @@ from model.cluster_index import IndexCluster
 from model.batch import Batch
 from typing import List, Union
 import logging
-import uuid
 
 
 class DBConnector:

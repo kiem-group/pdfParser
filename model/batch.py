@@ -46,11 +46,13 @@ class Batch:
 
     def cluster(self):
         # Cluster bibliographic references
+        self.logger.info("Started bibliography clustering")
         self.cluster_set_bib = ClusterSet(batch=self.UUID)
         for pub in self.publications:
             self.cluster_set_bib.add_references(pub.bib_refs)
         self.logger.info("\tNumber of bib clusters: %d", self.cluster_set_bib.num_clusters)
         # Cluster index references
+        self.logger.info("Started index clustering")
         self.cluster_set_index = IndexClusterSet(batch=self.UUID, threshold=0.9)
         for pub in self.publications:
             self.cluster_set_index.add_references(pub.index_refs)

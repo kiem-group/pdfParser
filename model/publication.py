@@ -152,65 +152,94 @@ class Publication(BasePublication):
         self.index_refs_with_errors = []
         self.bib_refs_with_errors = []
 
-        # Some JATS files contain bibliography inside and not in PDF (e.g., see example in unusual_xml)
-        jats_bib = jats_root.xpath('//ref-list')
-        if len(jats_bib) > 0:
-            self.logger.error("JATS file contains bibliographic references (currently not processed!)")
-        jats_idx = jats_root.xpath('//index-title-group')
-        if len(jats_idx) > 0:
-            self.logger.error("JATS file contains index lists (currently not processed!)")
+        # Extract (structured) back matter from JATS
+        jats_bibs = jats_root.xpath('//ref-list')
+        if len(jats_bibs) > 0:
+            self.__extract_jats_refs(jats_bibs[0])
+        jats_idx_groups = jats_root.xpath('//index')
+        for jats_idx in jats_idx_groups:
+            self.__extract_jats_idx(jats_idx)
 
+        # Extract back matter from PDF
         for book_part in book_parts:
-            title = ' '.join(book_part.xpath('.//title//text()')).lower()
+            titles = book_part.xpath('.//title/text()')
+            if len(titles) < 1:
+                continue
+            title = book_part.xpath('.//title/text()')[0].lower()
             hrefs = book_part.xpath('.//self-uri/@xlink:href', namespaces={"xlink": "http://www.w3.org/1999/xlink"})
-            if hrefs and self._extract_bib and 'bibliography' in title or self._extract_index and 'index' in title:
-                href = hrefs[0]
-                target_pdf = pub_zip.open(href)
-                if self._extract_bib and 'bibliography' in title:
-                    self.bib_file = href
-                    # Extract references and save skipped text from bibliography file for analysis
-                    [items, self._bib_skipped] = PdfParser.parse_target_indent(target_pdf)
-                    for idx, ref_text in enumerate(items):
-                        try:
-                            ref = Reference(text=ref_text, ref_num=idx+1, cited_by_doi=self.doi, cited_by_zip=self.zip_path)
-                            if ref_text.startswith('——') and idx > 0:
-                                ref.follows = self.bib_refs[idx-1]
-                            self.bib_refs.append(ref)
-                        except Exception as e:
-                            self.logger.warning("Failed to parse bibliographic reference: " + ref_text)
-                            self.logger.error(e)
-                            self.bib_refs_with_errors.append(ref_text)
-                if self._extract_index and 'index' in title:
-                    self.logger.info("Parsing index file: " + href)
-                    self.index_files.append(href)
-                    curr_index_types = IndexReference.get_index_types(title)
-                    [items, skipped] = PdfParser.parse_target_indent(target_pdf)
+            if len(hrefs) < 1:
+                continue
+            self.__extract_pdf_refs(title, hrefs[0], pub_zip)
+            self.__extract_pdf_idx(title, hrefs[0], pub_zip)
 
-                    # Save skipped text from index files for analysis
-                    self.logger.info("Extracted index references: " + str(len(items)))
-                    self.logger.info("Skipped lines in index file: " + str(len(skipped)))
+    def __extract_pdf_refs(self, title, href, pub_zip):
+        if self._extract_bib and 'bibliography' in title:
+            target_pdf = pub_zip.open(href)
+            self.bib_file = href
+            [items, self._bib_skipped] = PdfParser.parse_target_indent(target_pdf)
+            for idx, ref_text in enumerate(items):
+                self.__create_ref(ref_text, idx)
 
-                    if skipped:
-                        self._index_skipped.append(skipped)
+    def __extract_pdf_idx(self, title, href, pub_zip):
+        if self._extract_index and 'index' in title:
+            target_pdf = pub_zip.open(href)
+            self.index_files.append(href)
+            curr_index_types = IndexReference.get_index_types(title)
+            [items, skipped] = PdfParser.parse_target_indent(target_pdf)
+            # Save skipped text from index files for analysis
+            self.logger.info("Extracted index references: " + str(len(items)))
+            self.logger.info("Skipped lines in index file: " + str(len(skipped)))
+            if skipped:
+                self._index_skipped.append(skipped)
+            # Merge lines that start from digid with previous
+            items = [item.replace("\n", " ").strip() for item in items]
+            ref_items = []
+            ref_text = ""
+            for text in items:
+                if text[0].isdigit():
+                    ref_text += " " + text
+                else:
+                    if ref_text:
+                        ref_items.append(ref_text)
+                    ref_text = text
+            for idx, ref_text in enumerate(ref_items):
+                self.__create_index_ref(ref_text, idx, curr_index_types)
 
-                    # Merge lines that start from digid with previous
-                    items = [item.replace("\n", " ").strip() for item in items]
-                    ref_items = []
-                    ref_text = ""
-                    for text in items:
-                        if text[0].isdigit():
-                            ref_text += " " + text
-                        else:
-                            if ref_text:
-                                ref_items.append(ref_text)
-                            ref_text = text
-                    for idx, ref_text in enumerate(ref_items):
-                        ref = IndexReference(text=ref_text, ref_num=idx + 1, cited_by_doi=self.doi, cited_by_zip=self.zip_path,
-                                             types=curr_index_types)
-                        self.index_refs.append(ref)
-                        if not ref.refs:
-                            self.logger.warning("Failed to parse index reference: " + ref_text)
-                            self.index_refs_with_errors.append(ref_text)
+    def __extract_jats_refs(self, jats_bib):
+        refs = jats_bib.xpath('.//ref')
+        for idx, ref in enumerate(refs):
+            ref_text = ''.join(ref.xpath('.//text()'))
+            self.__create_ref(ref_text, idx)
+
+    def __extract_jats_idx(self, jats_idx):
+        titles = jats_idx.xpath('.//index-title-group//title/text()')
+        curr_index_types = ["unknown"]
+        if len(titles) > 0:
+            title = titles[0].lower()
+            curr_index_types = IndexReference.get_index_types(title)
+        ref_items = jats_idx.xpath('.//index-entry')
+        for idx, idx_item in enumerate(ref_items):
+            ref_text = ''.join(idx_item.xpath('.//text()'))
+            self.__create_index_ref(ref_text, idx, curr_index_types)
+
+    def __create_ref(self, ref_text, idx):
+        try:
+            ref = Reference(text=ref_text, ref_num=idx + 1, cited_by_doi=self.doi, cited_by_zip=self.zip_path)
+            if ref_text.startswith('——') and idx > 0:
+                ref.follows = self.bib_refs[idx - 1]
+            self.bib_refs.append(ref)
+        except Exception as e:
+            self.logger.warning("Failed to parse bibliographic reference: " + ref_text)
+            self.logger.error(e)
+            self.bib_refs_with_errors.append(ref_text)
+
+    def __create_index_ref(self, ref_text, idx, curr_index_types):
+        ref = IndexReference(text=ref_text, ref_num=idx + 1, cited_by_doi=self.doi, cited_by_zip=self.zip_path,
+                             types=curr_index_types)
+        self.index_refs.append(ref)
+        if not ref.refs:
+            self.logger.warning("Failed to parse index reference: " + ref_text)
+            self.index_refs_with_errors.append(ref_text)
 
     def disambiguate_bib(self):
         if self.bib_refs:
