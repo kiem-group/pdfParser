@@ -23,7 +23,7 @@ class Batch:
     extract_index: bool = False
     start: int = 0
     size: int = 0
-    count_index: int = 0
+    count_idx: int = 0
     count_bib: int = 0
     errors_xml: int = 0
     errors_other: int = 0
@@ -38,7 +38,7 @@ class Batch:
         if pub is None:
             return
         self.publications.append(pub)
-        self.count_index += len(pub.index_files) if pub.index_files else 0
+        self.count_idx += len(pub.index_files) if pub.index_files else 0
         if pub.bib_file:
             self.count_bib += 1
         else:
@@ -68,11 +68,45 @@ class Batch:
         self.logger.info("\tStart and end indices: %d - %d", self.start, self.start + self.size)
         self.logger.info("\tParsed bibliography: %r", self.extract_bib)
         self.logger.info("\tParsed indices: %r", self.extract_index)
-        self.logger.info("\tNumber of publications: %d", len(self.publications))
+        self.logger.info("\tNumber of publications: %d", self.pub_count)
+        self.logger.info("\tNumber of collections: %d", self.collection_count)
+        self.logger.info("\tNumber of pages: %d", self.page_count)
+        self.logger.info("\tAverage publication length: %d", self.avg_page_count)
+        self.logger.info("\tMax number of index files in a publication: %d", self.max_idx_count)
         self.logger.info("\tNumber of bibliography files: %d", self.count_bib)
-        self.logger.info("\tNumber of index files: %d", self.count_index)
-        self.logger.info("\tFailed to process JATS files: %d", self.errors_xml)
+        self.logger.info("\tNumber of index files: %d", self.count_idx)
+        self.logger.info("\tFailed to process XML files: %d", self.errors_xml)
         self.logger.info("\tFailed to process publications: %d", self.errors_other)
+
+    @property
+    def pub_count(self) -> int:
+        return len(self.publications or [])
+
+    @property
+    def page_count(self) -> int:
+        if self.pub_count > 0:
+            return sum([p.page_count if p.page_count is not None else 0 for p in self.publications])
+        return 0
+
+    @property
+    def avg_page_count(self) -> int:
+        if self.pub_count > 0:
+            num_no_page_count = sum([1 if p.page_count is None else 0 for p in self.publications])
+            num_page_info = self.pub_count - num_no_page_count
+            return self.page_count / num_page_info if num_page_info > 0 else 0
+        return 0
+
+    @property
+    def max_idx_count(self) -> int:
+        if self.pub_count > 0:
+            return max([len(p.index_files or []) for p in self.publications])
+        return 0
+
+    @property
+    def collection_count(self) -> int:
+        if self.pub_count > 0:
+            return sum([1 if p.is_collection else 0 for p in self.publications])
+        return 0
 
     # Extract information about a batch of publications
     @classmethod

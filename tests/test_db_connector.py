@@ -30,7 +30,7 @@ class TestDBConnector(unittest.TestCase):
         rel_count_before = self.db.query_rel_count()
 
         # Create and add publication
-        data_dir = "data\\41a8cdce8aae605806c445f28971f623\\"
+        data_dir = "catalogue\\41a8cdce8aae605806c445f28971f623\\"
         data_test_dir = "..\\data_test\\"
         pub_dir = "9783657782116_BITS"
         pub_zip = data_dir + pub_dir + "\\" + pub_dir + ".zip"

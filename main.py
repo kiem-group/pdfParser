@@ -11,33 +11,8 @@ import os
 
 if __name__ == '__main__':
 
-    # Parse publication archive and save knowledge graph in a DB
-    def populate_db(limit: int = None, batch_size: int = 20):
-        # Process publication archives in batches
-        dir_path = "data"
-        zip_arr = [f for f in listdir(dir_path) if isfile(join(dir_path, f))]
-        if len(zip_arr) > 0:
-            logger.info("Started corpus processing!")
-            # 1. Parse publication batch
-            corpus_zip_path = join(dir_path, zip_arr[0])
-            start_idx = 0
-            while limit is None or start_idx < limit:
-                batch = Batch.from_zip(zip_path=corpus_zip_path, start=start_idx, size=batch_size,
-                                       extract_bib=True, extract_index=True)
-                if batch is not None:
-                    # 2. Cluster similar references in the corpus
-                    batch.cluster()
-                    # 3. Add batch to the knowledge graph
-                    db.create_graph(batch)
-                    logger.info("Processed and saved the batch!")
-                else:
-                    logger.info("Finished corpus processing!")
-                    break
-                start_idx += batch_size
-            logger.info("Finished corpus processing!")
-
     # Disambiguate bibliographic references from the DB
-    def disambiguate_bib(unprocessed_only: bool = True, limit: int = 100):
+    def disambiguate_bib(db, unprocessed_only: bool = True, limit: int = None):
         count_found = 0
         count_links = 0
         refs = db.query_bib_refs(limit, unprocessed_only)
@@ -60,7 +35,7 @@ if __name__ == '__main__':
         logger.info("Disambiguated: %d out of %d bibliographic references!", count_found, total)
 
     # Disambiguate index references from the DB
-    def disambiguate_index(unprocessed_only: bool = True, limit: int = 100):
+    def disambiguate_index(db, unprocessed_only: bool = True, limit: int = None):
         count_found = 0
         count_links = 0
         refs = db.query_index_refs(limit, unprocessed_only)
@@ -77,8 +52,36 @@ if __name__ == '__main__':
             db.set_disambiguated(IndexReference.__name__, idx.UUID, session)
             print("Processed:" + str(i + 1) + "; disambiguated:" + str(count_found) + "; links:" + str(count_links))
         # Merge copies with the same uri
-        db.merge_ext_idx()
+        # db.merge_ext_idx()
         logger.info("Disambiguated: %d out of %d index references!", count_found, total)
+
+    # Parse publication archive and save knowledge graph in a DB
+    def populate_db(limit: int = None, batch_size: int = 1000):
+        # Process publication archives in batches
+        zip_arr = [f for f in listdir(dir_path) if isfile(join(dir_path, f))]
+        for zip in zip_arr:
+            logger.info("Started corpus processing!")
+            # 1. Parse publication batch
+            corpus_zip_path = join(dir_path, zip)
+            start_idx = 0
+            while limit is None or start_idx < limit:
+                # Full version with reference and index mining
+                batch = Batch.from_zip(zip_path=corpus_zip_path, start=start_idx, size=batch_size,
+                                       extract_bib=True, extract_index=True)
+                # Fast version without PDF mining, use it, e.g., to explore catalogue content
+                # batch = Batch.from_zip(zip_path=corpus_zip_path, start=start_idx, size=batch_size,
+                #                        extract_bib=False, extract_index=False)
+                if batch is not None:
+                    # 2. Cluster similar references in the corpus
+                    batch.cluster()
+                    # 3. Add batch to the knowledge graph
+                    db.create_graph(batch)
+                    logger.info("Processed and saved the batch!")
+                else:
+                    logger.info("Finished corpus processing!")
+                    break
+                start_idx += batch_size
+            logger.info("Finished corpus processing!")
 
     # -1. Create logger
     logger = config_logger()
@@ -87,17 +90,18 @@ if __name__ == '__main__':
     db = DBConnector("neo4j+s://aeb0fdae.databases.neo4j.io:7687", "neo4j", pwd)
 
     # Step 1: extract publications from archive, parse references and indices, cluster, populate the database
+    dir_path = "data"
     db.clear_graph()
     populate_db()
-    db.merge_clusters()
+    # db.merge_clusters()
 
     # Step 2: disambiguate a given number of references
-    # db.delete_external_pub()
-    # disambiguate_bib(True)
+    db.delete_external_pub()
+    disambiguate_bib(db, True, 100)
 
     # Step 3: disambiguate a given number of indices
-    # db.delete_external_index()
-    # disambiguate_index(True)
+    db.delete_external_index()
+    disambiguate_index(db, False, 100)
 
 
 

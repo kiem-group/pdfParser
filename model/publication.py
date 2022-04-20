@@ -28,6 +28,10 @@ class Publication(BasePublication):
     bib_file: str = None
     index_files: [str] = None
 
+    # stats
+    is_collection: bool = None
+    page_count: int = None
+
     # Relationships
     bib_refs: [Reference] = None
     index_refs: [IndexReference] = None
@@ -90,6 +94,14 @@ class Publication(BasePublication):
             if len(pub_id) > 0:
                 pub_format = pub_format[0] if len(pub_format) > 0 else None
                 self.identifiers.append(IndustryIdentifier(pub_id[0], "issn", pub_format))
+
+        collection_meta = book.xpath('.//collection-meta')
+        self.is_collection = True if len(collection_meta) > 0 else False
+        page_counts = book.xpath('.//counts/book-page-count')
+        if len(page_counts) > 0:
+            counts = page_counts[0].xpath('@count')
+            self.page_count = int(counts[0]) if len(counts) > 0 else None
+
         doi = book.xpath('.//book-meta/book-id[@book-id-type="doi"]')
         if len(doi) > 0:
             self.identifiers.append(IndustryIdentifier(doi[0].xpath('text()')[0], "doi", "online"))
@@ -110,10 +122,10 @@ class Publication(BasePublication):
         for jats_contrib in contributors:
             c = Contributor.from_jats(jats_contrib)
             # This will work for "volume editor", "volume-editor", and other variations
-            if "editor" in c.type:
+            if "editor" in c.type.lower():
                 self.editors.append(c)
             else:
-                if "author" in c.type:
+                if "author" in c.type.lower():
                     self.authors.append(c)
                 else:
                     self.logger.warning("Unknown contributor type: %s", c.type)
@@ -173,54 +185,58 @@ class Publication(BasePublication):
             self.__extract_pdf_idx(title, hrefs[0], pub_zip)
 
     def __extract_pdf_refs(self, title, href, pub_zip):
-        if self._extract_bib and 'bibliography' in title:
-            target_pdf = pub_zip.open(href)
+        if 'bibliography' in title:
             self.bib_file = href
-            [items, self._bib_skipped] = PdfParser.parse_target_indent(target_pdf)
-            for idx, ref_text in enumerate(items):
-                self.__create_ref(ref_text, idx)
+            if self._extract_bib:
+                target_pdf = pub_zip.open(href)
+                [items, self._bib_skipped] = PdfParser.parse_target_indent(target_pdf)
+                for idx, ref_text in enumerate(items):
+                    self.__create_ref(ref_text, idx)
 
     def __extract_pdf_idx(self, title, href, pub_zip):
-        if self._extract_index and 'index' in title:
-            target_pdf = pub_zip.open(href)
+        if 'index' in title:
             self.index_files.append(href)
-            curr_index_types = IndexReference.get_index_types(title)
-            [items, skipped] = PdfParser.parse_target_indent(target_pdf)
-            # Save skipped text from index files for analysis
-            self.logger.info("Extracted index references: " + str(len(items)))
-            self.logger.info("Skipped lines in index file: " + str(len(skipped)))
-            if skipped:
-                self._index_skipped.append(skipped)
-            # Merge lines that start from digid with previous
-            items = [item.replace("\n", " ").strip() for item in items]
-            ref_items = []
-            ref_text = ""
-            for text in items:
-                if text[0].isdigit():
-                    ref_text += " " + text
-                else:
-                    if ref_text:
-                        ref_items.append(ref_text)
-                    ref_text = text
-            for idx, ref_text in enumerate(ref_items):
-                self.__create_index_ref(ref_text, idx, curr_index_types)
+            if self._extract_index:
+                target_pdf = pub_zip.open(href)
+                curr_index_types = IndexReference.get_index_types(title)
+                [items, skipped] = PdfParser.parse_target_indent(target_pdf)
+                # Save skipped text from index files for analysis
+                self.logger.info("Extracted index references: " + str(len(items)))
+                self.logger.info("Skipped lines in index file: " + str(len(skipped)))
+                if skipped:
+                    self._index_skipped.append(skipped)
+                # Merge lines that start from digid with previous
+                items = [item.replace("\n", " ").strip() for item in items]
+                ref_items = []
+                ref_text = ""
+                for text in items:
+                    if text[0].isdigit():
+                        ref_text += " " + text
+                    else:
+                        if ref_text:
+                            ref_items.append(ref_text)
+                        ref_text = text
+                for idx, ref_text in enumerate(ref_items):
+                    self.__create_index_ref(ref_text, idx, curr_index_types)
 
     def __extract_jats_refs(self, jats_bib):
-        refs = jats_bib.xpath('.//ref')
-        for idx, ref in enumerate(refs):
-            ref_text = ''.join(ref.xpath('.//text()'))
-            self.__create_ref(ref_text, idx)
+        if self._extract_bib:
+            refs = jats_bib.xpath('.//ref')
+            for idx, ref in enumerate(refs):
+                ref_text = ''.join(ref.xpath('.//text()'))
+                self.__create_ref(ref_text, idx)
 
     def __extract_jats_idx(self, jats_idx):
-        titles = jats_idx.xpath('.//index-title-group//title/text()')
-        curr_index_types = ["unknown"]
-        if len(titles) > 0:
-            title = titles[0].lower()
-            curr_index_types = IndexReference.get_index_types(title)
-        ref_items = jats_idx.xpath('.//index-entry')
-        for idx, idx_item in enumerate(ref_items):
-            ref_text = ''.join(idx_item.xpath('.//text()'))
-            self.__create_index_ref(ref_text, idx, curr_index_types)
+        if self._extract_index:
+            titles = jats_idx.xpath('.//index-title-group//title/text()')
+            curr_index_types = ["unknown"]
+            if len(titles) > 0:
+                title = titles[0].lower()
+                curr_index_types = IndexReference.get_index_types(title)
+            ref_items = jats_idx.xpath('.//index-entry')
+            for idx, idx_item in enumerate(ref_items):
+                ref_text = ''.join(idx_item.xpath('.//text()'))
+                self.__create_index_ref(ref_text, idx, curr_index_types)
 
     def __create_ref(self, ref_text, idx):
         try:
@@ -252,6 +268,14 @@ class Publication(BasePublication):
         if self.index_refs:
             for idx in self.index_refs:
                 DisambiguateIndex.find_wikidata(idx)
+
+    @property
+    def num_disambiguated_refs(self) -> int:
+        count = 0
+        if self.bib_refs:
+            for ref in self.bib_refs:
+                count += 1 if len(ref.refers_to or []) > 0 else 0
+        return count
 
     @property
     def props(self) -> dict:

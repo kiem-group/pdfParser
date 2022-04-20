@@ -6,20 +6,17 @@ from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 from lxml import etree
 from rdflib import Graph, Namespace, URIRef, Literal, BNode
-from rdflib.namespace import RDF, DCTERMS
+from rdflib.namespace import RDF
 
 FABIO = Namespace('http://purl.org/spar/fabio')
 CITO = Namespace('http://purl.org/spar/cito')
 BIRO = Namespace('http://purl.org/spar/biro')
 CO = Namespace('http://purl.org/co/')
 FRBR = Namespace('http://purl.org/vocab/frbr/core#')
-# TODO Need own namespace
+c4o = Namespace('http://purl.org/spar/c4o')
 KIEM = Namespace('http://brill.com/kiem/')
 DOI = "http://dx.doi.org/"
 
-# g.parse('../spar/fabio.xml')
-# g.parse('../spar/cito.xml')
-# g.parse('../spar/biro.xml')
 
 @dataclass_json
 @dataclass
@@ -34,16 +31,6 @@ class MapToSpar:
         self.g.bind('frbr', FRBR)
         self.g.bind('kiem', KIEM)
         self.g.namespace_manager.bind('', URIRef(KIEM))
-
-    # Why mapping from JATS to RDF does not work?
-    def jats_to_spar(self, jats_file):
-        dom = etree.parse(jats_file)
-        xslt_file = open("../spar/transform/jats2spar.xsl")
-        xslt = etree.parse(xslt_file.read())
-        transform = etree.XSLT(xslt)
-        new_dom = transform(dom)
-        file = open("../spar/jats_test.txt", "w")
-        file.write(etree.tostring(new_dom, pretty_print=True))
 
     # Maps publication
     # <http://dx.doi.org/10.1002/asi.21134> frbr:part :reference-list .
@@ -75,37 +62,33 @@ class MapToSpar:
         ref_first = URIRef(KIEM + "reference-1")
         self.g.add((ref_list, CO.firstItem, ref_first))
         for idx, ref in enumerate(refs):
-            ref_item = URIRef(KIEM + "reference-" + str(ref.ref_num))
+            id_str = '{:03d}'.format(ref.ref_num)
+            ref_item = URIRef(KIEM + "reference-" + id_str)
             self.g.add((ref_list, CO.item, ref_item))
-        ref_last = URIRef(KIEM + "reference-" + str(len(refs)))
+        id_str_last = '{:03d}'.format(len(refs) + 1)
+        ref_last = URIRef(KIEM + "reference-" + id_str_last)
         self.g.add((ref_list, CO.lastItem, ref_last))
         for idx, ref in enumerate(refs):
             self.translate_ref(ref, idx == len(refs)-1)
 
     # Maps a bibliographic reference
-    # @Example
-    # :reference-i a co:ListItem ;
-    #     co:itemContent :renear02 ;
-    #     co:nextItem :reference-j .
-    # :renear02 a biro:BibliographicReference ;
-    # dcterms:bibliographicCitation
-    #    "Renear, A., Dubin, D. & Sperberg-McQueen, C.M. (2002). Towards a semantics for XML markup. In E. Mudson
-    #    (Chair), Proceedings of the ACM Symposium on Document Engineering, (pp. 119-126). New York: ACM Press." ;
-    # biro:references <http://dx.doi.org/10.1145/585058.585081> .
     def translate_ref(self, ref, is_last=False):
         # Create abbreviation: first author or ref-[ref_num] + year
-        ref_id_str = "ref-" + str(ref.ref_num)
+        id_str = '{:03d}'.format(ref.ref_num)
+        id_str_next = '{:03d}'.format(int(ref.ref_num) + 1)
+
+        ref_id_str = "ref-" + id_str
         ref_id = URIRef(KIEM + ref_id_str)
-        ref_list_item = URIRef(KIEM + "reference-" + str(ref.ref_num))
-        ref_list_next = URIRef(KIEM + "reference-" + str(int(ref.ref_num) + 1))
+        ref_list_item = URIRef(KIEM + "reference-" + id_str)
+        ref_list_next = URIRef(KIEM + "reference-" + id_str_next)
         # co:ListItem
         self.g.add((ref_list_item, RDF.type, CO.ListItem))
-        self.g.add((ref_list_item, CO.ItemContent, ref_id))
+        self.g.add((ref_list_item, CO.itemContent, ref_id))
         if not is_last:
-            self.g.add((ref_list_item, CO.NextItem, ref_list_next))
+            self.g.add((ref_list_item, CO.nextItem, ref_list_next))
         # biro:BibliographicReference
         self.g.add((ref_id, RDF.type, BIRO.BibliographicReference))
-        self.g.add((ref_id, DCTERMS.bibliographicCitation, Literal(ref.text)))
+        self.g.add((ref_id, c4o.hasContent, Literal(ref.text)))
         # Optional biro:references - point to disambiguation links
         if ref.refers_to and ref.refers_to:
             for ext_pub in ref.refers_to:

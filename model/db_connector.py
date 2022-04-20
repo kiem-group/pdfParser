@@ -80,7 +80,7 @@ class DBConnector:
         if session is None:
             session = self.driver.session()
 
-        self.logger.debug("# nodes before deleting publication data: %d", self.query_node_count())
+        self.logger.debug("# nodes before deleting publication catalogue: %d", self.query_node_count())
 
         self.delete_node(pub.UUID, session)
 
@@ -109,7 +109,7 @@ class DBConnector:
         self.delete_empty_nodes(ExternalIndex.__name__)
         self.delete_empty_nodes(IndexCluster.__name__)
 
-        self.logger.debug("# nodes after deleting publication data: %d", self.query_node_count())
+        self.logger.debug("# nodes after deleting publication catalogue: %d", self.query_node_count())
 
     # Create
 
@@ -118,7 +118,7 @@ class DBConnector:
         if session is None:
             session = self.driver.session()
 
-        self.logger.debug("# nodes before adding publication data: %d", self.query_node_count())
+        self.logger.debug("# nodes before adding publication catalogue: %d", self.query_node_count())
 
         # Create publication
         cql_create_pub = """CREATE (:Publication {0})"""
@@ -137,7 +137,7 @@ class DBConnector:
         self.create_bib_refs(pub, session)
         # Create index references
         self.create_index_refs(pub, session)
-        self.logger.debug("# nodes after adding publication data: %d", self.query_node_count())
+        self.logger.debug("# nodes after adding publication catalogue: %d", self.query_node_count())
 
     def create_contributor(self, pub: BasePublication, session: Session = None):
         if session is None:

@@ -24,6 +24,14 @@ class TestModel(unittest.TestCase):
         self.assertEqual('Netherlands', pub.location)
         self.assertEqual('2016', pub.year)
         self.assertEqual('../data_test/9783657782116_BITS.zip', pub.zip_path)
+        self.assertEqual(413, pub.page_count)
+        self.assertEqual(False, pub.is_collection)
+
+        zip_file = '../data_test/9789047443735_BITS.zip'
+        pub = Publication.from_zip(zip_file)
+        self.assertEqual(385, pub.page_count)
+        self.assertEqual(True, pub.is_collection)
+
 
     # Parse publication
     def test_publication_bib_parser(self):

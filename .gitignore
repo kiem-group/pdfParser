@@ -129,7 +129,7 @@ dmypy.json
 .pyre/
 
 # Data
-data/
+catalogue/
 data_all/
 data_sample/
 reports/

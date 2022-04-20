@@ -15,7 +15,7 @@ from bibtexparser.customization import convert_to_unicode
 
 
 def get_brill_catalogue_refs():
-    bibtex_file = open('../data_test/Brill_CLS_books.bib', 'r', encoding="utf-8")
+    bibtex_file = open('../catalogue/Brill_CLS_books.bib', 'r', encoding="utf-8")
     parser = BibTexParser()
     parser.customization = convert_to_unicode
     bib_database = bibtexparser.load(bibtex_file, parser=parser)
@@ -206,8 +206,16 @@ class DisambiguateBibliographic:
     #     return book_data
 
     @classmethod
-    def query_open_citations(cls, doi: str) -> json:
+    def query_coci(cls, doi: str) -> json:
         url = "https://opencitations.net/index/coci/api/v1/citations/" + doi
+        req = Request(url, headers={'User-Agent': 'Chrome/93.4'})
+        resp = urlopen(req)
+        book_data = json.load(resp)
+        return book_data
+
+    @classmethod
+    def query_croci(cls, doi: str) -> json:
+        url = "https://w3id.org/oc/index/croci/api/v1/references/" + doi
         req = Request(url, headers={'User-Agent': 'Chrome/93.4'})
         resp = urlopen(req)
         book_data = json.load(resp)

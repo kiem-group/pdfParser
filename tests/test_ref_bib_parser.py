@@ -3,9 +3,10 @@ from model.publication import Publication
 from model.disambiguate_bibliographic import DisambiguateBibliographic
 from model.reference_bibliographic import Reference
 from urllib.parse import quote
-import re
 from model.log_config import config_logger
 import csv
+from os import listdir
+from os.path import isfile, join
 
 
 class TestRefBibParser(unittest.TestCase):
@@ -21,16 +22,18 @@ class TestRefBibParser(unittest.TestCase):
             "Coulon, V., ed. 1923-1930. Aristophane, 5 vols., trans. H. van Daele. Paris",
             "Brown,  P.  G.  M.  1983,  “Menander’s  dramatic  technique  and  the  law  of  Athens”,  Classical  Quarterly, vol. 33, pp. 412–420. "
             "Andrewes, A. 1961, “Philochoros on phratries”, Journal of Hellenic Studies, vol. 81, pp. 1–15. ",
-            "——. 1994, “Legal space in classical Athens”, Greece and Rome, vol. 41, pp. 172–186. ",
+            "——. 1994. “Legal space in classical Athens”, Greece and Rome, vol. 41, pp. 172–186. ",
             "Cobetto Ghiggia, P. 2002, Iseo: Contra Leocare (sulla successione di Diceogene) introduzione,  testo critico, traduzione e commento, Pisa. ",
             "De Jong, I. 2001, A narratological commentary on the Odyssey, Cambridge. ",
             "——. 1968b, Aristophanes Clouds, edited with introduction and commentary, Oxford. ",
             "Conf anapolis: Indiana University Press, 2005. Pp. 28–49. ",
             "Butler, Edward P. “Polytheism and Individuality in the Henadic Manifold.” Dionysius 23 (2005): 83–104. ",
-            "HTAS In Tijdschrift voor Filosofie 45 (1983): 3–40. Engl. Trans. MyC "
+            "HTAS In Tijdschrift voor Filosofie 45 (1983): 3–40. Engl. Trans. MyC ",
+            "Cremonini, C., Musso, R., eds., I feudi imperiali in Italia tra XVI e XVII secolo, Rome, Bulzoni, 2010."
         ]
         for ref_text in data:
             ref = Reference(ref_text)
+            print(ref.author, " ### ", ref.year)
             self.assertIsNotNone(ref.year)
             self.assertIsNotNone(ref.author)
             self.assertIsNotNone(ref.title)
@@ -91,18 +94,45 @@ class TestRefBibParser(unittest.TestCase):
         self.assertEqual(10, len(res["items"]))
         self.assertEqual("The Brazen House", res["items"][0]["volumeInfo"]["title"])
 
+    ###
+    # The following 3 tests operating on the same folder can be used to compare the number of extracted and disambiguated
+    # references with the number of references in OpenCitations COCI and CROCI
+
+    def test_parse_disambiguate_pub(self):
+        dir_path = "../data_eval"
+        pubs = [f for f in listdir(dir_path) if isfile(join(dir_path, f))]
+        for zip_path in pubs:
+            pub = Publication.from_zip(join(dir_path, zip_path), extract_bib=True)
+            if pub.doi and len(pub.bib_refs) > 0:
+                pub.disambiguate_bib()
+                res0 = pub.num_disambiguated_refs
+                print(zip_path, len(pub.bib_refs), res0)
+
     # Disambiguation with OpenCitation API
-    def test_query_open_citations_pub(self):
-        pub = Publication.from_zip('./data_test/9789004188846_BITS.zip', extract_bib=True)
-        if pub.doi:
-            res = DisambiguateBibliographic.query_open_citations(pub.doi)
-            self.assertGreaterEqual(len(res), 3)
+    def test_query_coci_pub(self):
+        dir_path = "../data_eval"
+        pubs = [f for f in listdir(dir_path) if isfile(join(dir_path, f))]
+        for zip_path in pubs:
+            pub = Publication.from_zip(join(dir_path, zip_path), extract_bib=False)
+            if pub.doi:
+                res = DisambiguateBibliographic.query_coci(pub.doi)
+                print(zip_path, len(res))
+
+    def test_query_croci_pub(self):
+        dir_path = "../data_eval"
+        pubs = [f for f in listdir(dir_path) if isfile(join(dir_path, f))]
+        for zip_path in pubs:
+            pub = Publication.from_zip(join(dir_path, zip_path), extract_bib=False)
+            if pub.doi:
+                print(pub.doi)
+                # res = DisambiguateBibliographic.query_croci(pub.doi)
+                # print(zip_path, len(res))
 
     # Estimation of success rate of disambiguation
     def test_evaluate_disambiguation(self):
         self.logger.info("Started test_evaluate_disambiguation")
-        header = ["Reference", "GoogleAPI", "CrossRef", "Brill", "HumanEvaluation", "HumanLink"]
-        writer = csv.writer(open('../data_test/test_evaluate_disambiguation.csv', "w", encoding='utf-8', newline=""))
+        header = ["Reference", "GoogleAPI", "CrossRef", "Brill", "Score", "HumanLink"]
+        writer = csv.writer(open('../data_test/test_evaluate_bib_disambiguation.csv', "w", encoding='utf-8', newline=""))
         writer.writerow(header)
         from model.db_connector import DBConnector
         import os

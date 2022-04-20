@@ -1,7 +1,7 @@
 import sys
 from typing import List, Any
-from pdfminer.pdfdocument import PDFDocument
-from pdfminer.pdfparser import PDFParser
+# from pdfminer.pdfdocument import PDFDocument
+# from pdfminer.pdfparser import PDFParser
 from pdfminer.high_level import extract_pages
 from pdfminer.layout import LTTextContainer, LTChar, LTAnno
 from dataclasses import dataclass
@@ -36,16 +36,16 @@ class SkippedText:
 @dataclass
 class PdfParser:
 
-    @classmethod
-    def get_table_of_content(cls, path, password):
-        fp = open(path, 'rb')
-        parser = PDFParser(fp)
-        document = PDFDocument(parser, password)
-        outlines = document.get_outlines()
-        content = {}
-        for (level, title, dest, a, se) in outlines:
-            content[level] = title
-        return content
+    # @classmethod
+    # def get_table_of_content(cls, path, password):
+    #     fp = open(path, 'rb')
+    #     parser = PDFParser(fp)
+    #     document = PDFDocument(parser, password)
+    #     outlines = document.get_outlines()
+    #     content = {}
+    #     for (level, title, dest, a, se) in outlines:
+    #         content[level] = title
+    #     return content
 
     @classmethod
     def parse_target_indent(cls, in_file, config=bib_config):
@@ -87,7 +87,7 @@ class PdfParser:
                         except:
                             module_logger.error("Failed to get bbox", text_line)
 
-        # Remove occasional lines - title, page numbers, etc. - anything that occurs a couple of times per page on average
+        # Remove occasional lines - title, page numbers - anything that occurs just a few times per page
         odd_starts = cls.__get_offset_counter(odd_offset_counter, page_num, config)
         even_starts = cls.__get_offset_counter(even_offset_counter, page_num, config)
 

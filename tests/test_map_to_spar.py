@@ -11,7 +11,7 @@ import os
 class TestMappingSPAR(unittest.TestCase):
 
     def test_jats_to_spar(self):
-        # Note: mapping based on jast2spar.xsl is not working for Brill data
+        # Note: mapping based on jast2spar.xsl is not working for Brill catalogue
         pub_zip = zipfile.ZipFile("../data_test/9789004188846_BITS.zip", 'r')
         for file_name in pub_zip.namelist():
             if file_name.endswith('.xml'):
@@ -40,7 +40,7 @@ class TestMappingSPAR(unittest.TestCase):
     def test_translate_pub(self):
         pwd = os.environ.get('KIEM_NEO4J_PASSWORD')
         self.assertIsNotNone(pwd)
-        prefix = "data\\41a8cdce8aae605806c445f28971f623"
+        prefix = "catalogue\\41a8cdce8aae605806c445f28971f623"
         db = DBConnector("neo4j+s://aeb0fdae.databases.neo4j.io:7687", "neo4j", pwd)
 
         # Restore publication with bibliographic references

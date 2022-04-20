@@ -2,8 +2,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 import re
-from pyparsing import (Word, Char, Literal, OneOrMore, delimitedList, restOfLine, pyparsing_unicode as ppu,
-                       ParseException, Optional, Regex, CaselessKeyword, Combine, CharsNotIn)
+from pyparsing import (Word, Char, Literal, OneOrMore, oneOf, restOfLine, pyparsing_unicode as ppu,
+                       ParseException, Optional, Regex, CaselessKeyword, Combine)
 from model.publication_external import ExternalPublication
 from model.reference_base import BaseReference
 
@@ -22,18 +22,18 @@ class Reference(BaseReference):
         if not self.text:
             return
         self.text = self.text.replace("\n", " ").replace('"', '”')
-        dot = Literal('.')
-        comma = Literal(',')
+        dot = Literal(".")
+        comma = Literal(",")
         intl_alphas = ppu.Latin1.alphas + ppu.LatinA.alphas + ppu.LatinB.alphas
         family_name = Word(intl_alphas+'-', min=2)
         init_name = Char(intl_alphas) + dot + Optional('-' + Char(intl_alphas) + dot)
         # family_name.setName('LastName').setDebug()
         same = Word('—') + dot.suppress()
-        eds = CaselessKeyword("ed") | CaselessKeyword("eds")
+        eds = Optional('(') + (CaselessKeyword("ed") | CaselessKeyword("eds")) + Optional(dot) + Optional(comma) + Optional(')')
         year_or_range = r"\d{4}[a-z]?([,–,-]\d{4})?"
-        year = Regex(year_or_range) + Optional(dot).suppress() + Optional(comma).suppress()
+        year = Regex(year_or_range) + Optional(dot | comma).suppress()
         author = family_name("LastName") + comma + OneOrMore(init_name("FirstName"))
-        author_list = Combine((author | same) + Optional(eds).suppress() + Optional(dot).suppress() + Optional(comma).suppress())
+        author_list = Combine((author | same) + Optional(eds).suppress())
         citation = author_list('author') + year('year') + restOfLine('title')
         year_anywhere = None
         try:

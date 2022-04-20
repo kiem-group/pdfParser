@@ -157,7 +157,7 @@ class TestIndexParser(unittest.TestCase):
 
     # Parsing of indices from zipped pdf files
     def test_extract_and_parse_indices(self):
-        batch = Batch.from_zip('data/41a8cdce8aae605806c445f28971f623.zip', extract_index=True, extract_bib=False, size=5)
+        batch = Batch.from_zip('catalogue/41a8cdce8aae605806c445f28971f623.zip', extract_index=True, extract_bib=False, size=5)
         index_count = [0, 335, 14, 30, 100]
         for idx, pub in enumerate(batch.publications):
             self.assertEqual(len(pub.index_refs), index_count[idx])
@@ -168,7 +168,7 @@ class TestIndexParser(unittest.TestCase):
     # Estimation of success rate of disambiguation
     def test_evaluate_index_disambiguation(self):
         self.logger.info("Started test_evaluate_index_disambiguation")
-        header = ["Reference", "Labels", "Wikidata", "HumanEvaluation", "HumanLink"]
+        header = ["Reference", "Labels", "Wikidata", "Score", "HumanLink"]
         with open('../data_test/test_evaluate_idx_disambiguation_labels.csv', "w", encoding='utf-8', newline="") as f:
             writer = csv.writer(f)
             writer.writerow(header)
@@ -201,6 +201,25 @@ class TestIndexParser(unittest.TestCase):
                 writer.writerow([idx.text, " \n".join(terms), out_wikidata])
             self.logger.info("Success rate: %s/500", success_wikidata)
             self.logger.info("Finished test_evaluate_index_disambiguation")
+
+    # Revised disambiguation via analysis of all Google API results
+    def test_analyze_index_disambiguation(self):
+        test_dataset = open('../data_test/test_evaluate_idx_disambiguation_labels_annotated.tsv', encoding='utf-8')
+        reader = csv.reader(test_dataset, delimiter="\t")
+        count_filled = 0
+        count_filled_human = 0
+        count_good = 0
+        for row in reader:
+            if row[2]:
+                count_filled += 1
+            if row[3] == "0" and ("https" in row[4]):
+                count_filled_human += 1
+            if row[3] == "1":
+                count_good += 1
+            if row[3] == "0.5":
+                count_good += 0.5
+        print(count_good, count_filled)
+        print(count_good, count_filled + count_filled_human)
 
 
 if __name__ == '__main__':
