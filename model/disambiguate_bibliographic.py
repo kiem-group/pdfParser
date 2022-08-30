@@ -66,9 +66,13 @@ class DisambiguateBibliographic:
             return
         res = cls.query_crossref_pub(ref.text)
         # Here we just get the first returned, no date match
-        if res is not None:
+        if res is not None and "title" in res:
             max_ratio = 0
-            ratio = Levenshtein.ratio(ref.title, res["title"][0])
+            ratio = 0
+            try:
+                ratio = Levenshtein.ratio(ref.title, res["title"][0])
+            except Exception as e:
+                print(e)
             if ratio >= threshold:
                 if ref.refers_to is None:
                     ref.refers_to = []
@@ -162,6 +166,7 @@ class DisambiguateBibliographic:
         if "authors" in volume_info:
             ext_pub.authors = []
             for author in volume_info["authors"]:
+                author = author.replace("\"", "'")
                 ext_pub.authors.append(Contributor(full_name=author, type="author"))
         if "publishedDate" in volume_info:
             ext_pub.year = volume_info["publishedDate"]

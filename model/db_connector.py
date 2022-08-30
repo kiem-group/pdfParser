@@ -128,9 +128,10 @@ class DBConnector:
         cql_create_id = """CREATE (:IndustryIdentifier {0})"""
         cql_create_pub_has_identifier = """MATCH (a:Publication), (b:IndustryIdentifier)
            WHERE a.UUID = $pub_uuid AND b.UUID = $id_uuid CREATE (a)-[:HasIdentifier]->(b)"""
-        for industry_id in pub.identifiers:
-            session.run(cql_create_id.format(industry_id.serialize()))
-            session.run(cql_create_pub_has_identifier, pub_uuid=pub.UUID, id_uuid=industry_id.UUID)
+        if pub.identifiers:
+            for industry_id in pub.identifiers:
+                session.run(cql_create_id.format(industry_id.serialize()))
+                session.run(cql_create_pub_has_identifier, pub_uuid=pub.UUID, id_uuid=industry_id.UUID)
         # Create contributors: editors or authors
         self.create_contributor(pub, session)
         # Create bibliographic references
@@ -164,9 +165,10 @@ class DBConnector:
             session = self.driver.session()
         cql_create_pub_cites_ref = """MATCH (a:Publication), (b:Reference)
            WHERE a.UUID = $pub_uuid AND b.UUID = $ref_uuid CREATE (a)-[:Cites]->(b)"""
-        for ref in pub.bib_refs:
-            self.create_bib_ref(ref, session)
-            session.run(cql_create_pub_cites_ref, pub_uuid=pub.UUID, ref_uuid=ref.UUID)
+        if pub.bib_refs:
+            for ref in pub.bib_refs:
+                self.create_bib_ref(ref, session)
+                session.run(cql_create_pub_cites_ref, pub_uuid=pub.UUID, ref_uuid=ref.UUID)
 
     # Create index references
     def create_index_refs(self, pub: Publication, session: Session = None, save_parts: bool = False):
@@ -302,7 +304,7 @@ class DBConnector:
                     try:
                         self.create_pub(pub, session)
                     except Exception as e:
-                        self.logger.error("Failed to serialize publication: %s", pub.UUID)
+                        self.logger.error("Failed to serialize publication: %s", pub.zip_path)
                         self.logger.error(e)
             self.create_clusters(batch, session)
 
@@ -346,6 +348,16 @@ class DBConnector:
                         session.run(cql_merge_clusters, c1_uuid=c1.UUID, c2_uuid=c2.UUID)
                         merged[j] = True
     # Query
+
+    def query_pubs_jats_files(self) -> List[str]:
+        file_names = []
+        cql_pubs = "MATCH (a:Publication) return a.jats_file as file_name"
+        with self.driver.session() as session:
+            nodes = session.run(cql_pubs)
+            db_pubs = [record for record in nodes.data()]
+            for db_pub in db_pubs:
+                file_names.append(db_pub["file_name"])
+        return file_names
 
     # Retrieve all publications
     def query_pubs(self, limit: int = None) -> List[Publication]:

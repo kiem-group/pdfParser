@@ -29,7 +29,7 @@ class Publication(BasePublication):
     index_files: [str] = None
 
     # stats
-    is_collection: bool = None
+    is_collection: bool = False
     page_count: int = None
 
     # Relationships
@@ -95,8 +95,6 @@ class Publication(BasePublication):
                 pub_format = pub_format[0] if len(pub_format) > 0 else None
                 self.identifiers.append(IndustryIdentifier(pub_id[0], "issn", pub_format))
 
-        collection_meta = book.xpath('.//collection-meta')
-        self.is_collection = True if len(collection_meta) > 0 else False
         page_counts = book.xpath('.//counts/book-page-count')
         if len(page_counts) > 0:
             counts = page_counts[0].xpath('@count')
@@ -119,11 +117,13 @@ class Publication(BasePublication):
         contributors = book.xpath('.//book-meta//contrib-group//contrib')
         self.editors = []
         self.authors = []
+
         for jats_contrib in contributors:
             c = Contributor.from_jats(jats_contrib)
             # This will work for "volume editor", "volume-editor", and other variations
             if "editor" in c.type.lower():
                 self.editors.append(c)
+                self.is_collection = True
             else:
                 if "author" in c.type.lower():
                     self.authors.append(c)

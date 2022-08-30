@@ -68,7 +68,8 @@ class Reference(BaseReference):
                 self.author = text_to_parse.partition(self.title)[0].strip()
         if self.year is None and year_anywhere:
             self.year = year_anywhere
-        self.title = self.title.strip()
+        # replacing " as it breaks Neo4J operations
+        self.title = self.title.strip().replace("\"","'")
 
     @property
     def derived_author(self) -> str:

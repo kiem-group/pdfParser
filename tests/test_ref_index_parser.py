@@ -174,8 +174,9 @@ class TestIndexParser(unittest.TestCase):
             writer.writerow(header)
             from model.db_connector import DBConnector
             import os
-            pwd = os.environ.get('KIEM_NEO4J_PASSWORD')
-            db = DBConnector("neo4j+s://aeb0fdae.databases.neo4j.io:7687", "neo4j", pwd)
+            db_address = os.environ.get('KIEM_NEO4J_TEST')
+            pwd = os.environ.get('KIEM_NEO4J_PASSWORD_TEST')
+            db = DBConnector(db_address, "neo4j", pwd)
             cql_refs = "MATCH (a:IndexReference) WHERE a.types CONTAINS 'locorum' OR a.types CONTAINS 'nominum' " \
                        "return a, rand() as r ORDER BY r"
             idx_refs = db.query_resource(cql_refs, IndexReference, 500)

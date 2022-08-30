@@ -1,7 +1,6 @@
 import unittest
 from model.map_to_spar import MapToSpar
 from model.reference_bibliographic import Reference
-from model.publication import Publication
 from model.db_connector import DBConnector
 from model.disambiguate_bibliographic import DisambiguateBibliographic
 import zipfile
@@ -38,10 +37,12 @@ class TestMappingSPAR(unittest.TestCase):
 
     # Convert publication to SPAR
     def test_translate_pub(self):
-        pwd = os.environ.get('KIEM_NEO4J_PASSWORD')
+        db_address = os.environ.get('KIEM_NEO4J_TEST')
+        print(db_address)
+        pwd = os.environ.get('KIEM_NEO4J_PASSWORD_TEST')
         self.assertIsNotNone(pwd)
         prefix = "catalogue\\41a8cdce8aae605806c445f28971f623"
-        db = DBConnector("neo4j+s://aeb0fdae.databases.neo4j.io:7687", "neo4j", pwd)
+        db = DBConnector(db_address, "neo4j", pwd)
 
         # Restore publication with bibliographic references
         db_pub = db.query_pub_by_zip(prefix + "\\9789004261648_BITS\\9789004261648_BITS.zip")

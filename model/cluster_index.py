@@ -14,9 +14,10 @@ class IndexCluster(BaseCluster):
             ref_label = next((item.label for item in ref.refs if len(item.label) > 3), None)
             if ref_label and len(self.refs) > 0:
                 for cluster_ref in self.refs:
-                    cluster_label = next((item.label for item in cluster_ref.refs if len(item.label) > 3), None)
-                    if cluster_label:
-                        return lev.ratio(cluster_label, ref_label)
+                    if cluster_ref.refs:
+                        cluster_label = next((item.label for item in cluster_ref.refs if len(item.label) > 3), None)
+                        if cluster_label:
+                            return lev.ratio(cluster_label, ref_label)
         return 0
 
 

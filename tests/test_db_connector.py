@@ -10,11 +10,18 @@ import os
 class TestDBConnector(unittest.TestCase):
 
     def setUp(self):
-        self.pwd = os.environ.get('KIEM_NEO4J_PASSWORD')
+        # To test on production instance
+        # self.db_address = os.environ.get('KIEM_NEO4J')
+        # self.pwd = os.environ.get('KIEM_NEO4J_PASSWORD')
+
+        self.db_address = os.environ.get('KIEM_NEO4J_TEST')
+        self.pwd = os.environ.get('KIEM_NEO4J_PASSWORD_TEST')
+
         self.assertIsNotNone(self.pwd)
-        self.db = DBConnector("neo4j+s://aeb0fdae.databases.neo4j.io:7687", "neo4j", self.pwd)
+        self.db = DBConnector(self.db_address, "neo4j", self.pwd)
         self.logger = config_logger("test_db_connector.log")
 
+    @unittest.skip("Skipping because the test modifies the databse")
     def test_query_nodes(self):
         # Retrieve 20 publications
         db_pubs = self.db.query_pubs(20)
@@ -88,6 +95,7 @@ class TestDBConnector(unittest.TestCase):
 
     # Test that cluster merging works
     # Attention: test clears the database!
+    @unittest.skip("Skipping because the test clears the database!")
     def test_merge_clusters(self):
         # Clear
         self.db.clear_graph()
