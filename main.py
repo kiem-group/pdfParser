@@ -8,8 +8,9 @@ from os import listdir
 from model.db_connector import DBConnector
 from os.path import isfile, join
 import os
-import multiprocessing
 import time
+from model.cluster_bibliographic import ClusterSet
+from model.cluster_index import IndexClusterSet
 
 if __name__ == '__main__':
 
@@ -74,10 +75,10 @@ if __name__ == '__main__':
         logger.info("Disambiguated: %d out of %d bibliographic references!", count_found, total)
 
     # Disambiguate index references from the DB
-    def disambiguate_index(unprocessed_only: bool = True, limit: int = None):
+    def disambiguate_index(unprocessed_only: bool = True, limit: int = None, order=0):
         count_found = 0
         count_links = 0
-        refs = db.query_index_refs(limit, unprocessed_only)
+        refs = db.query_index_refs(limit, unprocessed_only, order)
         total = len(refs)
         print("Extracted index references: ", total)
         session = db.driver.session()
@@ -111,6 +112,22 @@ if __name__ == '__main__':
             print(len(missing_file_names))
             print(missing_file_names)
 
+    def cluster_bib():
+        cluster_set_bib = ClusterSet()
+        refs = db.query_bib_refs(100)
+        for i, ref in enumerate(refs):
+            cluster_set_bib.add_references(ref)
+            if i % 100 == 0:
+                print(i, "Number of bib clusters: %d", cluster_set_bib.num_clusters)
+
+    def cluster_index():
+        cluster_set_index = IndexClusterSet(threshold=0.9)
+        refs = db.query_index_refs(100)
+        for i, ref in enumerate(refs):
+            cluster_set_index.add_references(ref)
+            if i % 100 == 0:
+                print(i, "Number of bib clusters: %d", cluster_set_index.num_clusters)
+
     # -1. Create logger
     logger = config_logger()
     # 0. Prepare storage
@@ -137,21 +154,10 @@ if __name__ == '__main__':
     start = time.perf_counter()
 
     # disambiguate_bib(True, 1000)
-    disambiguate_index(True, 30000)
+    disambiguate_index(True, 1000, 1)
 
     end = time.perf_counter()
     print(f'Finished in {round(end-start, 2)} second(s)')
-
-    # Step 2 || Step 3
-    # start = time.perf_counter()
-    # process1 = multiprocessing.Process(target=disambiguate_bib(True, 100))
-    # process2 = multiprocessing.Process(target=disambiguate_index(True, 100))
-    # process1.start()
-    # process2.start()
-    # process1.join()
-    # process2.join()
-    # end = time.perf_counter()
-    # print(f'Finished in {round(end-start, 2)} second(s)')
 
 
 

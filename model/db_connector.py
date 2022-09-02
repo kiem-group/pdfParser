@@ -476,15 +476,17 @@ class DBConnector:
         return refs
 
     # Retrieve references
-    def query_bib_refs(self, limit: int = None, unprocessed_only: bool = True) -> List[Reference]:
+    def query_bib_refs(self, limit: int = None, unprocessed_only: bool = True, order: int = 0) -> List[Reference]:
         cql_condition = "WHERE a.disambiguated IS NULL" if unprocessed_only else ""
-        cql_refs = "MATCH (a:Reference) {condition} return a".format(condition=cql_condition)
+        cql_order = "" if order == 0 else "order by a.UUID" if order > 0 else "order by a.UUID desc"
+        cql_refs = "MATCH (a:Reference) {condition} return a {order}".format(condition=cql_condition, order=cql_order)
         return self.query_resource(cql_refs, Reference, limit)
 
     # Retrieve index references
-    def query_index_refs(self, limit: int = None, unprocessed_only: bool = True) -> List[IndexReference]:
+    def query_index_refs(self, limit: int = None, unprocessed_only: bool = True, order: int = 0) -> List[IndexReference]:
         cql_condition = "WHERE a.disambiguated IS NULL" if unprocessed_only else ""
-        cql_refs = "MATCH (a:IndexReference) {condition} return a".format(condition=cql_condition)
+        cql_order = "" if order == 0 else "order by a.UUID" if order > 0 else "order by a.UUID desc"
+        cql_refs = "MATCH (a:IndexReference) {condition} return a {order}".format(condition=cql_condition, order=cql_order)
         return self.query_resource(cql_refs, IndexReference, limit)
 
     # Retrieve bibliographic references for a cluster
