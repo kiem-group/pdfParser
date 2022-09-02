@@ -43,10 +43,10 @@ if __name__ == '__main__':
             logger.info("Finished corpus processing!")
 
     # Disambiguate bibliographic references from the DB
-    def disambiguate_bib(unprocessed_only: bool = True, limit: int = None):
+    def disambiguate_bib(unprocessed_only: bool = True, limit: int = None, order=0):
         count_found = 0
         count_links = 0
-        refs = db.query_bib_refs(limit, unprocessed_only)
+        refs = db.query_bib_refs(limit, unprocessed_only, order)
         total = len(refs)
         print("Extracted bib references: ", total)
         session = db.driver.session()
@@ -69,7 +69,7 @@ if __name__ == '__main__':
                     print("Failed to serialize reference", e)
             # Mark reference as disambiguated, even if the match is not found
             db.set_disambiguated(Reference.__name__, ref.UUID, session)
-            print("Processed:" + str(i + 1) + "; disambiguated:" + str(count_found) + "; links:" + str(count_links))
+            print("Processed:" + str(i + 1) + "; disambiguated:" + str(count_found) + "; links:" + str(count_links), ref.UUID)
         # Merge copies with the same uri
         db.merge_ext_pub()
         logger.info("Disambiguated: %d out of %d bibliographic references!", count_found, total)
@@ -93,7 +93,7 @@ if __name__ == '__main__':
                     print("Failed to serialize index", e)
                 # Mark reference as disambiguated, even if the match is not found
             db.set_disambiguated(IndexReference.__name__, idx.UUID, session)
-            print("Processed:" + str(i + 1) + "; disambiguated:" + str(count_found) + "; links:" + str(count_links))
+            print("Processed:" + str(i + 1) + "; disambiguated:" + str(count_found) + "; links:" + str(count_links), idx.UUID)
         # Merge copies with the same uri
         # db.merge_ext_idx()
         logger.info("Disambiguated: %d out of %d index references!", count_found, total)
@@ -153,8 +153,8 @@ if __name__ == '__main__':
 
     start = time.perf_counter()
 
-    # disambiguate_bib(True, 1000)
-    disambiguate_index(True, 1000, 1)
+    disambiguate_bib(True, 2000, -1)
+    # disambiguate_index(True, 1000, 1)
 
     end = time.perf_counter()
     print(f'Finished in {round(end-start, 2)} second(s)')
